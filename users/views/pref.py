@@ -145,7 +145,7 @@ def validForm(rec):
     
 def get_contact_email():
     """Return a tuple of the contact name and email address or None"""
-    from app import get_app_config
+    from shotglass2.base_app import get_app_config
     
     app_config = get_app_config()
     

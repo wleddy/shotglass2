@@ -85,6 +85,13 @@ DOC_DIRECTORY_LIST = ['','docs','takeabeltof','takeabeltof/docs','users','users/
 # The default static directory will be tried if not found here.
 LOCAL_STATIC_FOLDER = "resource/static"
 
+# Additional template directories to search BEFORE using
+#   the default flask search methods.
+# Should be a tuple of app relative paths to search
+LOCAL_TEMPLATE_DIRS = (
+    'resource/templates',
+    )
+    
 # A list of dictionaries of settings for sites that share this config and virtualenv
 SUB_DOMAIN_SETTINGS = [
     {"host_name": HOST_NAME, "database_path": DATABASE_PATH, "time_zone": TIME_ZONE, "local_static_folder": LOCAL_STATIC_FOLDER, "contact_email_addr": CONTACT_EMAIL_ADDR, "contact_name": CONTACT_NAME},
