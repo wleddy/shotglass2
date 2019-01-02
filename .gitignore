@@ -1,0 +1,15 @@
+*.py[co]
+env/
+.idea
+*.log
+*.sqlite
+instance/
+resource/
+__pycache__
+.pytest_cache
+.coverage
+
+## Passenger web app files
+tmp/
+passenger.*
+

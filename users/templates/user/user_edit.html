@@ -1,0 +1,50 @@
+{% extends "form_layout.html" %}
+
+{% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
+
+{% block fieldset %}
+<fieldset>
+    <p>{{ input_field(rec.id,"id",type="hidden",default=0) }}</p>
+    <p>{{ input_field(rec.first_name,"first_name",label="First Name*",req=True) }}</p>
+    <p>{{ input_field(rec.last_name,"last_name",label="Last Name*",req=True) }}</p>
+    <p>{{ input_field(rec.email,"email",label="Email*",req=True, type="email") }}
+
+    {% set extras = "" %}
+    {% if not config.ALLOW_USERNAME_CHANGE %}{% set extras = 'disabled="disabled"' %}{% endif %}
+    <p>{{ input_field(rec.username,"new_username",label="User Name",extras=extras) }}
+    
+    {% set label = 'Password <em class="w3-small">(&mdash; Optional &mdash;)</em>' %}
+    {% if rec.password and rec.password != '' %}
+        {% set label = 'Password <em class="w3-small">(leave as-is to keep current)</em>' %}
+    {% endif %}
+    <p>{{ input_field(new_password,"new_password",type="password",label=label) }}</p>
+    <p>{{ input_field(confirm_password,"confirm_password",type="password",label="Re-enter password") }}</p>
+    <p>{{ input_field(rec.address,"address") }}</p>
+    <p>{{ input_field(rec.address2,"address2",label="Address line 2") }}</p>
+    <p>{{ input_field(rec.city,"city") }}</p>
+    <p>{{ input_field(rec.state,"state") }}</p>
+    <p>{{ input_field(rec.zip,"zip") }}</p>
+    <p>{{ input_field(rec.phone,"phone") }}</p>
+    
+    {% if is_admin %}
+    <p>{{ select_field("roles_select","Role",extras='multiple size="5"', class="w3-border") }}
+            {% for role in roles %}
+                {% if role.name == "super" and "super" is not in session_roles %}
+                {% else %}
+                <option value="{{role.name}}" {% if role.name in user_roles %}selected="selected" {% endif %}>{{role.name}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        </p>
+        <p>
+            {% set extras = "" %}
+            {% if rec.active ==1 %}{% set extras = ' checked="checked"' %}{% endif %}
+            {{ radio_field(1,"active","Active:",extras=extras ,right=True) }}&nbsp;
+            {% set extras = "" %}
+            {% if rec.active ==0 %}{% set extras = ' checked="checked"' %}{% endif %}
+            {{ radio_field(0,"active","Inactive:",extras=extras ,right=True ) }}
+        </p>
+        <p>{{ label_only("Last Access:")}} {{rec.last_access|default('Never',True)}} (UTC)</p>
+    {% endif %}
+</fieldset>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "form_layout.html" %}
+
+{% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
+
+{% block fieldset %}
+<fieldset>
+    <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
+    <p>{{ input_field(rec.name,"name",req=True)}}</p>
+    <p>{{ input_field(rec.value,"value",req=True)}}</p>
+    <p>{{ input_field(rec.user_name,"user_name")}}</p>
+    <p>{{ input_field(rec.expires,"expire_marker",label="Expires",placeholder="Never")}}</p>
+</fieldset>
+{% endblock fieldset %}
