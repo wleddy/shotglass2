@@ -2,9 +2,9 @@ import sys
 #print(sys.path)
 sys.path.append('') ##get import to look in the working dir.
 
-from users.admin import Admin, login_required, table_access_required
+from shotglass2.users.admin import Admin, login_required, table_access_required
 import app
-from users.models import User,Role
+from shotglass2.users.models import User,Role
 import os
 import pytest
 

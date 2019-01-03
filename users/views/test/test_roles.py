@@ -8,7 +8,7 @@ import pytest
 import tempfile
 
 import app
-from users.views.password import getPasswordHash
+from shotglass2.users.views.password import getPasswordHash
 
 @pytest.fixture
 def client():
@@ -58,7 +58,7 @@ def delete_test_db():
 
     
 def test_roles():
-    from users.models import Role
+    from shotglass2.users.models import Role
     #db = get_test_db()
     
     assert Role(db).get(0) == None 
@@ -94,7 +94,7 @@ def nogood_test_list_page(client):
     with app.app.app_context():
         with client as c:
             from flask import session, g
-            from users.models import User,Role
+            from shotglass2.users.models import User,Role
             import app
             print(app.app.config['DATABASE_PATH'])
             app.get_db(app.app.config['DATABASE_PATH'])

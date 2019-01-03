@@ -1,6 +1,6 @@
-from takeabeltof.database import SqliteTable
-from takeabeltof.utils import cleanRecordID
-from users.views.password import getPasswordHash
+from shotglass2.takeabeltof.database import SqliteTable
+from shotglass2.takeabeltof.utils import cleanRecordID
+from shotglass2.users.views.password import getPasswordHash
         
 class Role(SqliteTable):
     """Handle some basic interactions with the role table"""

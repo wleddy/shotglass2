@@ -1,8 +1,8 @@
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash, Blueprint, Response, safe_join
-from users.admin import login_required, table_access_required
-from takeabeltof.utils import render_markdown_for, printException, handle_request_error
-from takeabeltof.date_utils import datetime_as_string
+from shotglass2.users.admin import login_required, table_access_required
+from shotglass2.takeabeltof.utils import render_markdown_for, printException, handle_request_error
+from shotglass2.takeabeltof.date_utils import datetime_as_string
 import os
 
 
@@ -41,7 +41,7 @@ def contact():
     setExits()
     g.title = 'Contact Us'
     from app import app
-    from takeabeltof.mailer import send_message
+    from shotglass2.takeabeltof.mailer import send_message
     rendered_html = render_markdown_for('contact.md',mod)
     
     show_form = True
@@ -65,7 +65,7 @@ def contact():
             to = []
             # See if the contact info is in Prefs
             try:
-                from users.views.pref import get_contact_email
+                from shotglass2.users.views.pref import get_contact_email
                 contact_to = get_contact_email()
                 if contact_to:
                     to.append(contact_to)

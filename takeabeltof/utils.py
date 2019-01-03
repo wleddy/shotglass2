@@ -3,7 +3,7 @@
 """
 
 from flask import g, render_template_string, flash, send_from_directory, safe_join
-from takeabeltof.date_utils import nowString
+from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
 import re
@@ -141,7 +141,7 @@ def render_markdown_text(text_to_render,**kwargs):
     
 def handle_request_error(error=None,request=None,status=666):
     """Usually used to handle a basic request error such as a db error"""
-    from takeabeltof.mailer import alert_admin
+    from shotglass2.takeabeltof.mailer import alert_admin
     from shotglass2.base_app import get_app_config
     app_config = get_app_config()
     
@@ -171,16 +171,28 @@ def send_static_file(filename,**kwargs):
     
     default_path = 'static/'
     
-    path = kwargs.get("local_path",default_path)
-    if type(path) != str:
-        path = default_path
+    path_list = kwargs.get('path_list')
+    print(path_list)
+    if not path_list:
+        path_list = kwargs.get("local_path",default_path)
         
-    if path[0] == "/":
-        path = path[1:]
+    if isinstance(path_list,tuple):
+        pass
+    elif isinstance(path_list,str):
+        path_list = (default_path,)
         
-    file_loc = safe_join(os.path.dirname(os.path.abspath(__name__)),path,filename)
-    if not os.path.isfile(file_loc):
-        path = default_path
+    
+    path = default_path
+    for temp_path in path_list:
+        if temp_path[0] == "/":
+            temp_path = temp_path[1:]
+        
+        print(temp_path)
+        file_loc = safe_join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
+        print(file_loc)
+        if os.path.isfile(file_loc):
+            path = temp_path
+            break
     
     return send_from_directory(path,filename, as_attachment=False)
     

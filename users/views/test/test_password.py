@@ -4,7 +4,7 @@ sys.path.append('') ##get import to look in the working dir.
 
         
 def test_password():
-    from users.views import password
+    from shotglass2.users.views import password
     # basic tests
     passwords = ("password", 
                  "PassWord",

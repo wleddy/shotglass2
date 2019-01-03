@@ -7,7 +7,7 @@ import random
     
 def get_access_token(token_length=24):
     """Return an access token that does not exist in the user table"""
-    from users.models import User
+    from shotglass2.users.models import User
     
     temp_rec = 'temp'
     while temp_rec != None:

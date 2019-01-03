@@ -60,6 +60,6 @@ def test_render_markup_text():
 def test_handle_request_error():
     #handle_request_error(error=None,request=None,level='info')
     with app.app_context():
-        from takeabeltof.utils import handle_request_error
+        from shotglass2.takeabeltof.utils import handle_request_error
         result = handle_request_error("test for error",None,200)
         assert "test for error" in result

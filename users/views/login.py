@@ -2,10 +2,10 @@ from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash, Blueprint
 from time import sleep, time
 import random
-from users.models import User
-from users.views.password import getPasswordHash, matchPasswordToHash
-from users.utils import get_access_token
-from users.admin import silent_login
+from shotglass2.users.models import User
+from shotglass2.users.views.password import getPasswordHash, matchPasswordToHash
+from shotglass2.users.utils import get_access_token
+from shotglass2.users.admin import silent_login
 
 mod = Blueprint('login',__name__, template_folder='../templates')
 
@@ -112,7 +112,7 @@ def recover_password():
             g.db.commit()
             
             # send an email with instructions
-            from takeabeltof.mailer import send_message
+            from shotglass2.takeabeltof.mailer import send_message
             full_name = rec.first_name + " " + rec.last_name
             context = {'temp_pass':temp_pass,'rec':rec,'full_name':full_name}
             to_address_list=[(full_name,rec.email),]

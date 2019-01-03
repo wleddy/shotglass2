@@ -8,7 +8,7 @@ import pytest
 import tempfile
 
 import app
-from takeabeltof.get_client import client
+from shotglass2.takeabeltof.get_client import client
 
 #@pytest.fixture
 #def client():

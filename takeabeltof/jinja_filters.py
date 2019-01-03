@@ -1,4 +1,4 @@
-from takeabeltof.date_utils import date_to_string
+from shotglass2.takeabeltof.date_utils import date_to_string
 
 # some custom filters for templates
 def iso_date_string(value):

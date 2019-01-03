@@ -50,7 +50,7 @@ def test_create_test_data():
     
 def test_user_get():
     import users.views.password as login
-    from users.models import User
+    from shotglass2.users.models import User
     
     #do some tests...
     user = User(db)
@@ -87,7 +87,7 @@ def test_user_get():
     assert user.get(234343) == None
     
 def test_user_creation():
-    from users.models import User
+    from shotglass2.users.models import User
     #create some user records
     user = User(db)
     
@@ -106,7 +106,7 @@ def test_user_creation():
     db.rollback()
     
 def test_user_update():
-    from users.models import User
+    from shotglass2.users.models import User
     
     user = User(db)
     rec = user.get('doris')
@@ -130,7 +130,7 @@ def test_user_update():
     db.rollback()
     
 def test_user_delete():
-    from users.models import User, Role
+    from shotglass2.users.models import User, Role
     
     user = User(db)
     record_deleted = user.delete(2)

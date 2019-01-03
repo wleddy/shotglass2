@@ -1,6 +1,6 @@
 import sqlite3
 from namedlist import namedlist #Like namedtuples but mutable
-from takeabeltof.utils import cleanRecordID
+from shotglass2.takeabeltof.utils import cleanRecordID
 
 
 class Database:

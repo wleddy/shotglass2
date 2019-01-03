@@ -56,7 +56,7 @@ class Admin():
     def has_access(self,user_name,table=None):
         """Test to see if the user represented by user name has access to ANY admin items
         If a table class is specified, only check to see if user has access to that table"""
-        from users.models import User
+        from shotglass2.users.models import User
         
         if len(self.permissions) == 0:
             return False
@@ -109,8 +109,8 @@ def silent_login(alert=True):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            from users.views.login import authenticate_user
-            from takeabeltof.mailer import email_admin
+            from shotglass2.users.views.login import authenticate_user
+            from shotglass2.takeabeltof.mailer import email_admin
             if g.user == None \
                 and (not request.form \
                 or 'username' not in request.form \

@@ -1,10 +1,10 @@
 from flask import Flask, render_template, g, session, url_for, request, redirect, flash, abort
 from flask_mail import Mail
-from takeabeltof.database import Database
-from takeabeltof.utils import send_static_file
-from takeabeltof.jinja_filters import register_jinja_filters
-from users.models import User,Role,Pref
-from users.admin import Admin
+from shotglass2.takeabeltof.database import Database
+from shotglass2.takeabeltof.utils import send_static_file
+from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
+from shotglass2.users.models import User,Role,Pref
+from shotglass2.users.admin import Admin
 import os    
 
 ## Create app
@@ -34,7 +34,7 @@ def initalize_all_tables(db=None):
     if not db:
         db = get_db()
         
-    from users.models import init_db as users_init_db 
+    from shotglass2.users.models import init_db as users_init_db 
     users_init_db(db)
     
 
@@ -69,6 +69,17 @@ def update_config(app):
             from app import mail
             mail = Mail(app)
             
+            # update the jinja loader
+            import jinja2
+            
+            loader_list = []
+            if 'LOCAL_TEMPLATE_DIRS' in app.config:
+                for loader in list(app.config['LOCAL_TEMPLATE_DIRS']):
+                    loader_list.append(jinja2.FileSystemLoader(loader))
+            if loader_list:
+                loader_list.append(app.jinja_loader)
+                app.jinja_loader = jinja2.ChoiceLoader(loader_list)
+                            
         except:
             # Will use the default settings
             if app.config['DEBUG']:
@@ -172,35 +183,36 @@ def user_setup():
 #
 # @app.errorhandler(404)
 # def page_not_found(error):
-#     from takeabeltof.utils import handle_request_error
+#     from shotglass2.takeabeltof.utils import handle_request_error
 #     handle_request_error(error,request,404)
 #     g.title = "Page Not Found"
 #     return render_template('404.html'), 404
 #
 # @app.errorhandler(500)
 # def server_error(error):
-#     from takeabeltof.utils import handle_request_error
+#     from shotglass2.takeabeltof.utils import handle_request_error
 #     handle_request_error(error,request,500)
 #     g.title = "Server Error"
 #     return render_template('500.html'), 500
 
-@app.route('/static/<path:filename>')
-def static(filename):
-    """This takes full responsibility for loading static content"""
-        
-    local_path = None
-    if "LOCAL_STATIC_FOLDER" in app.config:
-        local_path = app.config['LOCAL_STATIC_FOLDER']
 
-    return send_static_file(filename,local_path=local_path)
+#@app.route('/static/<path:filename>')
+# def static(app,filename):
+#     """This takes full responsibility for loading static content"""
+#
+#     local_path = None
+#     if "LOCAL_STATIC_FOLDER" in app.config:
+#         local_path = app.config['LOCAL_STATIC_FOLDER']
+#
+#     return send_static_file(filename,local_path=local_path)
 
 
 def register_www(app):
-    from www.views import home
+    from shotglass2.www.views import home
     app.register_blueprint(home.mod)
 
 def register_users(app):
-    from users.views import user, login, role, pref
+    from shotglass2.users.views import user, login, role, pref
     app.register_blueprint(user.mod)
     app.register_blueprint(login.mod)
     app.register_blueprint(role.mod)

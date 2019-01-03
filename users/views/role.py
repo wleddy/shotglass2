@@ -1,8 +1,8 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
-from users.models import Role
-from takeabeltof.utils import printException, cleanRecordID
-from users.admin import login_required, table_access_required
+from shotglass2.users.models import Role
+from shotglass2.takeabeltof.utils import printException, cleanRecordID
+from shotglass2.users.admin import login_required, table_access_required
 
 mod = Blueprint('role',__name__, template_folder='../templates', url_prefix='/role')
 

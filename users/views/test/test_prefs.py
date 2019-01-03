@@ -8,7 +8,7 @@ import pytest
 import tempfile
 
 import app
-from users.views.password import getPasswordHash
+from shotglass2.users.views.password import getPasswordHash
 
 @pytest.fixture
 def client():
@@ -36,7 +36,7 @@ def delete_test_db():
 
     
 def test_prefs():
-    from users.models import Pref
+    from shotglass2.users.models import Pref
     #db = get_test_db()
     
     assert Pref(db).get(0) == None 
