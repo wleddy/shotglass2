@@ -172,24 +172,15 @@ def send_static_file(filename,**kwargs):
     default_path = 'static/'
     
     path_list = kwargs.get('path_list')
-    print(path_list)
     if not path_list:
         path_list = kwargs.get("local_path",default_path)
-        
-    if isinstance(path_list,tuple):
-        pass
-    elif isinstance(path_list,str):
-        path_list = (default_path,)
-        
-    
+            
     path = default_path
     for temp_path in path_list:
         if temp_path[0] == "/":
             temp_path = temp_path[1:]
         
-        print(temp_path)
         file_loc = safe_join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
-        print(file_loc)
         if os.path.isfile(file_loc):
             path = temp_path
             break
