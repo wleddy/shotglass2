@@ -137,11 +137,18 @@ def static(filename):
     #import pdb;pdb.set_trace()
     app_config = get_app_config()
     local_path = []
-    if app_config.get('LOCAL_STATIC_DIRS'):
-        local_path = app_config['LOCAL_STATIC_DIRS'] 
-    if app_config.get('STATIC_DIRS'):
+    local_config = app_config.get('LOCAL_STATIC_DIRS')
+    static_config = app_config.get('STATIC_DIRS')
+    if local_config:
+        if not isinstance(local_config,list):
+            raise TypeError('LOCAL_STATIC_DIRS must be a list')
+            
+        local_path = local_config
+    if static_config:
         #append STATIC_DIRS to LOCAL_STATIC_DIRS
-        for folder in app_config.get('STATIC_DIRS'):
+        if not isinstance(static_config,list):
+            raise TypeError('STATIC_DIRS must be a list')
+        for folder in static_config:
             local_path.append(folder)
         
     return send_static_file(filename,path_list=local_path)
