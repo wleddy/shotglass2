@@ -169,13 +169,11 @@ def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory
     It's important that the path passed to send_from_directory does not start with a slash."""
     
-    default_path = 'static/'
     
-    path_list = kwargs.get('path_list')
-    if not path_list:
-        path_list = kwargs.get("local_path",default_path)
-            
-    path = default_path
+    path_list = kwargs.get('path_list',['static/'])
+    
+    path = path_list[0] #default
+    
     for temp_path in path_list:
         if temp_path[0] == "/":
             temp_path = temp_path[1:]
