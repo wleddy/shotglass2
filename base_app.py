@@ -38,10 +38,75 @@ def initalize_all_tables(db=None):
     users_init_db(db)
     
 
-def update_config(app):
-    # update settings for the requested host
-    #import pdb;pdb.set_trace()
+# def update_config(app):
+#     # update settings for the requested host
+#     #import pdb;pdb.set_trace()
+#
+#     # if there is no request this function will error out
+#     # check to see if the property we need is available
+#     request_in_flight = True
+#     try:
+#         request.url
+#     except:
+#         request_in_flight = False
+#
+#     if request_in_flight and "SUB_DOMAIN_SETTINGS" in app.config and len(app.config["SUB_DOMAIN_SETTINGS"]) > 0:
+#         try:
+#             server = None
+#             for value in app.config['SUB_DOMAIN_SETTINGS']:
+#                 if value.get('host_name') == request.host:
+#                     server = value
+#                     break
+#
+#             if not server:
+#                 #did not find a server to match, use default
+#                 raise ValueError
+#
+#             for key, value in server.items():
+#                 app.config[key.upper()] = value
+#
+#             # refresh mail since settings changed
+#             from app import mail
+#             mail = Mail(app)
+#
+#             # update the jinja loader
+#             import jinja2
+#
+#             loader_list = []
+#             if app.config.get('LOCAL_TEMPLATE_DIRS'):
+#                 for loader in app.config['LOCAL_TEMPLATE_DIRS']:
+#                     loader_list.append(jinja2.FileSystemLoader(loader))
+#             if loader_list:
+#                 loader_list.append(app.jinja_loader)
+#                 app.jinja_loader = jinja2.ChoiceLoader(loader_list)
+#
+#         except:
+#             # Will use the default settings
+#             if app.config['DEBUG']:
+#                 #raise ValueError("SUB_DOMAIN_SETTINGS could not be determined")
+#              flash("Using Default SUB_DOMAIN_SETTINGS")
+#
+        
+def get_app_config(this_app=None):
+    """Returns a copy of the current app.config.
+    This makes it possible for other modules to get access to the config
+    with the values as updated for the current host.
+    Import this method rather than importing app
+
+    When called from app.py, the app is passed in. When
+    called from other modules it is not needed.
+    If not passed from app.py there seems to be some pieces
+    missing and the template loader won't work correctly.
+    In particular, it seems to be unable to find included templates.
+    """
+   
     
+    if not this_app:
+        from app import app
+        this_app = app
+        
+    #import pdb;pdb.set_trace()
+
     # if there is no request this function will error out
     # check to see if the property we need is available
     request_in_flight = True
@@ -49,11 +114,11 @@ def update_config(app):
         request.url
     except:
         request_in_flight = False
-        
-    if request_in_flight and "SUB_DOMAIN_SETTINGS" in app.config and len(app.config["SUB_DOMAIN_SETTINGS"]) > 0:
+
+    if request_in_flight and "SUB_DOMAIN_SETTINGS" in this_app.config and len(this_app.config["SUB_DOMAIN_SETTINGS"]) > 0:
         try:
             server = None
-            for value in app.config['SUB_DOMAIN_SETTINGS']:
+            for value in this_app.config['SUB_DOMAIN_SETTINGS']:
                 if value.get('host_name') == request.host:
                     server = value
                     break
@@ -61,42 +126,33 @@ def update_config(app):
             if not server:
                 #did not find a server to match, use default
                 raise ValueError
-            
+
             for key, value in server.items():
-                app.config[key.upper()] = value
-            
+                this_app.config[key.upper()] = value
+
             # refresh mail since settings changed
             from app import mail
-            mail = Mail(app)
-            
+            mail = Mail(this_app)
+
             # update the jinja loader
             import jinja2
-            
+
             loader_list = []
-            if 'LOCAL_TEMPLATE_DIRS' in app.config:
-                for loader in list(app.config['LOCAL_TEMPLATE_DIRS']):
+            if this_app.config.get('LOCAL_TEMPLATE_DIRS'):
+                for loader in this_app.config['LOCAL_TEMPLATE_DIRS']:
                     loader_list.append(jinja2.FileSystemLoader(loader))
             if loader_list:
-                loader_list.append(app.jinja_loader)
-                app.jinja_loader = jinja2.ChoiceLoader(loader_list)
-                            
+                loader_list.append(this_app.jinja_loader)
+                this_app.jinja_loader = jinja2.ChoiceLoader(loader_list)
+
         except:
             # Will use the default settings
-            if app.config['DEBUG']:
+            if this_app.config['DEBUG']:
                 #raise ValueError("SUB_DOMAIN_SETTINGS could not be determined")
-                flash("Using Default SUB_DOMAIN_SETTINGS")
+             flash("Using Default SUB_DOMAIN_SETTINGS")
     
-        
-def get_app_config():
-    """Returns a copy of the current app.config.
-    This makes it possible for other modules to get access to the config
-    with the values as updated for the current host.
-    Import this method rather than importing app
-    """
-    from app import app
-    #import pdb;pdb.set_trace()
-    update_config(app)
-    return app.config
+    
+    return this_app.config
 
     
 # def get_db(filespec=None):
@@ -156,22 +212,17 @@ def make_db_path(filespec):
 #     get_db()
     
 def user_setup():
-    # Is the user signed in?
-    g.user = None
-    if 'user' in session:
-        g.user = session['user']
-        
     if 'admin' not in g:
         g.admin = Admin(g.db)
         # Add items to the Admin menu
         # the order here determines the order of display in the menu
         
-        # a header row must have the some permissions or higher than the items it heads
-        g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
-            
-        g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
-        g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=1000)
-        g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
+    # a header row must have the some permissions or higher than the items it heads
+    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
+        
+    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
+    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=1000)
+    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
         
 
 
