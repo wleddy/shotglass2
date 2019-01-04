@@ -71,7 +71,7 @@ ALLOW_USERNAME_CHANGE = True
 ALLOW_USER_SIGNUP = True
 
 ## Places to look for documentation:
-DOC_DIRECTORY_LIST = ['','docs','takeabeltof','takeabeltof/docs','users','users/docs',]
+DOC_DIRECTORY_LIST = ['/','docs','shotglass2/','shotglass2/docs/',]
 
 #Map Box Settings...
 #MAPBOX_PROJECT_ID = ""
