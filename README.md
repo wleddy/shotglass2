@@ -17,16 +17,22 @@ Out of the box it provides most of the basics for a web site including:
 A typical approach to setting up a new development project would be to:
 * Create a new empty github repo for your new project
 * Clone it into your development machine
-* cd into the new directory and clone shotglass2 into it with:  
-    `git clone https://github.com/wleddy/shotglass2.git`
-* From the terminal run `cp -R shotglass2/a_starter_app/ . `
-* Next run `. setup_env` This will create the instance directory where your private
+* cd into the new directory and clone shotglass2 into it with:
+    ```
+    git clone https://github.com/wleddy/shotglass2.git
+    ```
+* From the terminal run:
+    ```
+    cp -r shotglass2/a_starter_app/* . 
+    ```
+* Next run `. setup_env`  
+  This will create the instance directory where your private
   stuff is stored and a 'resource' directory where you can put static content unique to the installation.  
   It will also try to create virtualenv directory 'env' and pip the requirements into it.  
   * See the note below about virtualenv and requirements.txt with A2 Hosting. 
 * If not already in the virtual environment, run `. activate_env` to enter your virtual environment.
 * Next, edit the file at `instance/site_settings.py` with all your secrets.
-* run python app.py to start the dev server and create the initial database. (unless your on A2, see below)
+* run `python app.py` to start the dev server and create the initial database. (unless your on A2, see below)
     
 ### Special Installation Instructions for A2 Hosting
 
