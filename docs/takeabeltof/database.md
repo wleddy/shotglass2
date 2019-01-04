@@ -120,5 +120,5 @@ Update the namedlist rec with the matching elements in form
 > Optionally can save the rec (but not committed) after update
 
 ---
-[Return to Docs](/docs/takeabeltof/README.md)
+[Return to Docs](/docs/shotglass2/README.md)
 

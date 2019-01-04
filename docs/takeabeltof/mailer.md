@@ -39,4 +39,4 @@ Shortcut method to send a quick email to the admin
 An alias to email_admin() for reasons I don't recall...
 
 ---
-[Return to docs](/docs/)
+[Return to docs](/docs/takeabeltof/index.md)

@@ -34,4 +34,4 @@ Registers the filters with app.
 
 ---
 
-[Return to Docs](/docs/takeabeltof/README.md)
+[Return to Docs](/docs/shotglass2/README.md)

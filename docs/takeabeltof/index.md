@@ -39,6 +39,6 @@ This module is a catch all for a number of functions.
 [More Info...](/docs/takeabeltof/utils.md)
 
 ---
-[Return to Docs](/docs/)
+[Return to Docs](/docs/shotglass2/README.md)
 
 

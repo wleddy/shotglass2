@@ -67,4 +67,4 @@ You can use the same `.htaccess` file in multiple doc roots if for some reason y
 My guess is that when a visitor hits the site, the Passenger... directives cause the web server to pipe the request to the 
 python app indicated. That's just a guess...
 
-[Back to Docs](/docs/)
+[Back to Docs](/docs/shotglass2/README.md)

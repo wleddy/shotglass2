@@ -11,4 +11,4 @@ At runtime, the function `takeabeltof.utils.send_static_file` will try to use th
 to construct a path for the file. If not found there it will look in the root (default) static directory.
 
  
-[Return to Docs](/docs/takeabeltof/README.md)
+[Return to Docs](/docs/shotglass2/README.md)

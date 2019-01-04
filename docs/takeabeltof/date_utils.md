@@ -43,4 +43,4 @@ This function will NOT convert an aware datetime to a new time zone.
 Returns the current datetime as a string. A short cut to datetime_as_string()
 
 ---
-[Return to Docs](/docs/takeabeltof/docs/README.md)
+[Return to Docs](/docs/shotglass2/README.md)

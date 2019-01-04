@@ -30,4 +30,4 @@ used.
 
 For more information about customizing options see [content_override.md](/docs/content_override.md)
 
-[Back to Docs](/docs/)
+[Back to Docs](/docs/shotglass2/README.md)
