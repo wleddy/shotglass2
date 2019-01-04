@@ -1,8 +1,6 @@
-from flask import Flask, render_template, g, session, url_for, request, redirect, flash, abort
+from flask import render_template, g, url_for, request, flash
 from flask_mail import Mail
-from shotglass2.takeabeltof.database import Database
 from shotglass2.takeabeltof.utils import send_static_file
-from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
 from shotglass2.users.models import User,Role,Pref
 from shotglass2.users.admin import Admin
 import os    

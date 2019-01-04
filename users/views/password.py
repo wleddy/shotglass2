@@ -5,7 +5,7 @@ import random
 
 def getPasswordHash(pw, theSalt=None, timesAround='05',encoding='utf-8'):
     """Return a string hash of the password or None"""
-    from shotglass2.base_app import get_app_config
+    from shotglass2.shotglass import get_app_config
     
     if type(pw) is str:
         pw = pw.strip()

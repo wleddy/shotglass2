@@ -34,7 +34,7 @@ def looksLikeEmailAddress(email=""):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email.strip())
     
 def printException(mes="An Unknown Error Occurred",level="error",err=None):
-    from shotglass2.base_app import get_app_config 
+    from shotglass2.shotglass import get_app_config 
     from app import app
     
     app_config = get_app_config()
@@ -77,7 +77,7 @@ def render_markdown_for(file_name,bp=None):
     (In particular, the shotglass.home.docs route depends on this fact.)
     
     """
-    from shotglass2.base_app import get_app_config
+    from shotglass2.shotglass import get_app_config
     #import pdb;pdb.set_trace()
     
     app_config = get_app_config()
@@ -142,7 +142,7 @@ def render_markdown_text(text_to_render,**kwargs):
 def handle_request_error(error=None,request=None,status=666):
     """Usually used to handle a basic request error such as a db error"""
     from shotglass2.takeabeltof.mailer import alert_admin
-    from shotglass2.base_app import get_app_config
+    from shotglass2.shotglass import get_app_config
     app_config = get_app_config()
     
     error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(app_config['SITE_NAME'],status)

@@ -1,7 +1,7 @@
 from flask import g, flash, render_template_string, render_template
 from app import mail
 from flask_mail import Message
-from shotglass2.base_app import get_app_config
+from shotglass2.shotglass import get_app_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
 
 def send_message(to_address_list=None,**kwargs):

@@ -119,7 +119,7 @@ def contact():
 def docs(filename=None):
     setExits()
     g.title = "Docs"
-    from shotglass2.base_app import get_app_config
+    from shotglass2.shotglass import get_app_config
     app_config = get_app_config()
     
     #import pdb;pdb.set_trace()
