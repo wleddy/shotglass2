@@ -17,6 +17,7 @@ hr {
 
 pre {
     overflow-x: scroll;
+    margin: .3em 0;
 }
 
 /* colors */
