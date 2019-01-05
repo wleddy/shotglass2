@@ -154,7 +154,11 @@ def static(filename):
 
 def register_www(app):
     from shotglass2.www.views import home
-    app.register_blueprint(home.mod)
+    mod = home.mod #get_blueprint(home)
+    routes = home.get_default_routes()
+    for key, value in routes.items():
+        mod.add_url_rule(value[0],value[1],value[2])
+    app.register_blueprint(mod)
 
 def register_users(app):
     from shotglass2.users.views import user, login, role, pref
