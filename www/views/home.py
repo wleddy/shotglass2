@@ -5,8 +5,21 @@ from shotglass2.takeabeltof.utils import render_markdown_for, printException, ha
 from shotglass2.takeabeltof.date_utils import datetime_as_string
 import os
 
+mod = Blueprint('www',__name__, template_folder='templates', url_prefix='')
 
-mod = Blueprint('www',__name__, template_folder='../templates', url_prefix='')
+
+# return a dict of all the routes for this blueprint
+def get_default_routes():
+    # modify this dict before calling mod.add_url_rule to override any of the routes
+    route_dict = {}
+    route_dict['/'] = ('/','home',home)
+    route_dict['/about/'] = ('/about/','about',about)
+    route_dict['/contact/'] = ('/contact/','contact',contact)
+    route_dict['/docs/'] = ('/docs/','docs',docs)
+    route_dict['/docs/<path:filename>'] = ('/docs/<path:filename>','docs',docs)
+    route_dict['/robots.txt'] = ('/robots.txt','robots',robots)
+
+    return route_dict
 
 
 def setExits():
@@ -15,17 +28,18 @@ def setExits():
     g.contactURL = url_for('.contact')
     g.title = 'Home'
 
-@mod.route('/')
+#@mod.route('/')
 def home():
     setExits()
+    g.title = 'Home'
     g.suppress_page_header = True
     rendered_html = render_markdown_for('index.md',mod)
 
     return render_template('markdown.html',rendered_html=rendered_html,)
 
 
-@mod.route('/about', methods=['GET',])
-@mod.route('/about/', methods=['GET',])
+#@mod.route('/about', methods=['GET',])
+#@mod.route('/about/', methods=['GET',])
 def about():
     setExits()
     g.title = "About"
@@ -35,8 +49,8 @@ def about():
     return render_template('markdown.html',rendered_html=rendered_html)
 
 
-@mod.route('/contact', methods=['POST', 'GET',])
-@mod.route('/contact/', methods=['POST', 'GET',])
+#@mod.route('/contact', methods=['POST', 'GET',])
+#@mod.route('/contact/', methods=['POST', 'GET',])
 def contact():
     setExits()
     g.title = 'Contact Us'
@@ -113,9 +127,9 @@ def contact():
     flash(mes)
     return render_template('500.html'), 500
     
-@mod.route('/docs', methods=['GET',])
-@mod.route('/docs/', methods=['GET',])
-@mod.route('/docs/<path:filename>', methods=['GET',])
+#@mod.route('/docs', methods=['GET',])
+#@mod.route('/docs/', methods=['GET',])
+#@mod.route('/docs/<path:filename>', methods=['GET',])
 def docs(filename=None):
     setExits()
     g.title = "Docs"
@@ -152,7 +166,7 @@ def docs(filename=None):
         #file not found
         abort(404)
     
-@mod.route('/robots.txt', methods=['GET',])
+#@mod.route('/robots.txt', methods=['GET',])
 def robots():
     resp = Response("""User-agent: *
 Disallow: /""" )
