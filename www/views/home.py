@@ -5,19 +5,21 @@ from shotglass2.takeabeltof.utils import render_markdown_for, printException, ha
 from shotglass2.takeabeltof.date_utils import datetime_as_string
 import os
 
-mod = Blueprint('www',__name__, template_folder='templates', url_prefix='')
+mod = Blueprint('www',__name__, template_folder='templates/www', url_prefix='')
 
 
 # return a dict of all the routes for this blueprint
 def get_default_routes():
     # modify this dict before calling mod.add_url_rule to override any of the routes
+    # options is a dict of extra values to pass to add_url_rule. pass {} to use default of GET, HEAD, and OPTION
+    put_options = {'methods':['POST', 'GET',]}
     route_dict = {}
-    route_dict['/'] = ('/','home',home)
-    route_dict['/about/'] = ('/about/','about',about)
-    route_dict['/contact/'] = ('/contact/','contact',contact)
-    route_dict['/docs/'] = ('/docs/','docs',docs)
-    route_dict['/docs/<path:filename>'] = ('/docs/<path:filename>','docs',docs)
-    route_dict['/robots.txt'] = ('/robots.txt','robots',robots)
+    route_dict['/'] = ('/','home',home,{})
+    route_dict['/about/'] = ('/about/','about',about,{})
+    route_dict['/contact/'] = ('/contact/','contact',contact,put_options)
+    route_dict['/docs/'] = ('/docs/','docs',docs,{})
+    route_dict['/docs/<path:filename>'] = ('/docs/<path:filename>','docs',docs,{})
+    route_dict['/robots.txt'] = ('/robots.txt','robots',robots,{})
 
     return route_dict
 

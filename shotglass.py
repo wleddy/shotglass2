@@ -112,7 +112,6 @@ def user_setup():
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
         
 
-
 #
 # @app.errorhandler(404)
 def page_not_found(error):
@@ -157,7 +156,7 @@ def register_www(app):
     mod = home.mod #get_blueprint(home)
     routes = home.get_default_routes()
     for key, value in routes.items():
-        mod.add_url_rule(value[0],value[1],value[2])
+        mod.add_url_rule(value[0],value[1],value[2],**value[3])
     app.register_blueprint(mod)
 
 def register_users(app):
