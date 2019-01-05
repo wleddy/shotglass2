@@ -37,7 +37,7 @@ def home():
     g.suppress_page_header = True
     rendered_html = render_markdown_for('index.md',mod)
 
-    return render_template('markdown.html',rendered_html=rendered_html,)
+    return render_template('index.html',rendered_html=rendered_html,)
 
 
 #@mod.route('/about', methods=['GET',])

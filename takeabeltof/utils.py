@@ -115,6 +115,9 @@ def render_markdown_for(file_name,bp=None):
             # look in the resource folder
             markdown_path = os.path.join(application_path,local_static_folder,bp.root_path.replace(application_path,'').strip("/"), bp_template_folder,file_name)
         if not os.path.isfile(markdown_path):
+            # look in the root templates again, but with the bp template_path
+            markdown_path = os.path.join(application_path,bp_template_folder,file_name)
+        if not os.path.isfile(markdown_path):
             # look in the template folder of the blueprint
             markdown_path = os.path.join(bp.root_path, bp_template_folder,file_name)
     if os.path.isfile(markdown_path):
