@@ -86,7 +86,6 @@ DOC_DIRECTORY_LIST = ['/','docs','shotglass2/','shotglass2/docs/',]
 STATIC_DIRS = [
     'resource/static',
     'static',
-    'shotglass2/static',
 ]
 
 ## For Debuging
