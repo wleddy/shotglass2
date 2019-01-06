@@ -26,13 +26,18 @@ A typical approach to setting up a new development project would be to:
     cp -r shotglass2/a_starter_app/* . 
     ```
 * Next run `. setup_env`  
-  This will create the instance directory where your private
-  stuff is stored and a 'resource' directory where you can put static content unique to the installation.  
-  It will also try to create virtualenv directory 'env' and pip the requirements into it.  
-  * See the note below about virtualenv and requirements.txt with A2 Hosting. 
-* If not already in the virtual environment, run `. activate_env` to enter your virtual environment.
+  This will create the instance, resource and templates directories:
+    * The 'instance' directory is where you'll keep your private info such as the encryption key and email account info. The database files
+    are usually stored here tool.
+    * The 'resource' directory is where you can put static content unique to the installation. [More info here.](/docs/takeabeltof/content_override.md)
+    * The 'template' directory is where your primary site design file go. The content of the shotgass2/templates directory will
+    be copied here for you. You can edit them to suit your needs.  
+    
+    * setup_env will also try to create virtualenv directory 'env' and pip the requirements into it.  
+        * See the note below about virtualenv and requirements.txt with A2 Hosting.  
+* You should now be in the virtual environment. If not, type `. activate_env` to activate it.
 * Next, edit the file at `instance/site_settings.py` with all your secrets.
-* run `python app.py` to start the dev server and create the initial database. (unless your on A2, see below)
+* Enter `python app.py` to start the dev server and create the initial database. (unless your on A2, see below)
     
 ### Special Installation Instructions for A2 Hosting
 
@@ -50,7 +55,7 @@ sheet and other content. The sites are configured in the application settings fi
 It's possible to override the files in the default 'static' folder by creating your own versions in a folder outside of the shotglass
 repo. [Read more here](/docs/takeabeltof/content_override.md).
 
-## Database Access and Utility functions
+## Utility Functions and Database Access
 
 Database access and some utility functions are grouped in the 'takeabeltof' package. [Read more here.](/docs/takeabeltof/index.md)
 
