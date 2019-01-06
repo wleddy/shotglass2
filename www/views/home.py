@@ -1,7 +1,7 @@
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash, Blueprint, Response, safe_join
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.takeabeltof.utils import render_markdown_for, printException, handle_request_error
+from shotglass2.takeabeltof.utils import render_markdown_for, printException, handle_request_error, send_static_file
 from shotglass2.takeabeltof.date_utils import datetime_as_string
 import os
 
@@ -48,7 +48,7 @@ def about():
     
     rendered_html = render_markdown_for('about.md',mod)
             
-    return render_template('markdown.html',rendered_html=rendered_html)
+    return render_template('about.html',rendered_html=rendered_html)
 
 
 #@mod.route('/contact', methods=['POST', 'GET',])
@@ -170,8 +170,6 @@ def docs(filename=None):
     
 #@mod.route('/robots.txt', methods=['GET',])
 def robots():
-    resp = Response("""User-agent: *
-Disallow: /""" )
-    resp.headers['content-type'] = 'text/plain'
-    return resp
+    #from shotglass2.shotglass import get_app_config
+    return redirect('/static/robots.txt')
 

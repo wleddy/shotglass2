@@ -152,12 +152,17 @@ def static(filename):
 
 
 def register_www(app):
+    """I did this because I thought I could modify the routes
+    at startup by modifying the routes var returned from get_default_routes
+    Turns out flask complains that the routes already exist.
+    If you really want to make more extensive changes, just copy the www blueprint
+    into a new project and have your way with it."""
+    
     from shotglass2.www.views import home
-    mod = home.mod #get_blueprint(home)
     routes = home.get_default_routes()
     for key, value in routes.items():
-        mod.add_url_rule(value[0],value[1],value[2],**value[3])
-    app.register_blueprint(mod)
+        home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
+    app.register_blueprint(home.mod)
 
 def register_users(app):
     from shotglass2.users.views import user, login, role, pref
