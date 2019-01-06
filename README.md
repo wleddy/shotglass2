@@ -23,7 +23,7 @@ A typical approach to setting up a new development project would be to:
     ```
 * From the terminal run:
     ```
-    cp -r shotglass2/a_starter_app/* . 
+    cp -r shotglass2/a_starter_app/. .
     ```
 * Next run `. setup_env`  
   This will create the instance, resource and templates directories:
