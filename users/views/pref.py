@@ -4,7 +4,7 @@ from shotglass2.users.models import Pref
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
 
-mod = Blueprint('pref',__name__, template_folder='../templates', url_prefix='/pref')
+mod = Blueprint('pref',__name__, template_folder='templates', url_prefix='/pref')
 
 
 def setExits():

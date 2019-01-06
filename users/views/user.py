@@ -10,7 +10,7 @@ from shotglass2.users.views.password import getPasswordHash
 from shotglass2.users.admin import login_required, table_access_required
 
 
-mod = Blueprint('user',__name__, template_folder='../templates', url_prefix='/user')
+mod = Blueprint('user',__name__, template_folder='templates', url_prefix='/user')
 
 
 def setExits():

@@ -7,7 +7,7 @@ from shotglass2.users.views.password import getPasswordHash, matchPasswordToHash
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.admin import silent_login
 
-mod = Blueprint('login',__name__, template_folder='../templates')
+mod = Blueprint('login',__name__, template_folder='templates')
 
 
 def setExits():
