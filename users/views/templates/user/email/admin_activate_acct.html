@@ -7,7 +7,7 @@
 <p>Someone has requested a an account at {{ config.SITE_NAME | default("you web site",True)}}</p>
 <p>
     If you wish to nip this in the bud you can <a href="{{context.deleteURL}}">Delete this account</a> 
-    otherwise, wait you receive another email which will allow you to activate the account.
+    otherwise, wait until you receive another email which will allow you to activate the account.
 </p>
 <p>This registration request expires: {{ context.registration_exp }}</p>
 {% endif %}
