@@ -4,7 +4,7 @@ from shotglass2.users.models import Pref
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
 
-mod = Blueprint('pref',__name__, template_folder='templates', url_prefix='/pref')
+mod = Blueprint('pref',__name__, template_folder='templates/pref', url_prefix='/pref')
 
 
 def setExits():
@@ -20,7 +20,7 @@ def display():
     g.title = "{} Record List".format(g.title)
     # get all records
     recs = Pref(g.db).select()
-    return render_template('pref/pref_list.html',recs=recs)
+    return render_template('pref_list.html',recs=recs)
     
 
 ## Edit the Pref
@@ -89,7 +89,7 @@ def edit(rec_id=None):
             pass
 
     # display form
-    return render_template('pref/pref_edit.html', rec=rec)
+    return render_template('pref_edit.html', rec=rec)
     
 
 @mod.route('/delete/', methods=['GET','POST'])

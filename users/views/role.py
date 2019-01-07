@@ -4,7 +4,7 @@ from shotglass2.users.models import Role
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
 
-mod = Blueprint('role',__name__, template_folder='templates', url_prefix='/role')
+mod = Blueprint('role',__name__, template_folder='templates/role', url_prefix='/role')
 
 
 def setExits():
@@ -20,7 +20,7 @@ def display():
     g.title = "{} Record List".format(g.title)
     # get all records
     recs = Role(g.db).select()
-    return render_template('role/role_list.html',recs=recs)
+    return render_template('role_list.html',recs=recs)
     
 
 ## Edit the role
@@ -84,7 +84,7 @@ def edit(rec_id=None):
             pass
 
     # display form
-    return render_template('role/role_edit.html', rec=rec)
+    return render_template('role_edit.html', rec=rec)
     
 
 @mod.route('/delete/', methods=['GET','POST'])

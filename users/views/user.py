@@ -10,7 +10,7 @@ from shotglass2.users.views.password import getPasswordHash
 from shotglass2.users.admin import login_required, table_access_required
 
 
-mod = Blueprint('user',__name__, template_folder='templates', url_prefix='/user')
+mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user')
 
 
 def setExits():
@@ -26,7 +26,7 @@ def setExits():
 @login_required
 def home():
     setExits()
-    return render_template('user/user_index.html')
+    return render_template('user_index.html')
     
 @mod.route('/list/', methods=['GET'])
 @table_access_required(User)
@@ -36,7 +36,7 @@ def display():
     include_inactive = True
     
     recs = User(g.db).select(include_inactive=include_inactive)
-    return render_template('user/user_list.html', recs=recs)
+    return render_template('user_list.html', recs=recs)
     
 @mod.route('/edit/<int:id>/', methods=['POST','GET'])
 @table_access_required(User)
@@ -179,8 +179,8 @@ def edit(rec_handle=None):
                     to_address_list,
                     subject="Welcome to {{config.SITE_NAME}}",
                     context=context,
-                    html_template='user/email/welcome.html',
-                    text_template='user/email/welcome.txt',
+                    html_template='email/welcome.html',
+                    text_template='email/welcome.txt',
                     )
                 if not sent:
                     flash('The welcome message could not be sent. Error: {}'.format(msg))
@@ -202,7 +202,7 @@ def edit(rec_handle=None):
             confirm_password = request.form.get('confirm_password','')
 
     # display form
-    return render_template('user/user_edit.html', rec=rec, 
+    return render_template('user_edit.html', rec=rec, 
         no_delete=no_delete, 
         is_admin=is_admin, 
         user_roles=user_roles, 
@@ -231,7 +231,7 @@ def register():
     roles=None
     no_delete=True
     success=True
-    help = render_markdown_for("user/new_account_help.md",mod)        
+    help = render_markdown_for("new_account_help.md",mod)        
     
     if 'confirm' in request.args:
         #Try to find the user record that requested registration
@@ -248,11 +248,11 @@ def register():
             deleteURL = "{}://{}{}?delete={}".format(app.config['HOST_PROTOCOL'],app.config['HOST_NAME'],url_for('.delete'), rec.access_token)
             context={'rec':rec,'confirmURL':confirmURL,'deleteURL':deleteURL}
             subject = 'Activate Account Request from - {}'.format(app.config['SITE_NAME'])
-            html_template = 'user/email/admin_activate_acct.html'
+            html_template = 'email/admin_activate_acct.html'
             text_template = None
             send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
             
-            return render_template('user/registration_success.html',success=success)
+            return render_template('registration_success.html',success=success)
         else:
             flash("That registration request has expired")
             return redirect('/')
@@ -277,8 +277,8 @@ def register():
                 to=[(full_name,rec.email)]
                 context={'rec':rec,'confirmation_code':rec.access_token}
                 subject = 'Signup Success'
-                html_template = 'user/email/registration_confirm.html'
-                text_template = 'user/email/registration_confirm.txt'
+                html_template = 'email/registration_confirm.html'
+                text_template = 'email/registration_confirm.txt'
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
                 
                 #inform the admin
@@ -286,7 +286,7 @@ def register():
                 deleteURL = "{}://{}{}?delete={}".format(app.config['HOST_PROTOCOL'],app.config['HOST_NAME'],url_for('.delete'), rec.access_token)
                 context={'rec':rec,'deleteURL':deleteURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
                 subject = 'Unconfirmed Account Request from - {}'.format(app.config['SITE_NAME'])
-                html_template = 'user/email/admin_activate_acct.html'
+                html_template = 'email/admin_activate_acct.html'
                 text_template = None
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
 
@@ -303,12 +303,12 @@ def register():
                 send_message(to,context=context,body=body,subject=mes)
                 success = False
             
-            return render_template('user/registration_success.html',success=success)
+            return render_template('registration_success.html',success=success)
         else:
             #validation failed
             user.update(rec,request.form)
             
-    return render_template('user/user_edit.html', rec=rec, no_delete=no_delete, is_admin=is_admin, user_roles=user_roles, roles=roles, help=help)
+    return render_template('user_edit.html', rec=rec, no_delete=no_delete, is_admin=is_admin, user_roles=user_roles, roles=roles, help=help)
 
 
 @mod.route('/activate/', methods=['GET'])
@@ -333,8 +333,8 @@ def activate():
             to=[(full_name,rec.email)]
             context={'rec':rec,}
             subject = 'Account Activated'
-            html_template = 'user/email/activation_complete.html'
-            text_template = 'user/email/activation_complete.txt'
+            html_template = 'email/activation_complete.html'
+            text_template = 'email/activation_complete.txt'
             send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
             
         else:

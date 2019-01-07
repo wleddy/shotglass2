@@ -7,7 +7,7 @@ from shotglass2.users.views.password import getPasswordHash, matchPasswordToHash
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.admin import silent_login
 
-mod = Blueprint('login',__name__, template_folder='templates')
+mod = Blueprint('login',__name__, template_folder='templates/login')
 
 
 def setExits():
@@ -49,14 +49,14 @@ def login():
         if 'loginTries' not in session:
             #Testing that user agent is keeping cookies.
             #If not, there is no point in going on... Also, could be a bot.
-            return render_template('login/no-cookies.html')
+            return render_template('no-cookies.html')
         
         result = authenticate_user(request.form["userNameOrEmail"],request.form['password'])
         if result != 0:
             session['loginTries'] = 0
             if result == -1:
                 flash("Your account is inactive")
-                return render_template('/login/inactive.html')
+                return render_template('inactive.html')
             #import pdb;pdb.set_trace()          
             if next:
                 return redirect(next)
@@ -73,7 +73,7 @@ def login():
     if session['loginTries'] > 5:
         sleep(session['loginTries']/.8)
         
-    return render_template('login/login.html', form=request.form, next=next)
+    return render_template('login.html', form=request.form, next=next)
        
     
 @mod.route('/logout', methods=['GET'])
@@ -119,13 +119,13 @@ def recover_password():
             result,msg = send_message(
                 to_address_list,
                 context=context,
-                html_template='login/email/confirm_reset.html',
-                text_template='login/email/confirm_reset.txt',
+                html_template='email/confirm_reset.html',
+                text_template='email/confirm_reset.txt',
                 subject = 'Confirm Password Reset'
                 )
     
     # Return a page telling user what we did
-    return render_template('login/recover_password.html',temp_pass=temp_pass,rec=rec)
+    return render_template('recover_password.html',temp_pass=temp_pass,rec=rec)
     
     
 @mod.route('/quiet_test', methods=['GET','POST'])
