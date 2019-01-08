@@ -3,7 +3,7 @@ sys.path.append('') ##get import to look in the working dir
 
 import app
 import sqlite3
-import takeabeltof.database as dbm
+import shotglass2.takeabeltof.database as dbm
 
 filespec = 'instance/test_database.db'
 db = None

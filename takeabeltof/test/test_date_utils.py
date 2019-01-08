@@ -4,7 +4,7 @@ sys.path.append('') ##get import to look in the working dir.
 
 import pytest
 from datetime import datetime
-import takeabeltof.date_utils as dates
+import shotglass2.takeabeltof.date_utils as dates
 
 def test_local_datetime_now():
     from app import app

@@ -2,7 +2,7 @@ import sys
 #print(sys.path)
 sys.path.append('') ##get import to look in the working dir.
 from datetime import datetime
-import takeabeltof.jinja_filters as filters
+import shotglass2.takeabeltof.jinja_filters as filters
 
 def test_two_digit():
     """Test that it rounds to 2 digits"""

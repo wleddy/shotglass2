@@ -4,7 +4,7 @@ import os
 #print(sys.path)
 sys.path.append('') ##get import to look in the working dir.
 
-import users.utils as utils
+import shotglass2.users.utils as utils
 from flask import g
 import app
 

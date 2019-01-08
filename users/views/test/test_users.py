@@ -41,7 +41,7 @@ def delete_test_db():
         
 def test_create_test_data():
     # Populate the test database
-    f = open('users/views/test/test_data_create.sql','r')
+    f = open('shotglass2/users/views/test/test_data_create.sql','r')
     sql = f.read()
     f.close()
     cur = db.cursor()
@@ -49,7 +49,7 @@ def test_create_test_data():
     
     
 def test_user_get():
-    import users.views.password as login
+    import shotglass2.users.views.password as login
     from shotglass2.users.models import User
     
     #do some tests...

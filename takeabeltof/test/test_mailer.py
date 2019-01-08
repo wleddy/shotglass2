@@ -18,7 +18,7 @@ try:
 except:
     pass
 
-import takeabeltof.mailer as mail
+import shotglass2.takeabeltof.mailer as mail
 
 def test_send_message():
     with app.app_context():

@@ -4,7 +4,7 @@ sys.path.append('') ##get import to look in the working dir.
 
 import pytest
 from app import app
-import takeabeltof.utils as utils
+import shotglass2.takeabeltof.utils as utils
 
 def test_cleanRecordID():
     """Tesst the cleanRecordID utility fuction"""
