@@ -27,9 +27,7 @@ def get_app_config(this_app=None):
     If not passed from app.py there seems to be some pieces
     missing and the template loader won't work correctly.
     In particular, it seems to be unable to find included templates.
-    """
-    import jinja2
-   
+    """   
     
     if not this_app:
         from app import app
@@ -45,10 +43,10 @@ def get_app_config(this_app=None):
     except:
         request_in_flight = False
 
-    if request_in_flight and "SUB_DOMAIN_SETTINGS" in this_app.config and len(this_app.config["SUB_DOMAIN_SETTINGS"]) > 0:
+    if request_in_flight and "SHARED_HOST_SETTINGS" in this_app.config and len(this_app.config["SHARED_HOST_SETTINGS"]) > 0:
         try:
             server = None
-            for value in this_app.config['SUB_DOMAIN_SETTINGS']:
+            for value in this_app.config['SHARED_HOST_SETTINGS']:
                 if value.get('host_name') == request.host:
                     server = value
                     break
@@ -67,15 +65,21 @@ def get_app_config(this_app=None):
         except:
             # Will use the default settings
             if this_app.config['DEBUG']:
-                #raise ValueError("SUB_DOMAIN_SETTINGS could not be determined")
-             flash("Using Default SUB_DOMAIN_SETTINGS")
+                #raise ValueError("SHARED_HOST_SETTINGS could not be determined")
+             flash("Using Default SHARED_HOST_SETTINGS")
+    
+    return this_app.config
+
+def set_template_dirs(this_app):
     
     #update the jinja loader
-    template_dirs = this_app.config.get('TEMPLATE_DIRS')
-    host_template_dirs = []
+    import jinja2
+    template_dirs = this_app.config.get('TEMPLATE_DIRS',[])
+    host_template_dirs = this_app.config.get('HOST_TEMPLATE_DIRS',[])
     if template_dirs:
         if isinstance(template_dirs,list):
-            host_dir = this_app.config.get('HOST_TEMPLATE_DIRS',[])
+            host_dir = host_template_dirs.copy()
+            host_template_dirs = [] #start fresh
             if host_dir:
                 if isinstance(host_dir,list):
                     for j in range(len(host_dir)):
@@ -84,40 +88,17 @@ def get_app_config(this_app=None):
                             host_template_dirs.append(os.path.join(host_dir[j],template_dirs[i]))
                 else:
                     flash("app config 'HOST_TEMPLATE_DIRS' must be a list.")
-                    
-                    
-            # generate a completely new jinja_loader
-            this_app.jinja_loader = jinja2.ChoiceLoader([
-                    jinja2.FileSystemLoader(host_template_dirs),
-                    jinja2.FileSystemLoader(template_dirs),
-                    jinja2.FileSystemLoader([this_app.template_folder,]),
-            ])
-            
-            # ## this debug code will cause the session cookie to become to big
-#             ##. and lead to unpredictable results
-#             mes = []
-#             for i in this_app.jinja_loader.loaders:
-#                 try:
-#                     mes.append(i.searchpath)
-#                 except AttributeError:
-#                     try:
-#                         for j in i.loaders:
-#                             try:
-#                                 mes.append(j.searchpath)
-#                             except AttributeError:
-#                                 mes.append(str(j))
-#                     except:
-#                         pass
-#
-#             flash(mes)
-            
-            
         else:
             flash("app config 'TEMPLATE_DIRS' must be a list.")
     
-                
-    return this_app.config
+        # generate a completely new jinja_loader
+        this_app.jinja_loader = jinja2.ChoiceLoader([
+                jinja2.FileSystemLoader(host_template_dirs),
+                jinja2.FileSystemLoader(template_dirs),
+                jinja2.FileSystemLoader([this_app.template_folder,]),
+        ])
 
+    
 def make_db_path(filespec):
     # test the path, if not found, create it
     root_path = os.path.dirname(os.path.abspath(__name__))
