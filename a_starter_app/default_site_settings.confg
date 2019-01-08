@@ -92,7 +92,7 @@ STATIC_DIRS = [
 #EXPLAIN_TEMPLATE_LOADING = True
 
 ## This list will be PREPENDED to the above static search
-#### if you override this is SUB_DOMAIN_SETTINGS be sure to profide a list:
+#### if you override this is SHARED_HOST_SETTINGS be sure to profide a list:
 ####.   'local_static_dirs': ['resource/local8000/static']
 #LOCAL_STATIC_DIRS = [
 #    'resource/localhost/static',
@@ -120,7 +120,7 @@ TEMPLATE_DIRS = [
 
     
 # A list of dictionaries of settings for sites that share this config and virtualenv
-SUB_DOMAIN_SETTINGS = [
+SHARED_HOST_SETTINGS = [
     {"host_name": HOST_NAME, "database_path": DATABASE_PATH, "time_zone": TIME_ZONE, "contact_email_addr": CONTACT_EMAIL_ADDR, "contact_name": CONTACT_NAME},
     ]
 
