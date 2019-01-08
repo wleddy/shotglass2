@@ -98,14 +98,25 @@ STATIC_DIRS = [
 #    'resource/localhost/static',
 #]
 
-# Template directories to search BEFORE using
-#   the default flask search methods.
+## For Debuging
+#EXPLAIN_TEMPLATE_LOADING = True
+
+# Template directories to search FIRST
 # Must be a list of app relative paths to search
-LOCAL_TEMPLATE_DIRS = [
-    'resource/templates',
-    'templates',
-    'shotglass2/templates',
+HOST_TEMPLATE_DIRS = [
+    'resource'
+]
+
+# Template directories to search AFTER HOST_TEMPLATE_DIRS
+# Must be a list of app relative paths to search
+TEMPLATE_DIRS = [
+    'templates/www',
+    'templates/users',
     ]
+    
+# Finally the default Flask search order is uses...
+# each blueprint in the order defined then...
+# app.template_folder
 
     
 # A list of dictionaries of settings for sites that share this config and virtualenv

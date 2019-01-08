@@ -28,6 +28,7 @@ def get_app_config(this_app=None):
     missing and the template loader won't work correctly.
     In particular, it seems to be unable to find included templates.
     """
+    import jinja2
    
     
     if not this_app:
@@ -63,24 +64,58 @@ def get_app_config(this_app=None):
             from app import mail
             mail = Mail(this_app)
 
-            # update the jinja loader
-            import jinja2
-
-            loader_list = []
-            if this_app.config.get('LOCAL_TEMPLATE_DIRS'):
-                for loader in this_app.config['LOCAL_TEMPLATE_DIRS']:
-                    loader_list.append(jinja2.FileSystemLoader(loader))
-            if loader_list:
-                loader_list.append(this_app.jinja_loader)
-                this_app.jinja_loader = jinja2.ChoiceLoader(loader_list)
-
         except:
             # Will use the default settings
             if this_app.config['DEBUG']:
                 #raise ValueError("SUB_DOMAIN_SETTINGS could not be determined")
              flash("Using Default SUB_DOMAIN_SETTINGS")
     
+    #update the jinja loader
+    template_dirs = this_app.config.get('TEMPLATE_DIRS')
+    host_template_dirs = []
+    if template_dirs:
+        if isinstance(template_dirs,list):
+            host_dir = this_app.config.get('HOST_TEMPLATE_DIRS',[])
+            if host_dir:
+                if isinstance(host_dir,list):
+                    for j in range(len(host_dir)):
+                        host_template_dirs.append(host_dir[j])
+                        for i in range(len(template_dirs)):
+                            host_template_dirs.append(os.path.join(host_dir[j],template_dirs[i]))
+                else:
+                    flash("app config 'HOST_TEMPLATE_DIRS' must be a list.")
+                    
+                    
+            # generate a completely new jinja_loader
+            this_app.jinja_loader = jinja2.ChoiceLoader([
+                    jinja2.FileSystemLoader(host_template_dirs),
+                    jinja2.FileSystemLoader(template_dirs),
+                    jinja2.FileSystemLoader([this_app.template_folder,]),
+            ])
+            
+            # ## this debug code will cause the session cookie to become to big
+#             ##. and lead to unpredictable results
+#             mes = []
+#             for i in this_app.jinja_loader.loaders:
+#                 try:
+#                     mes.append(i.searchpath)
+#                 except AttributeError:
+#                     try:
+#                         for j in i.loaders:
+#                             try:
+#                                 mes.append(j.searchpath)
+#                             except AttributeError:
+#                                 mes.append(str(j))
+#                     except:
+#                         pass
+#
+#             flash(mes)
+            
+            
+        else:
+            flash("app config 'TEMPLATE_DIRS' must be a list.")
     
+                
     return this_app.config
 
 def make_db_path(filespec):
