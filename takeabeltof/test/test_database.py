@@ -1,5 +1,6 @@
 import sys
 sys.path.append('') ##get import to look in the working dir
+import os
 
 import app
 import sqlite3
@@ -32,10 +33,11 @@ def test_database_cursor():
 
 ############################ The final 'test' ########################
 ######################################################################
+
 def test_finished():
     try:
         db.close()
         delete_test_db()
         assert True
     except:
-        assert True
+        assert "failed to delete test db" == ""
