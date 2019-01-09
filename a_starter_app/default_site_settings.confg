@@ -24,8 +24,9 @@ MAIL_PASSWORD = ""
 MAIL_DEFAULT_SENDER = "Some Name"
 MAIL_DEFAULT_ADDR = "admin@example.com"
 
-CONTACT_EMAIL_ADDR = "admin@example.com"
-CONTACT_NAME = "Some Name"
+CONTACT_NAME = MAIL_DEFAULT_SENDER
+CONTACT_EMAIL_ADDR = MAIL_DEFAULT_ADDR
+
 CC_ADMIN_ON_CONTACT = True
 
 REPORT_404_ERRORS = DEBUG
@@ -73,19 +74,12 @@ ALLOW_USER_SIGNUP = True
 ## Places to look for documentation:
 DOC_DIRECTORY_LIST = ['/','docs','shotglass2/','shotglass2/docs/',]
 
-#Map Box Settings...
-#MAPBOX_PROJECT_ID = ""
-#MAPBOX_ACCESS_TOKEN = ""
-
-# Sets the default location when creating a new location pin if geolocation is not available
-#LOCATION_DEFAULT_LNG = -121.74439430236818
-#LOCATION_DEFAULT_LAT = 38.54422161206573
-
 # Where to look for static files.
 # Must be a list.
 STATIC_DIRS = [
     'resource/static',
     'static',
+    'shotglass2/static',
 ]
 
 ## For Debuging
@@ -123,4 +117,13 @@ TEMPLATE_DIRS = [
 SHARED_HOST_SETTINGS = [
     {"host_name": HOST_NAME, "database_path": DATABASE_PATH, "time_zone": TIME_ZONE, "contact_email_addr": CONTACT_EMAIL_ADDR, "contact_name": CONTACT_NAME},
     ]
+
+#Map Box Settings...
+#MAPBOX_PROJECT_ID = ""
+#MAPBOX_ACCESS_TOKEN = ""
+
+# Sets the default location when creating a new location pin if geolocation is not available
+#LOCATION_DEFAULT_LNG = -121.74439430236818
+#LOCATION_DEFAULT_LAT = 38.54422161206573
+
 
