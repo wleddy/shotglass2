@@ -3,10 +3,9 @@
 A2 Hosting uses this `passenger` system to run python apps on their system. Use the following steps to install your app.
 
 1. In the terminal, `git clone` the new app as the directory you want to use.
-2. cd into the new directory and `git clone https://github.com/wleddy/takeabeltof.git`
-2. cd into the new directory and `git clone https://github.com/wleddy/users.git`
+2. cd into the new directory and `git clone https://github.com/wleddy/shotglass2.git`
 3. run `. setup_env` to create the instance directory. It will not actually create a virtualenv.
-4. Go to the "Setup Python App" cpanel and create a new app.  
+4. Go to the "Setup Python App" cpanel and create a new app (if needed. See Manual Configuration below).  
     * set the "App Directory" to the directory you just cloned.
     * set the "App URI" to the URI visitors will use to access the site.
     * Click "Setup" to create your virtualenv. The path to the new is displayed there.
@@ -30,15 +29,16 @@ A2 Hosting uses this `passenger` system to run python apps on their system. Use 
 database records and is a good way to check that 
 everything is working. If all goes well, type control + c to quit the dev server.
 11. Type `touch tmp/restart.txt` to restart the app. You need to do this every time you make a change to the app.
-13. In the App URI directory, A2 creates a default robots.txt file. Delete that to use the system at `www.views.home.robots`
+12. In the App URI directory, A2 creates a default robots.txt file. Delete that to use the system at `www.views.home.robots`
 
-***Easy as 1-2-3*** plus 10
-
+***Easy as 1-2-3*** plus 9
 
 ## How to manually configure passenger setup
 
-As of today, Nov. 27, 2018, this is what I think you need to do to manually fix/adjust/create the python settings 
-for a site hosted on A2 Hosting
+If you already have a suitable python environment setup for the app you're about to install, you can reuse it by adding 
+a `.htaccess` file in the document root of your web site.
+
+You can manually setup or modify the passenger config as described here.
 
 To begin with, setup the virtual environment using the  "Python Setup" cpanel. This will usually do everything needed to get you going, 
 but the problem I have is that the cpanel does not show all of my environments so I could not make the changes I needed to make.

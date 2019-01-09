@@ -26,18 +26,7 @@ used.
 
 ### Overriding Templates
 
-So far at least I have not figured out how to change the template
-loading sequence in the on a per request basis.
-As near as I can tell the template search sequence needs to be set at startup. That means that all the domains must
-share the same templates. It may be possible to sniff out the host name during template rendering and modify the content that way
-but I haven't tried it yet.
-
-On the other hand, You can override some or all of the templates in a blueprint by adding the value of the blueprint's 
-`template_path` to the LOCAL_TEMPLATE_DIRS list in site_settings. Then place your customized templates within the root templates
-directory with the same relative path as template_path.
-
-If templates aren't loading the way you expect, enable the EXPLAIN_TEMPLATE_LOADING variable in site_settings. I will print out 
-where it searched and what it found.
-
+If you need to override some templates for a specific host within a shared installation, you can include a list value for "host_template_dirs" in
+your SHARED_HOST_SETTINGS dictionary. [Get more information here.](/docs/template_loading.md)
 
 [Back to Docs](/docs/shotglass2/README.md)

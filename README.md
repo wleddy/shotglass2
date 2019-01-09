@@ -43,6 +43,14 @@ A typical approach to setting up a new development project would be to:
 
 A2 Hosting uses this `passenger` system to run python apps on their system. [Read more here](/docs/passenger_setup.md).
 
+## Template Loading Order
+
+Shotglass2 uses a customizable template loading order. Two setting values control this:
+1. HOST_TEMPLATE_DIRS
+2. TEMPLATE_DIRS
+
+[Read more here.](/docs/template_loading.md)
+
 ## Hosting Multiple sites from one Installation
 
 Shotglass has the ability to host multiple domains from the same server installation. Each site may have it's own database, style
