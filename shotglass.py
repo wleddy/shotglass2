@@ -95,7 +95,7 @@ def set_template_dirs(this_app):
         this_app.jinja_loader = jinja2.ChoiceLoader([
                 jinja2.FileSystemLoader(host_template_dirs),
                 jinja2.FileSystemLoader(template_dirs),
-                jinja2.FileSystemLoader([this_app.template_folder,]),
+                jinja2.FileSystemLoader([this_app.template_folder,'shotglass2/templates']),
         ])
 
     
