@@ -23,10 +23,12 @@ def setExits():
     g.title = 'User'
 
 @mod.route('/')
-@login_required
 def home():
     setExits()
-    return render_template('user_index.html')
+    if g.user:
+        return redirect(g.listURL)
+        
+    return redirect('/')
     
 @mod.route('/list/', methods=['GET'])
 @table_access_required(User)
