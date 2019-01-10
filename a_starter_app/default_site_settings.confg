@@ -110,7 +110,8 @@ TEMPLATE_DIRS = [
     
 # Finally the default Flask search order is uses...
 # each blueprint in the order defined then...
-# app.template_folder
+# app.template_folder then...
+# 'shotglass2/templates'
 
     
 # A list of dictionaries of settings for sites that share this config and virtualenv

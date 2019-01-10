@@ -2,7 +2,7 @@
     Some utility functions
 """
 
-from flask import g, render_template_string, flash, send_from_directory, safe_join
+from flask import g, render_template_string, flash, send_from_directory, abort
 from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
@@ -169,23 +169,21 @@ def handle_request_error(error=None,request=None,status=666):
         
         
 def send_static_file(filename,**kwargs):
-    """Send the file if it exists, else try to send it from the static directory
-    It's important that the path passed to send_from_directory does not start with a slash."""
+    """Send the file if it exists, else try to send it from the static directory"""
     
+    path_list = kwargs.get('path_list',['static','shotglass2/static'])
     
-    path_list = kwargs.get('path_list',['static/'])
-    
-    path = path_list[0] #default
+    path = None
     
     for temp_path in path_list:
-        if temp_path[0] == "/":
-            temp_path = temp_path[1:]
-        
-        file_loc = safe_join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
+        file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
         if os.path.isfile(file_loc):
             path = temp_path
             break
     
-    return send_from_directory(path,filename, as_attachment=False)
+    if path:
+        return send_from_directory(path,filename, as_attachment=False)
+            
+    abort(404)
     
     

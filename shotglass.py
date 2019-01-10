@@ -148,6 +148,7 @@ def server_error(error):
 def static(filename):
     """This takes full responsibility for loading static content"""
     #import pdb;pdb.set_trace()
+    from app import app
     app_config = get_app_config()
     local_path = []
     local_config = app_config.get('LOCAL_STATIC_DIRS')
@@ -161,9 +162,20 @@ def static(filename):
         #append STATIC_DIRS to LOCAL_STATIC_DIRS
         if not isinstance(static_config,list):
             raise TypeError('STATIC_DIRS must be a list')
-        for folder in static_config:
-            local_path.append(folder)
+        local_path.extend(static_config)
         
+    #Add relative static_folder from app blueprints
+    for key, value in app.blueprints.items():
+        if value._static_folder:
+            local_path.append(value._static_folder)
+    #Add absolute static_folder from app blueprints
+    for key, value in app.blueprints.items():
+        if value.static_folder:
+            local_path.append(value.static_folder)
+                
+    # Finally add the default search paths
+    local_path.extend(['static','shotglass2/static'])
+
     return send_static_file(filename,path_list=local_path)
 
 
