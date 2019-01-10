@@ -156,7 +156,7 @@ def test_user_profile_page(client):
             #attempt to get admin access
             result = c.get('/user/edit/1/',follow_redirects=True)  
             assert result.status_code == 200
-            assert b'Permission Denied' in result.data
+            assert b'Sorry. You do not have access to that page' in result.data
 
             #log in
             result = c.get('/login/')  

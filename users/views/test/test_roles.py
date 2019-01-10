@@ -101,7 +101,7 @@ def nogood_test_list_page(client):
             # access without login
             result = c.get('/user/delete/3/',follow_redirects=True)  
             assert result.status_code == 200
-            assert b'Permission Denied' in result.data
+            assert b'Sorry. You do not have access to that page' in result.data
         
             rec = User(app.g.db).get('John')
             print(rec)
@@ -115,7 +115,7 @@ def nogood_test_list_page(client):
             #attempt to delete a record
             result = c.get('/role/delete/3/',follow_redirects=True)  
             assert result.status_code == 200
-            assert b'Permission Denied' in result.data
+            assert b'Sorry. You do not have access to that page' in result.data
     
     
 ############################ The final 'test' ########################

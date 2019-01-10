@@ -98,7 +98,7 @@ def table_access_required(table):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if g.user is None or not g.admin or not g.admin.has_access(g.user,table):
-                flash("Permission Denied")
+                flash("Sorry. You do not have access to that page")
                 return redirect(url_for('login.login', next=request.url))
             return f(*args,**kwargs)
         return decorated_function
