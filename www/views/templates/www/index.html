@@ -2,10 +2,11 @@
 {% block title %}{{ g.title }}{% endblock %}
 {% block body %}
 
-
 {% if rendered_html %}
 {{ rendered_html | safe() }}
-{% endif %}
+{% else %}
 <h2>Hmmmm...</h2>
 <p>There's nothing here... Better fix index.html'</p>
+{% endif %}
+
 {% endblock body %}
