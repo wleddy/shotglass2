@@ -74,7 +74,7 @@ def set_template_dirs(this_app):
     
     #update the jinja loader
     import jinja2
-    template_dirs = this_app.config.get('TEMPLATE_DIRS',[])
+    template_dirs = this_app.config.get('TEMPLATE_DIRS',['templates'])
     host_template_dirs = this_app.config.get('HOST_TEMPLATE_DIRS',[])
     if template_dirs:
         if isinstance(template_dirs,list):
@@ -91,13 +91,14 @@ def set_template_dirs(this_app):
         else:
             flash("app config 'TEMPLATE_DIRS' must be a list.")
     
-        # generate a completely new jinja_loader
-        this_app.jinja_loader = jinja2.ChoiceLoader([
-                jinja2.FileSystemLoader(host_template_dirs),
-                jinja2.FileSystemLoader(template_dirs),
-                jinja2.FileSystemLoader([this_app.template_folder,'shotglass2/templates']),
-        ])
-
+    # generate a completely new jinja_loader
+    this_app.jinja_loader = jinja2.ChoiceLoader([
+            jinja2.FileSystemLoader(host_template_dirs),
+            jinja2.FileSystemLoader(template_dirs),
+            jinja2.FileSystemLoader([this_app.template_folder,'shotglass2/templates']),
+    ])
+    #import pdb;pdb.set_trace()
+    
     
 def make_db_path(filespec):
     # test the path, if not found, create it
