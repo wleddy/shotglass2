@@ -9,7 +9,9 @@
         {% if not g.user %}
               <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
         {% else %}
+            {% if not g.admin %}
               <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+            {% endif %}
               <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.logout')}}">Logout</a>
             {% if g.admin and g.admin.has_access(g.user)%}
                 <div style="display:none"><div style="display:none"><!-- just a place holder -->
