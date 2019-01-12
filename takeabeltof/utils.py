@@ -90,33 +90,22 @@ def render_markdown_for(file_name,bp=None):
             
     application_path = os.path.dirname(os.path.abspath(__name__))
     
-    local_static_folder = ''
-    if 'LOCAL_STATIC_FOLDER' in app_config and app_config['LOCAL_STATIC_FOLDER']:
-        # look in the site's private stash...
-        local_static_folder = app_config['LOCAL_STATIC_FOLDER'].strip('/')
-        markdown_path = os.path.join(application_path,local_static_folder,file_name)
-    if not os.path.isfile(markdown_path):
-        #next try to find the file in the root directory
-        markdown_path = os.path.join(application_path, file_name)
+    # search the directories in the same way flask does
+    for directory in g.template_list:
+        markdown_path = os.path.join(application_path,directory,file_name)
+        if os.path.isfile(markdown_path):
+            break
+
     if not os.path.isfile(markdown_path):
         # next, try docs
         markdown_path = os.path.join(application_path, 'docs',file_name)
-    if not os.path.isfile(markdown_path):
-        # use similar search approach as flask templeting, root first, then local
-        # try to find the root templates directory
-        markdown_path = os.path.join(application_path, 'templates',file_name)
     if not os.path.isfile(markdown_path) and bp:
         # look in the templates directory of the calling blueprint
         bp_template_folder = 'templates' #default
         if bp.template_folder:
-            bp_template_folder = bp.template_folder.lstrip('/')
+            bp_template_folder = bp.template_folder
         
-        if local_static_folder:
-            # look in the resource folder
-            markdown_path = os.path.join(application_path,local_static_folder,bp.root_path.replace(application_path,'').strip("/"), bp_template_folder,file_name)
-        if not os.path.isfile(markdown_path):
-            # look in the root templates again, but with the bp template_path
-            markdown_path = os.path.join(application_path,bp_template_folder,file_name)
+        markdown_path = os.path.join(application_path,bp_template_folder,file_name)
         if not os.path.isfile(markdown_path):
             # look in the template folder of the blueprint
             markdown_path = os.path.join(bp.root_path, bp_template_folder,file_name)

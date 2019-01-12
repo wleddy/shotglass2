@@ -91,14 +91,18 @@ def set_template_dirs(this_app):
         else:
             flash("app config 'TEMPLATE_DIRS' must be a list.")
     
+    #Save it for later render_markdown_for wants to use it
+    #import pdb;pdb.set_trace()
+    g.template_list = []
+    g.template_list.extend(host_template_dirs)
+    g.template_list.extend(template_dirs)
+    g.template_list.extend([this_app.template_folder,'shotglass2/templates'])
+    
     # generate a completely new jinja_loader
     this_app.jinja_loader = jinja2.ChoiceLoader([
-            jinja2.FileSystemLoader(host_template_dirs),
-            jinja2.FileSystemLoader(template_dirs),
-            jinja2.FileSystemLoader([this_app.template_folder,'shotglass2/templates']),
+            jinja2.FileSystemLoader(g.template_list),
     ])
-    #import pdb;pdb.set_trace()
-    
+
     
 def make_db_path(filespec):
     # test the path, if not found, create it
