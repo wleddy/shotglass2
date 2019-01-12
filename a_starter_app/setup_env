@@ -44,8 +44,8 @@ echo ""
 
 if [ ! -d "templates" ]
 then
-    echo 'copy templates directory'
-    cp -r shotglass2/templates/ ./templates/
+    echo 'create templates directory'
+    mkdir templates
 else
     echo "###### a directory named 'templates' already exists #####"
 fi
@@ -56,4 +56,4 @@ echo ""
 
 echo "Don't forget to update instance/site_settings.py before launching the app for the first time"
 
-
+echo ""
