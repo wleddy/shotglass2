@@ -76,7 +76,7 @@ A basic users and roles functionality is provided in the 'users' package. [Read 
 * python 3.6
 * Flask
 * Flask-mail
-* mistuse for Markdown support
+* mistune for Markdown support
 * namedlist
 * pytest
 * pytz
