@@ -68,7 +68,7 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
         return mes
         
         
-def render_markdown_for(file_name,bp=None):
+def render_markdown_for(file_name,bp=None,**kwargs):
     """Try to find the file to render and then do so
     if file_name has a leading slash, it will be treated as an apbolute path
     by os.path.join. If that's not what you were expecting, you need to
@@ -114,7 +114,7 @@ def render_markdown_for(file_name,bp=None):
         rendered_html = f.read()
         f.close()
                 
-        rendered_html = render_markdown_text(rendered_html)
+        rendered_html = render_markdown_text(rendered_html,**kwargs)
     elif app_config['DEBUG']:
         ### TESTING Note: the test is looking for the text 'no file found' in this return.
         source_script = ''
@@ -128,7 +128,9 @@ def render_markdown_for(file_name,bp=None):
 def render_markdown_text(text_to_render,**kwargs):
     # treat the markdown as a template and render url_for and app.config values
     text_to_render = render_template_string(text_to_render,**kwargs)
-    return mistune.markdown(text_to_render)
+    escape = kwargs.get('escape',True) #Set to False to preserve included html
+    markdown = mistune.Markdown(renderer=mistune.Renderer(escape=escape))
+    return markdown(text_to_render)
     
     
 def handle_request_error(error=None,request=None,status=666):
