@@ -216,9 +216,9 @@ class Pref(SqliteTable):
 
     def get(self,name,user_name=None,**kwargs):
         """can get by pref name and user_name"""
-        user_clause = ''
+        user_clause = 'and user_name is null'
         if user_name:
-            user_clause = ' and user_name = "{}"'.format(user_name)
+            user_clause = 'and user_name = "{}"'.format(user_name)
         
         if type(name) is str:
             where = ' lower(name) = lower("{}") {}'.format(name,user_clause)
