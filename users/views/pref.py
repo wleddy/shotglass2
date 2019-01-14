@@ -153,10 +153,10 @@ def get_contact_email():
     to_name = None
     to_addr = None
     
-    rec = Pref(g.db).get("Contact Name",default=app_config.get("CONTACT_NAME",app_config.get("MAIL_DEFAULT_SENDER","Site Contact")))
+    rec = Pref(g.db).get("Contact Name",app_config.get("HOST_NAME"),default=app_config.get("CONTACT_NAME",app_config.get("MAIL_DEFAULT_SENDER","Site Contact")))
     if rec:
         to_name = rec.value
-    rec = Pref(g.db).get("Contact Email Address",
+    rec = Pref(g.db).get("Contact Email Address",user_name=app_config.get("HOST_NAME"),
             default=app_config.get("CONTACT_EMAIL_ADDR",
                         app_config.get("MAIL_DEFAULT_ADDR","info@{}".format(app_config.get("HOST_NAME","example.com")))))
     if rec:
