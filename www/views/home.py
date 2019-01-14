@@ -56,7 +56,7 @@ def about():
 def contact():
     setExits()
     g.title = 'Contact Us'
-    from app import app
+    from shotglass2.shotglass import get_app_config
     from shotglass2.takeabeltof.mailer import send_message
     rendered_html = render_markdown_for('contact.md',mod)
     
@@ -64,6 +64,7 @@ def contact():
     context = {}
     success = True
     passed_quiz = False
+    app_config = get_app_config()
     mes = "No errors yet..."
     if request.form:
         #import pdb;pdb.set_trace()
@@ -89,14 +90,10 @@ def contact():
                 printException("Need to update home.contact to find contacts in prefs.","error",e)
                 
             try:
-                admin_to = None
                 if not to:
-                    to = [(app.config['CONTACT_NAME'],app.config['CONTACT_EMAIL_ADDR'],),]
-                if app.config['CC_ADMIN_ON_CONTACT']:
-                    admin_to = (app.config['MAIL_DEFAULT_SENDER'],app.config['MAIL_DEFAULT_ADDR'],)
-                    
-                if admin_to:
-                    to.append(admin_to,)
+                    to = [(app_config['CONTACT_NAME'],app_config['CONTACT_EMAIL_ADDR'],),]
+                if app_config['CC_ADMIN_ON_CONTACT']:
+                    to.append((app_config['MAIL_DEFAULT_SENDER'],app_config['MAIL_DEFAULT_ADDR']))
                 
             except KeyError as e:
                 mes = "Could not get email addresses."
@@ -111,7 +108,7 @@ def contact():
                 # Ok so far... Try to send
                 success, mes = send_message(
                                     to,
-                                    subject = "Contact from {}".format(app.config['SITE_NAME']),
+                                    subject = "Contact from {}".format(app_config['SITE_NAME']),
                                     html_template = "home/email/contact_email.html",
                                     context = context,
                                     reply_to = request.form['email'],
