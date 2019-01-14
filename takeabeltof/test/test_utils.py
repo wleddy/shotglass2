@@ -43,7 +43,9 @@ def test_printException():
             
 def test_render_markdown_for():
     with app.app_context():
-        from flask import Blueprint
+        from flask import Blueprint, g
+        from shotglass2 import shotglass
+        shotglass.set_template_dirs(app)
         mod = Blueprint('testme',__name__) 
         result = utils.render_markdown_for('test_script.md',mod)
         assert "no file found" in result

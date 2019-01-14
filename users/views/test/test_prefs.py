@@ -75,12 +75,34 @@ def test_prefs():
     rec = Pref(db).get(pref_name)
     assert rec == None
     
+    # create a new record with default values
     rec = Pref(db).get(pref_name,default=default_value)
     assert rec != None
     assert rec.name == pref_name
     assert rec.value == default_value
+    assert rec.user_name == None
     
-    # this should have no effect
+    # create another except has a user name
+    rec = Pref(db).get(pref_name,user_name='test',default="new value")
+    assert rec != None
+    assert rec.name == pref_name
+    assert rec.value == 'new value'
+    assert rec.user_name == 'test'
+    
+    # get the generic record
+    rec = Pref(db).get(pref_name)
+    assert rec != None
+    assert rec.name == pref_name
+    assert rec.value == default_value
+    
+    # get the user specific record. Providing a default should not change the record
+    rec = Pref(db).get(pref_name,user_name='test',default="someother value")
+    assert rec != None
+    assert rec.name == pref_name
+    assert rec.value == 'new value'
+    assert rec.user_name == 'test'
+    
+    # this should have no effect because get with default does a commit
     db.rollback()
     
     rec = Pref(db).get(pref_name)
