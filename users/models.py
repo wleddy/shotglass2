@@ -218,7 +218,7 @@ class Pref(SqliteTable):
         """can get by pref name and user_name"""
         user_clause = ''
         if user_name:
-            user_clause = ' and user_name = {}'.format(user_name)
+            user_clause = ' and user_name = "{}"'.format(user_name)
         
         if type(name) is str:
             where = ' lower(name) = lower("{}") {}'.format(name,user_clause)
@@ -232,6 +232,7 @@ class Pref(SqliteTable):
             rec = self.new()
             rec.name = name
             rec.value = kwargs['default']
+            rec.user_name = user_name
             self.save(rec)
             self.db.commit()
             result = rec
