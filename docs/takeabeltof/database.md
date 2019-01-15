@@ -110,14 +110,14 @@ A single row version of select_raw()
 ---
 > #### update(self,rec,form,save=False): => Nothing
 
-Update the namedlist rec with the matching elements in form
+Populate the namedlist rec with the matching elements in form
 
-> form is a dictionary like object
+> form is a dictionary like object (usually request.form)
 > 
 > The id element is never updated. Before calling this method be sure that any elements
 > in form that have names matching names in rec contain the values you want.
 > 
-> Optionally can save the rec (but not committed) after update
+> Optionally can save the rec (but not commit) after update
 
 ---
 [Return to Docs](/docs/shotglass2/README.md)

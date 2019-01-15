@@ -82,11 +82,11 @@ class User(SqliteTable):
         return False
         
     def get(self,id,**kwargs):
-        """Return a single namedlist for the user with this id
-            A keyword argument for include_inactive controls filtering
-            of active users only
+        """Return a single namedlist for the user with this id.
+        If 'id' is a string, try to find the user by username or email using self.get_by_username_or_email
+        If include_inactive=True is in kwargs the search will include inactive users else they are excluded from 
+        the result.
         """
-        #if the 'id' is a string, try to find the user by username or email
         if type(id) is str:
             return self.get_by_username_or_email(id,**kwargs)
             
@@ -133,7 +133,7 @@ class User(SqliteTable):
             
         
     def update_last_access(self,user_id,no_commit=False):
-        """Update the 'last_access field with the current datetime. Default is for record to be committed"""
+        """Update the 'last_access' field with the current datetime. Default is for record to be committed"""
         if type(user_id) is int:
             self.db.execute('update user set last_access = datetime() where id = ?',(user_id,))
             if not no_commit:
@@ -233,6 +233,7 @@ class Pref(SqliteTable):
             rec.name = name
             rec.value = kwargs['default']
             rec.user_name = user_name
+            rec.expires = kwargs.get('expires')
             self.save(rec)
             self.db.commit()
             result = rec
