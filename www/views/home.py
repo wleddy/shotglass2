@@ -130,7 +130,7 @@ def contact():
 #@mod.route('/docs/', methods=['GET',])
 #@mod.route('/docs/<path:filename>', methods=['GET',])
 def docs(filename=None):
-    setExits()
+    #setExits()
     g.title = "Docs"
     from shotglass2.shotglass import get_app_config
     app_config = get_app_config()
