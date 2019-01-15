@@ -5,17 +5,7 @@ from shotglass2.users.models import User,Role,Pref
 from shotglass2.users.admin import Admin
 import os    
 
-def init_db(db=None):
-    # to support old code
-    initalize_all_tables(db)
 
-def initalize_user_tables(db):
-    """Initialize the Users, Prefs and Roles tables"""
-        
-    from shotglass2.users.models import init_db as users_init_db 
-    users_init_db(db)
-    
-        
 def get_app_config(this_app=None):
     """Returns a copy of the current app.config.
     This makes it possible for other modules to get access to the config
@@ -24,9 +14,6 @@ def get_app_config(this_app=None):
 
     When called from app.py, the app is passed in. When
     called from other modules it is not needed.
-    If not passed from app.py there seems to be some pieces
-    missing and the template loader won't work correctly.
-    In particular, it seems to be unable to find included templates.
     """   
     
     if not this_app:
@@ -70,7 +57,81 @@ def get_app_config(this_app=None):
     
     return this_app.config
 
+
+def initalize_user_tables(db):
+    """Initialize the Users, Prefs and Roles tables"""
+        
+    from shotglass2.users.models import init_db as users_init_db 
+    users_init_db(db)
+    
+        
+def make_db_path(filespec):
+    """Test the filespec path and if not found, create the path
+    but not the file.
+    Returns True if a new path was created, else False
+    """
+    root_path = os.path.dirname(os.path.abspath(__name__))
+    if not os.path.isfile(os.path.join(root_path,filespec)):
+        # split it into directories and create them if needed
+        path_list = filespec.split("/")
+        current_path = root_path
+        for d in range(len(path_list)-1):
+            current_path = os.path.join(current_path,path_list[d])
+            if not os.path.isdir(current_path):
+                os.mkdir(current_path, mode=0o744)
+        return True
+    return False
+
+
+# @app.errorhandler(404)
+def page_not_found(error):
+    from shotglass2.takeabeltof.utils import handle_request_error
+    handle_request_error(error,request,404)
+    g.title = "Page Not Found"
+    return render_template('404.html'), 404
+
+
+def register_users(app):
+    from shotglass2.users.views import user, login, role, pref
+    app.register_blueprint(user.mod)
+    app.register_blueprint(login.mod)
+    app.register_blueprint(role.mod)
+    app.register_blueprint(pref.mod)
+
+
+def register_www(app):
+    """I did this because I thought I could modify the routes
+    at startup by modifying the routes var returned from get_default_routes
+    Turns out flask complains that the routes already exist.
+    If you really want to make more extensive changes, just copy the www blueprint
+    into a new project and have your way with it."""
+    
+    from shotglass2.www.views import home
+    routes = home.get_default_routes()
+    for key, value in routes.items():
+        home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
+    app.register_blueprint(home.mod)
+
+
+# @app.errorhandler(500)
+def server_error(error):
+    from shotglass2.takeabeltof.utils import handle_request_error
+    handle_request_error(error,request,500)
+    g.title = "Server Error"
+    return render_template('500.html'), 500
+
+
 def set_template_dirs(this_app):
+    """Compile a list of potential paths to search for
+    template files.
+    
+    sets the global g.template_list with the search paths and
+    sets app.jinja_loader which flask will use when searching
+    
+    Neither g.template_list nor app.jinja_loader will contain paths
+    to the blueprint template directories. Flask handles that after
+    the initial search so this works the same way.
+    """
     
     #update the jinja loader
     import jinja2
@@ -104,51 +165,6 @@ def set_template_dirs(this_app):
     ])
 
     
-def make_db_path(filespec):
-    # test the path, if not found, create it
-    root_path = os.path.dirname(os.path.abspath(__name__))
-    if not os.path.isfile(os.path.join(root_path,filespec)):
-        # split it into directories and create them if needed
-        path_list = filespec.split("/")
-        current_path = root_path
-        for d in range(len(path_list)-1):
-            current_path = os.path.join(current_path,path_list[d])
-            if not os.path.isdir(current_path):
-                os.mkdir(current_path, mode=0o744)
-        return True
-    return False
-
-    
-def user_setup():
-    if 'admin' not in g:
-        g.admin = Admin(g.db)
-        # Add items to the Admin menu
-        # the order here determines the order of display in the menu
-        
-    # a header row must have the some permissions or higher than the items it heads
-    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
-        
-    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
-    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=1000)
-    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
-        
-
-#
-# @app.errorhandler(404)
-def page_not_found(error):
-    from shotglass2.takeabeltof.utils import handle_request_error
-    handle_request_error(error,request,404)
-    g.title = "Page Not Found"
-    return render_template('404.html'), 404
-#
-# @app.errorhandler(500)
-def server_error(error):
-    from shotglass2.takeabeltof.utils import handle_request_error
-    handle_request_error(error,request,500)
-    g.title = "Server Error"
-    return render_template('500.html'), 500
-
-
 #@app.route('/static/<path:filename>')
 def static(filename):
     """This takes full responsibility for loading static content"""
@@ -184,23 +200,17 @@ def static(filename):
     return send_static_file(filename,path_list=local_path)
 
 
-def register_www(app):
-    """I did this because I thought I could modify the routes
-    at startup by modifying the routes var returned from get_default_routes
-    Turns out flask complains that the routes already exist.
-    If you really want to make more extensive changes, just copy the www blueprint
-    into a new project and have your way with it."""
-    
-    from shotglass2.www.views import home
-    routes = home.get_default_routes()
-    for key, value in routes.items():
-        home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
-    app.register_blueprint(home.mod)
-
-def register_users(app):
-    from shotglass2.users.views import user, login, role, pref
-    app.register_blueprint(user.mod)
-    app.register_blueprint(login.mod)
-    app.register_blueprint(role.mod)
-    app.register_blueprint(pref.mod)
+def user_setup():
+    if 'admin' not in g:
+        g.admin = Admin(g.db)
+        # Add items to the Admin menu
+        # the order here determines the order of display in the menu
+        
+    # a header row must have the some permissions or higher than the items it heads
+    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
+        
+    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
+    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=1000)
+    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
+        
 
