@@ -163,7 +163,7 @@ def docs(filename=None):
         return render_template('markdown.html',rendered_html=rendered_html)
     else:
         #file not found
-        abort(404)
+        return abort(404)
     
 #@mod.route('/robots.txt', methods=['GET',])
 def robots():

@@ -175,6 +175,6 @@ def send_static_file(filename,**kwargs):
     if path:
         return send_from_directory(path,filename, as_attachment=False)
             
-    abort(404)
+    return abort(404)
     
     
