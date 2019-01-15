@@ -18,38 +18,45 @@ Log an error and return `mes` with optional debug information. Usually I call th
 > _TODO:_ as of Dec. 2108, it does not actually log anything. Need to fix that.
 
 ---
-> #### render_markdown_for(*file_name,bp=None*): => str or None
+> #### render_markdown_for(*file_name,bp=None,**kwargs*): => str or None
 
 Attempts to find the file_name specified (may be a path) and render it from markdown to html.
 
-module is an optional blueprint object.
+:param bp is an optional blueprint object.
+
+Requires global g.template_list (from [shotglass2.shotglass.set_template_dirs](/docs/shotglass.md)) to 
+provide the initial list of template directories to search.
 
 The lookup sequence is:
-1. Try the path in setting `LOCAL_STATIC_FOLDER` if defined.
-2. Try to find the file in the application root directory.
-3. Try the /docs/ directory.
-4. Try to find the root templates directory. *(Just like Flask does)*
-5. Try in the templates directory of the calling blueprint (If both bp is not None).
+1. Try the paths in g.template_list.
+2. Try the /docs/ directory.
+3. Try in the templates directory of the calling blueprint (If bp is not None).
     
 If the file is not found, return None.
 
 ---
 > #### render_markdown_text(*text_to_render,**kwargs*): => str
 
-This will render the text supplied from markdown to html. Before it tries to render it, the text is passed through 
+This will render the text supplied from markdown to html. 
+Before it tries to render it, the text is passed through 
 Flask.render_template_string with **kwargs as context.
+
+if 'escape' is in kwargs, and is False the result will not be escaped and any html
+passed in the text will be returned as is. ***This is Dangerous!***
 
 ___
 > #### send_static_file(*filename,**kwargs*): => Flask.Response
 
-This function attempts to locate a file in one or more directories. By including `local_path` in the kwargs it will try
-that path first. If not found there, it will look in the root static directory
+Returns a Flask response object for the first file found. If `path_list` in the kwargs the list will
+be used to search each directory. If not provided, 'static' and 'shotglass2/static' directories are
+searched.
 
 The option to override static content (images, js, css ) makes it possible to use an existing repository as the basis for a site but
 still customize it with out altering the repo's files. That way you can still pull from the repo without conflicts.
 
-To use this option, check the config setting for `LOCAL_STATIC_FOLDER` and set the path to somewhere outside of 
-the repo (usually /instance...). Then copy the files from the repo's static folder to there and you can modify
+To use this option, check the config settings for `STATIC_DIRS` and `LOCAL_STATIC_DIRS`.\
+Set the path to somewhere outside of the repo (usually /resource...). 
+Then copy the files from the repo's static folder to there and you can modify
 them as you wish.
 
   

@@ -28,10 +28,11 @@ A typical approach to setting up a new development project would be to:
 * Next run `. setup_env`  
   This will create the instance, resource and templates directories:
     * The 'instance' directory is where you'll keep your private info such as the encryption key and email account info. The database files
-    are usually stored here tool.
-    * The 'resource' directory is where you can put static content unique to the installation. [More info here.](/docs/takeabeltof/content_override.md)
-    * The 'template' directory is where your primary site design file go. The content of the shotgass2/templates directory will
-    be copied here for you. You can edit them to suit your needs.  
+    are usually stored here too.
+    * The 'resource' directory is a good place to put static content and/or templates unique to a particular host.
+    [More info here.](/docs/content_override.md)
+    * The 'template' directory is where your primary site design file go. You can copy templates from shotglass2/templates and
+     edit them to suit your needs or add new ones.  
     
     * setup_env will also try to create virtualenv directory 'env' and pip the requirements into it.  
         * See the note below about virtualenv and requirements.txt with A2 Hosting.  
@@ -42,6 +43,10 @@ A typical approach to setting up a new development project would be to:
 ### Special Installation Instructions for A2 Hosting
 
 A2 Hosting uses this `passenger` system to run python apps on their system. [Read more here](/docs/passenger_setup.md).
+
+## shotglass.py
+
+shotglass.py handles a number of tasks that used to be part of app in the old shotglass setup. [Read more here.](/docs/shotglass.md)
 
 ## Template Loading Order
 
@@ -61,7 +66,7 @@ sheet and other content. The sites are configured in the application settings fi
 ## Overriding Static Content
 
 It's possible to override the files in the default 'static' folder by creating your own versions in a folder outside of the shotglass
-repo. [Read more here](/docs/takeabeltof/content_override.md).
+repo. [Read more here](/docs/content_override.md).
 
 ## Utility Functions and Database Access
 
