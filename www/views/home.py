@@ -15,6 +15,8 @@ def get_default_routes():
     put_options = {'methods':['POST', 'GET',]}
     route_dict = {}
     route_dict['/'] = ('/','home',home,{})
+    route_dict['/index.html'] = ('/index.html','home',home,{})
+    route_dict['/index.htm'] = ('/index.htm','home',home,{})
     route_dict['/about/'] = ('/about/','about',about,{})
     route_dict['/contact/'] = ('/contact/','contact',contact,put_options)
     route_dict['/docs/'] = ('/docs/','docs',docs,{})
