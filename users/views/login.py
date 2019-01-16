@@ -173,6 +173,9 @@ def authenticate_user(username,password,**kwargs):
         if rec.active != 1:
             result = -1
         if rec.active == 1 and login_on_success:
+            # use rec.username if there is one
+            if rec.username:
+                username = rec.username
             setUserStatus(username,rec.id)
             
     return result
