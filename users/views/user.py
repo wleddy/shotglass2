@@ -141,6 +141,12 @@ def edit(rec_handle=None):
             #update the record
             user.update(rec,request.form)
             
+            # ensure these are ints
+            if 'may_send_email' in rec._fields:
+                rec.may_send_email = cleanRecordID(rec.may_send_email)
+            if 'may_send_text' in rec._fields:
+                rec.may_send_text = cleanRecordID(rec.may_send_text)
+            
             set_username_from_form(rec)        
             set_password_from_form(rec)
     

@@ -8,6 +8,16 @@
     <p>{{ input_field(rec.first_name,"first_name",label="First Name*",req=True) }}</p>
     <p>{{ input_field(rec.last_name,"last_name",label="Last Name*",req=True) }}</p>
     <p>{{ input_field(rec.email,"email",label="Email*",req=True, type="email") }}
+    {% if 'may_send_email' in rec._fields %}
+    <p class="w3-border-bottom w3-secondary-color"  style="margin-bottom:6pt;margin-top:0;">
+        {% set extras = "" %}
+        {% if rec.may_send_email and rec.may_send_email >0 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {{ radio_field(1,"may_send_email","Send Automated Emails:",extras=extras ,right=True) }}&nbsp;
+        {% set extras = "" %}
+        {% if not rec.may_send_email or rec.may_send_email < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {{ radio_field(0,"may_send_email","No Automated Emails:",extras=extras ,right=True ) }}
+    </p>
+    {% endif %}
 
     {% set extras = "" %}
     {% if not config.ALLOW_USERNAME_CHANGE %}{% set extras = 'disabled="disabled"' %}{% endif %}
@@ -19,12 +29,22 @@
     {% endif %}
     <p>{{ input_field(new_password,"new_password",type="password",label=label) }}</p>
     <p>{{ input_field(confirm_password,"confirm_password",type="password",label="Re-enter password") }}</p>
+    <p>{{ input_field(rec.phone,"phone") }}</p>
+    {% if 'may_send_text' in rec._fields %}
+    <p class="w3-border-bottom w3-secondary-color" style="margin-bottom:6pt;margin-top:0;">
+        {% set extras = "" %}
+        {% if rec.may_send_text and rec.may_send_text > 0 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {{ radio_field(1,"may_send_text","Send Automated Texts:",extras=extras ,right=True) }}&nbsp;
+        {% set extras = "" %}
+        {% if not rec.may_send_text or rec.may_send_text < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {{ radio_field(0,"may_send_text","No Automated Texts:",extras=extras ,right=True ) }}
+    </p>
+    {% endif %}
     <p>{{ input_field(rec.address,"address") }}</p>
     <p>{{ input_field(rec.address2,"address2",label="Address line 2") }}</p>
     <p>{{ input_field(rec.city,"city") }}</p>
     <p>{{ input_field(rec.state,"state") }}</p>
     <p>{{ input_field(rec.zip,"zip") }}</p>
-    <p>{{ input_field(rec.phone,"phone") }}</p>
     
     {% if is_admin %}
     <p>{{ select_field("roles_select","Role",extras='multiple size="5"', class="w3-border") }}
@@ -41,7 +61,7 @@
             {% if rec.active ==1 %}{% set extras = ' checked="checked"' %}{% endif %}
             {{ radio_field(1,"active","Active:",extras=extras ,right=True) }}&nbsp;
             {% set extras = "" %}
-            {% if rec.active ==0 %}{% set extras = ' checked="checked"' %}{% endif %}
+            {% if rec.active ==0 or rec.active == None %}{% set extras = ' checked="checked"' %}{% endif %}
             {{ radio_field(0,"active","Inactive:",extras=extras ,right=True ) }}
         </p>
         <p>{{ label_only("Last Access:")}} {{rec.last_access|default('Never',True)}} (UTC)</p>
