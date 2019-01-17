@@ -82,6 +82,22 @@ def render_markdown_for(file_name,bp=None,**kwargs):
     
     app_config = get_app_config()
     
+    def valid_file_path(file_path):
+        """Test the file path and return true if exists, else false
+        if explain is True, print a report
+        """
+        explain = app_config.get('EXPLAIN_TEMPLATE_LOADING',False)
+        
+        if os.path.isfile(file_path):
+            if explain:
+                print('found: {}'.format(file_path))
+            return True
+        else:
+            if explain:
+                print('not found: {}'.format(file_path))
+            return False
+            
+    
     rendered_html = None
     markdown_path = ''
         
@@ -93,23 +109,23 @@ def render_markdown_for(file_name,bp=None,**kwargs):
     # search the directories in the same way flask does
     for directory in g.template_list:
         markdown_path = os.path.join(application_path,directory,file_name)
-        if os.path.isfile(markdown_path):
+        if valid_file_path(markdown_path):
             break
 
-    if not os.path.isfile(markdown_path):
+    if not valid_file_path(markdown_path):
         # next, try docs
         markdown_path = os.path.join(application_path, 'docs',file_name)
-    if not os.path.isfile(markdown_path) and bp:
+    if not valid_file_path(markdown_path) and bp:
         # look in the templates directory of the calling blueprint
         bp_template_folder = 'templates' #default
         if bp.template_folder:
             bp_template_folder = bp.template_folder
         
         markdown_path = os.path.join(application_path,bp_template_folder,file_name)
-        if not os.path.isfile(markdown_path):
+        if not valid_file_path(markdown_path):
             # look in the template folder of the blueprint
             markdown_path = os.path.join(bp.root_path, bp_template_folder,file_name)
-    if os.path.isfile(markdown_path):
+    if valid_file_path(markdown_path):
         f = open(markdown_path)
         rendered_html = f.read()
         f.close()
