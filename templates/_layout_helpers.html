@@ -1,7 +1,7 @@
-{% macro form_column_class() %}
-w3-col w3-card-4 l8 m10
+{% macro form_column_class(class="w3-col w3-card-4 l8 m10 s12") %}
+{{class}}
 {% endmacro %}
 
-{% macro left_column_spacer() %}
-<div class="w3-col m1 l2">&nbsp;</div>
+{% macro left_column_spacer(class="w3-col m1 l2 w3-hide-small") %}
+<div class="{{class}}">&nbsp;</div>
 {% endmacro %}

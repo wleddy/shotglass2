@@ -44,9 +44,9 @@
 {% if type == "checkbox"%}{% set baseclass = 'w3-check'%}{%endif%}
 {% set class = baseclass + " " + class %}
 {% if right %}
-    <label>{{ _radio_label_element(name,label,req)}}{{ _radio_input_element(value,name,type,id,class,extras) }}</label>
+    <label><span style="white-space: nowrap;">{{ _radio_label_element(name,label,req)}}{{ _radio_input_element(value,name,type,id,class,extras) }}</span></label>
 {% else %}
-    <label>{{ _radio_input_element(value,name,type,id,class,extras) }}{{ _radio_label_element(name,label,req)}}</label>
+    <label><span style="white-space: nowrap;">{{ _radio_input_element(value,name,type,id,class,extras) }}{{ _radio_label_element(name,label,req)}}</span></label>
 {% endif%}
 {%endmacro%}
 
