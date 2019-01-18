@@ -210,7 +210,7 @@ def user_setup():
     g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
         
     g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
-    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=1000)
-    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=1000)
+    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
+    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
         
 
