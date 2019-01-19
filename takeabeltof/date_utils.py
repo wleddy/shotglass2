@@ -57,6 +57,17 @@ def nowString():
 def date_to_string(value,format):
     """Attempt to return a date string in the format specified
     value may be a datetime or a 'date like' string"""
+    
+    formats ={
+    'date':"%m/%d/%y",
+    'date_full_year': "%m/%d/%Y",
+    'time':'%I:%M',
+    'time_long':'%H:%M:%S',
+    'ampm': '%p'
+    }
+    
+    #try to find the format in the dict
+    format = formats.get(format,format)
         
     if value and format:
         if type(value) is datetime:
