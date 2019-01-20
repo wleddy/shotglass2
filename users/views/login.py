@@ -81,7 +81,7 @@ def login():
 def logout():
     session.clear()
     g.user = None
-    flash("Successfully Logged Out")
+    #flash("Successfully Logged Out")
     return redirect('/')
     
 @mod.route('/reset', methods=['GET','POST'])
