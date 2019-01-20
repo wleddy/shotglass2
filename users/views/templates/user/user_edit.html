@@ -11,10 +11,10 @@
     {% if 'may_send_email' in rec._fields %}
     <p class="w3-border-bottom w3-label-color"  style="margin-bottom:6pt;margin-top:0;">
         {% set extras = "" %}
-        {% if rec.may_send_email and rec.may_send_email >0 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {% if rec.may_send_email and rec.may_send_email | int > 0 %}{% set extras = ' checked="checked"' %}{% endif %}
         {{ radio_field(1,"may_send_email","Send Automated Emails:",extras=extras ,right=True) }}&nbsp;
         {% set extras = "" %}
-        {% if not rec.may_send_email or rec.may_send_email < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {% if not rec.may_send_email or rec.may_send_email | int < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
         {{ radio_field(0,"may_send_email","No Automated Emails:",extras=extras ,right=True ) }}
     </p>
     {% endif %}
@@ -33,10 +33,10 @@
     {% if 'may_send_text' in rec._fields %}
     <p class="w3-border-bottom w3-label-color" style="margin-bottom:6pt;margin-top:0;">
         {% set extras = "" %}
-        {% if rec.may_send_text and rec.may_send_text > 0 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {% if rec.may_send_text and rec.may_send_text | int > 0 %}{% set extras = ' checked="checked"' %}{% endif %}
         {{ radio_field(1,"may_send_text","Send Automated Texts:",extras=extras ,right=True) }}&nbsp;
         {% set extras = "" %}
-        {% if not rec.may_send_text or rec.may_send_text < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
+        {% if not rec.may_send_text or rec.may_send_text | int < 1 %}{% set extras = ' checked="checked"' %}{% endif %}
         {{ radio_field(0,"may_send_text","No Automated Texts:",extras=extras ,right=True ) }}
     </p>
     {% endif %}

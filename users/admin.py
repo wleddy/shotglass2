@@ -53,6 +53,15 @@ class Admin():
                 
         self.permissions.append(permission)
            
+    
+    def has_user_table_access(self,user_name):
+        """Special function to see if current user has access to the user table
+        A shortcut I want to use in the menu template"""
+        
+        from shotglass2.users.models import User
+        return self.has_access(user_name,User)
+        
+        
     def has_access(self,user_name,table=None):
         """Test to see if the user represented by user name has access to ANY admin items
         If a table class is specified, only check to see if user has access to that table"""
