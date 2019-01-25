@@ -63,7 +63,8 @@ def date_to_string(value,format):
     'date_full_year': "%m/%d/%Y",
     'time':'%I:%M',
     'time_long':'%H:%M:%S',
-    'ampm': '%p'
+    'ampm': '%p',
+    'local_time': '%-I:%M%p'
     }
     
     #try to find the format in the dict
