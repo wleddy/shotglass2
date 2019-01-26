@@ -91,7 +91,8 @@ class SqliteTable:
     def query(self,sql):
         """Perform a query that may return results from muliple tables
         The table instance you call this with is unimportant.
-        You can call it on an instance of SqliteTable directly
+        You can call it on an instance of SqliteTable directly.
+        Always make sure that you don't have conflicting field names in output.
         """
         #import pdb;pdb.set_trace()
         out = None
