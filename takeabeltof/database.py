@@ -88,6 +88,21 @@ class SqliteTable:
                
         return False
         
+    def query(self,sql):
+        """Perform a query that may return results from muliple tables
+        The table instance you call this with is unimportant.
+        You can call it on an instance of SqliteTable directly
+        """
+        #import pdb;pdb.set_trace()
+        out = None
+        
+        data = self.db.execute(sql).fetchall()
+        if data != None and len(data) > 0:
+            field_names = data[0].keys()
+            nl = namedlist('DataRow',"{}".format(",".join(data[0].keys())),default=None)
+            out = [nl(*rec) for rec in data]
+        return out
+    
     def rows_to_namedlist(self,row_list):
         """return a list of namedlists based on the list of Row objects provided"""
         out = None
