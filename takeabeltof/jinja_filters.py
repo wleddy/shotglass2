@@ -19,7 +19,7 @@ def long_date_string(value):
     return date_to_string(value,format)
     
 def abbr_date_string(value):
-    format='%b. %-d, %Y'
+    format='%a, %b. %-d, %Y'
     return date_to_string(value,format)
     
 def local_time_string(value):
