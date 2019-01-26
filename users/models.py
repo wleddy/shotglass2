@@ -162,7 +162,7 @@ class User(SqliteTable):
             'last_access' DATETIME,
             'access_token' TEXT,
             'access_token_expires' INT,
-            'may_send_text', INT,
+            'may_send_text' INT,
             'may_send_email' INT
             """
         super().create_table(sql)
