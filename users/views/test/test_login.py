@@ -71,7 +71,7 @@ def test_login(client):
         
         result = c.get('/logout/',follow_redirects=True)   
         assert result.status_code == 200
-        assert b'Logged Out' in result.data 
+        # no longer flash a messge ### assert b'Logged Out' in result.data 
         assert 'user' not in session
         
         result = c.post('/quiet_test/', data={'password': 'dog', 'password': 'password'},follow_redirects=True)
