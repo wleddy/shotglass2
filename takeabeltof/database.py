@@ -88,18 +88,27 @@ class SqliteTable:
                
         return False
         
+    def query_one(self,sql):
+        """Single row random query"""
+        out = self.query(sql)
+        if out != None:
+            return out[0]
+            
+        return out
+        
     def query(self,sql):
         """Perform a query that may return results from muliple tables
         The table instance you call this with is unimportant.
         You can call it on an instance of SqliteTable directly.
         Always make sure that you don't have conflicting field names in output.
+        
+        Returns None or a list
         """
         #import pdb;pdb.set_trace()
         out = None
         
         data = self.db.execute(sql).fetchall()
         if data != None and len(data) > 0:
-            field_names = data[0].keys()
             nl = namedlist('DataRow',"{}".format(",".join(data[0].keys())),default=None)
             out = [nl(*rec) for rec in data]
         return out
