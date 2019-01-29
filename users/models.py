@@ -199,7 +199,21 @@ class User(SqliteTable):
             self.db.execute('insert into user_role (user_id,role_id) values (?,?)',(userID,roleID))
             self.db.commit()
 
-
+    def is_admin(self,user):
+        """Return True if user (name or id) is an admin"""
+        from shotglass2.shotglass import get_app_config
+        
+        rec = self.get(user)
+        if not rec:
+            return False
+        admin_roles = get_app_config().get('ADMIN_ROLES',['super','admin',])
+        user_role_ids = self.get_roles(rec.id)
+        for role in admin_roles:
+            if Role(self.db).get(role):
+                return True
+        return False
+        
+        
 class Pref(SqliteTable):
     """
         A table to store some random data in

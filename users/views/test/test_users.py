@@ -58,6 +58,16 @@ def test_user_get():
     assert rec.username == 'admin'
     rec = user.get('admin')
     assert rec.username == 'admin'
+    
+    admin_roles = user.get_roles(rec.id)
+    assert admin_roles != None
+    assert len(admin_roles)>0
+    assert admin_roles[0].name == "super"
+    
+    # test that user admin is in admins
+    assert user.is_admin('admin')
+    assert user.is_admin(rec.id)
+        
     recs = user.select()
     assert len(recs) == 3
     # select inactive users too...
