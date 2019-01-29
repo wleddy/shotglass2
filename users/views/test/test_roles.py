@@ -78,6 +78,14 @@ def test_roles():
     assert rec.name == 'Testing'
     assert rec.rank == 0
     
+    # test get by role name
+    rec = Role(db).get('Testing')
+    assert rec.id == recID
+
+    # test that bad name is not found
+    none_rec = Role(db).get('Wrong name')
+    assert none_rec == None
+    
     #Modify the record
     rec.name = "New Test"
     rec.rank = 300

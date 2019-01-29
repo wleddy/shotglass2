@@ -19,6 +19,14 @@ class Role(SqliteTable):
             'rank' INTEGER DEFAULT 0 """
         super().create_table(sql)
         
+    def get(self,value):
+        """Return a role with this value"""
+        if isinstance(value,str):
+            # if value is str, search by role.name
+            return self.select_one(where="name = '{}'".format(value))
+                
+        return super().get(value)
+        
     def init_table(self):
         """Create the table and initialize data"""
         self.create_table()
