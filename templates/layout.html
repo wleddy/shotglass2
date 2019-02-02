@@ -38,23 +38,34 @@
 </head>
 <body>
 <div id="contain" >
+    {% block dialog %}
     <div id="dialog"></div>
     <div id="modal-form-contain" class="w3-modal" style="overflow:hidden;padding-top:20pt!important;">
         <div id="modal-form" class="w3-container w3-modal-content w3-card-4 w3-animate-top" style="max-height:95vh;overflow:scroll;"></div>
     </div>
-    {% include "header.html"%}
-    {% if g.user or True %}
-    {% include "top-nav.html"%}
-    <div class="w3-main menu_space">
-    {% else %}
-    <div>
-    {% endif %}
+    {% endblock dialog %}
+    
+    {% block header %}
+        {% include "header.html"%}
+        {% if g.user or True %}
+            {% include "top-nav.html"%}
+            <div class="w3-main menu_space">
+        {% else %}
+            <div>
+        {% endif %}
+        {% endblock header %}
         <div class="w3-container">
-            {% if not g.suppress_page_header %}
+            {% block page_header %}
+                {% if not g.suppress_page_header %}
                 {% include "page_header.html" %}
-            {% endif %}
-            {% include "flasher.html" %}
+                {% endif %}
+            {% endblock page_header %}
+        
+            {% block flasher %}{% include "flasher.html" %}{% endblock flasher%}
+        
             {% block body %}{% endblock %}
+            
+            {% block footer %}{% endblock footer%}
         </div>
     </div>
 </div>
