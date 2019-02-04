@@ -33,6 +33,17 @@ function modalFormSuccess(data){
 	return result;
 }
 
+function submitModalToModalForm(formID, postingURL, successTarget, successURL){
+    /* Just like submitModalForm but doesn't close the modal form div on success */
+	$("#modal-form").load(postingURL,formToJson(formID),function(data){
+		if (data.toLowerCase() == 'success'){
+			$("#"+successTarget).load(successURL);
+		} else {
+			// there were errors, so the form will redisplay
+		}
+	}
+	,"html");
+}
 
 function submitModalForm(formID, postingURL, successTarget, successURL){
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
