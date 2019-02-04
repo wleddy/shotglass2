@@ -48,7 +48,12 @@ function submitModalToModalForm(formID, postingURL, successTarget, successURL){
 function submitModalForm(formID, postingURL, successTarget, successURL){
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (modalFormSuccess(data)){
-			$("#"+successTarget).load(successURL);
+            if(successTarget == ''){
+                // load a fresh page
+                document.location=successURL;
+            } else {
+			    $("#"+successTarget).load(successURL);
+            }
 		} else {
 			// there were errors, so the form will redisplay
 		}
