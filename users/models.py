@@ -207,9 +207,9 @@ class User(SqliteTable):
         if not rec:
             return False
         admin_roles = get_app_config().get('ADMIN_ROLES',['super','admin',])
-        user_role_ids = self.get_roles(rec.id)
-        for role in admin_roles:
-            if Role(self.db).get(role):
+        user_roles = self.get_roles(rec.id)
+        for role in user_roles:
+            if role.name in admin_roles:
                 return True
         return False
         

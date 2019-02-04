@@ -67,6 +67,10 @@ def test_user_get():
     # test that user admin is in admins
     assert user.is_admin('admin')
     assert user.is_admin(rec.id)
+    
+    #user John is not administrator
+    rec = user.get('John')
+    assert user.is_admin(rec.id) == False
         
     recs = user.select()
     assert len(recs) == 3
