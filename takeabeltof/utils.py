@@ -194,3 +194,24 @@ def send_static_file(filename,**kwargs):
     return abort(404)
     
     
+def formatted_phone_number(phone,sep="-",raw=False):
+    """Take what may be a phone number and return a formatted version of it or '' or a tuple of found parts
+    Taken from: https://www.diveinto.org/python3/regular-expressions.html
+    """
+    
+    phonePattern = re.compile(r'(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$')
+    try:
+        groups = phonePattern.search(phone).groups()
+    except AttributeError:
+        # No match found
+        return ''
+        
+    if groups:
+        if raw:
+            return groups
+            
+        if len(groups) > 2:
+             return sep.join(groups[:3])
+             
+    return '' # conversion failed
+    

@@ -65,3 +65,15 @@ def test_handle_request_error():
         from shotglass2.takeabeltof.utils import handle_request_error
         result = handle_request_error("test for error",None,200)
         assert "test for error" in result
+        
+        
+def test_formatted_phone_number():
+    # test the results of attempst to format a phone number
+    assert utils.formatted_phone_number('916-444-2904') == '916-444-2904'
+    assert utils.formatted_phone_number('(916) 444-2904') == '916-444-2904'
+    assert utils.formatted_phone_number('9164442904') == '916-444-2904'
+    assert utils.formatted_phone_number('(916)444-2904') == '916-444-2904'
+    assert utils.formatted_phone_number('444-2904') == ''
+    assert utils.formatted_phone_number('Not a number') == ''
+    assert utils.formatted_phone_number('(916)444-2904','/') == '916/444/2904'
+    assert utils.formatted_phone_number('(916)444-2904',raw=True) == ('916','444','2904','') # returns 4 items
