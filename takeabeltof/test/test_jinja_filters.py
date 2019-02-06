@@ -35,3 +35,10 @@ def test_iso_date_string():
     assert filters.iso_date_string(test_date) == "2018-05-09"
     assert filters.iso_date_string("2018-05-09") == "2018-05-09"
     assert filters.iso_date_string("05/09/18") == "2018-05-09"
+
+def test_local_date_string():
+    test_date = datetime(2018,5,9)
+    assert filters.local_date_string(test_date) == "5/9/18"
+    assert filters.local_date_string("2018-05-09") == "5/9/18"
+    assert filters.local_date_string("05/09/18") == "5/9/18"
+    assert filters.local_date_string("5/9/18") == "5/9/18"
