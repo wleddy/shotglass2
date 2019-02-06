@@ -10,6 +10,10 @@ def short_date_string(value):
     format='%m/%d/%y'
     return date_to_string(value,format)
     
+def local_date_string(value):
+    format='%-m/%-d/%y'
+    return date_to_string(value,format)
+
 def short_day_and_date_string(value):
     format='%a. %-m/%-d/%y'
     return date_to_string(value,format)
@@ -51,4 +55,5 @@ def register_jinja_filters(app):
     app.jinja_env.filters['two_decimal_string'] = two_decimal_string
     app.jinja_env.filters['iso_date_string'] = iso_date_string
     app.jinja_env.filters['local_time_string'] = local_time_string
+    app.jinja_env.filters['local_date_string'] = local_date_string
     app.jinja_env.filters['money'] = two_decimal_string
