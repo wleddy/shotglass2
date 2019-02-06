@@ -38,6 +38,10 @@ class SqliteTable:
         self._display_name = None #use to override the name display
         self.use_slots = True #Set to False to allow adding temporary fields to the list at runtime
         
+    def commit(self):
+        """A convenience to be able to call commit on the database from a table object"""
+        self.db.commit()
+        
     def create_table(self,definition=""):
         """The default table definition script. definition arg is a string of valid SQL"""
         
