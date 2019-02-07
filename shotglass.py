@@ -91,15 +91,15 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
-def register_users(app):
+def register_users(app,subdomain=None):
     from shotglass2.users.views import user, login, role, pref
-    app.register_blueprint(user.mod)
-    app.register_blueprint(login.mod)
-    app.register_blueprint(role.mod)
-    app.register_blueprint(pref.mod)
+    app.register_blueprint(user.mod, subdomain=subdomain)
+    app.register_blueprint(login.mod, subdomain=subdomain)
+    app.register_blueprint(role.mod, subdomain=subdomain)
+    app.register_blueprint(pref.mod, subdomain=subdomain)
 
 
-def register_www(app):
+def register_www(app,subdomain=None):
     """I did this because I thought I could modify the routes
     at startup by modifying the routes var returned from get_default_routes
     Turns out flask complains that the routes already exist.
@@ -110,7 +110,7 @@ def register_www(app):
     routes = home.get_default_routes()
     for key, value in routes.items():
         home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
-    app.register_blueprint(home.mod)
+    app.register_blueprint(home.mod, subdomain=subdomain)
 
 
 # @app.errorhandler(500)
