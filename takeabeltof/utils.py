@@ -177,16 +177,27 @@ def handle_request_error(error=None,request=None,status=666):
         
 def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory"""
+    from shotglass2.shotglass import get_app_config
     
     path_list = kwargs.get('path_list',['static','shotglass2/static'])
     
     path = None
     
+    explain = get_app_config().get('EXPLAIN_TEMPLATE_LOADING',False)
+    
+    if explain:
+        print("\nSearching for {}".format(filename))
+    
     for temp_path in path_list:
         file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
         if os.path.isfile(file_loc):
             path = temp_path
+            if explain:
+                print("{} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
             break
+        else:
+            if explain:
+                print("{} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
     
     if path:
         return send_from_directory(path,filename, as_attachment=False)
