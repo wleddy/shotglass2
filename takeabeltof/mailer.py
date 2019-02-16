@@ -1,5 +1,4 @@
 from flask import g, flash, render_template_string, render_template
-from app import mail
 from flask_mail import Message
 from shotglass2.shotglass import get_app_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
@@ -14,7 +13,7 @@ def send_message(to_address_list=None,**kwargs):
         **kwargs:
             context = {a dictionary like object with data for rendering all emails} = {}
             body = <text for body of email> = None
-            body_text_is_html = <True | False> = False
+            body_is_html = <True | False> = False
             text_template=<template to render as plain text message> = None
             html_template=<template to render as html message> = None
             subject=<subject text (will be rendered with the current context>)>= a default subject
@@ -23,12 +22,15 @@ def send_message(to_address_list=None,**kwargs):
             from_sender=<name of sender> = app.config['MAIL_DEFAULT_SENDER']
             reply_to_address=<replyto address> = from_address
             reply_to_name=<name of reply to account> = from_sender
+            attachment = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
+            attachments = [<list of attachment tuples>] = None
             
         On completion returns a tuple of:
             success [True or False]
             message "some message"
     """
     #import pdb;pdb.set_trace()
+    from app import mail
     
     app_config = get_app_config() #update the settings. this also recreates the mail var in app with new settings
     
@@ -38,6 +40,15 @@ def send_message(to_address_list=None,**kwargs):
     text_template = kwargs.get('text_template',None)
     html_template = kwargs.get('html_template',None)
     subject_prefix = kwargs.get('subject_prefix','')
+    attachment = kwargs.get('attachment',None)
+    attachments = kwargs.get('attachments',None)
+    
+    if attachments:
+        if not isinstance(attachments,list):
+            attachments = [attachments]
+        attachments.extend([attachment])
+    elif attachment:
+        attachments = [attachment]
     
     try:
         admin_addr = app_config['MAIL_DEFAULT_ADDR']
@@ -115,7 +126,11 @@ def send_message(to_address_list=None,**kwargs):
             
             msg.reply_to = reply_to
            
-
+            if attachments:
+                for attachment in attachments:
+                    if attachment and len(attachment) > 2:
+                        msg.attach(attachment[0],attachment[1],attachment[2])
+                    
             try:
                 mail.send(msg)
                 sent_cnt += 1
