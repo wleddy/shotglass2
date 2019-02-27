@@ -139,15 +139,19 @@ def quite_test_fixture():
 def setUserStatus(userNameOrEmail,user_id):
     #Log the user in
     user = User(g.db)
-    user.update_last_access(user_id)
-    session["user"] = userNameOrEmail.strip()
-    session['user_id'] = user.get(user_id).id
-    g.user = session["user"]
-    session["user_roles"] = []
-    recs = user.get_roles(user_id)
-    if recs:
-        session["user_roles"] = [rec.name for rec in recs]
-    g.user_roles = session['user_roles']
+    rec = user.get(user_id)
+    if rec:
+        user.update_last_access(rec.id)
+        session["user"] = userNameOrEmail.strip()
+        session['user_id'] = rec.id
+        g.user = session["user"]
+        session["user_roles"] = []
+        recs = user.get_roles(rec.id)
+        if recs:
+            session["user_roles"] = [rec.name for rec in recs]
+        g.user_roles = session['user_roles']
+    else:
+        flash("Unable to locate user")
     
     
 def authenticate_user(username,password,**kwargs):
