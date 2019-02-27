@@ -9,9 +9,7 @@ def send_message(to_address_list=None,**kwargs):
         
         If the to_address_list is not provided, mail will be sent to the admin
         
-        -- all templates must use 'context' as their only context variable
         **kwargs:
-            context = {a dictionary like object with data for rendering all emails} = {}
             body = <text for body of email> = None
             body_is_html = <True | False> = False
             text_template=<template to render as plain text message> = None
@@ -34,7 +32,6 @@ def send_message(to_address_list=None,**kwargs):
     
     app_config = get_app_config() #update the settings. this also recreates the mail var in app with new settings
     
-    context = kwargs.get('context',{})
     body = kwargs.get('body',None)
     body_is_html = kwargs.get('body_is_html',None)
     text_template = kwargs.get('text_template',None)
@@ -107,7 +104,7 @@ def send_message(to_address_list=None,**kwargs):
                     
                 body_err_head = "Bad Addres: {}\r\r".format(who,)
                 
-            subject = render_template_string(subject.strip(),context=context)
+            subject = render_template_string(subject.strip(), **kwargs)
             #Start a message
             msg = Message( subject,
                           sender=(from_sender, from_address),
@@ -116,13 +113,13 @@ def send_message(to_address_list=None,**kwargs):
             #Get the text body verson
             if body:
                 if body_is_html:
-                    msg.html = render_template_string("{}{}".format(body_err_head,body,), context=context)
+                    msg.html = render_template_string("{}{}".format(body_err_head,body,), **kwargs)
                 else:
-                    msg.body = render_template_string("{}{}".format(body_err_head,body,), context=context)
+                    msg.body = render_template_string("{}{}".format(body_err_head,body,), **kwargs)
             if html_template:
-                msg.html = render_template(html_template, context=context)
+                msg.html = render_template(html_template, **kwargs)
             if text_template:
-                msg.body = render_template(text_template, context=context) 
+                msg.body = render_template(text_template, **kwargs) 
             
             msg.reply_to = reply_to
            
