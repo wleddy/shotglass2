@@ -1,13 +1,15 @@
 from datetime import datetime
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash, Blueprint
+from shotglass2.shotglass import get_site_config
+from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
-from time import time
 from shotglass2.users.models import User, Role
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.views.login import setUserStatus
 from shotglass2.users.views.password import getPasswordHash
 from shotglass2.users.admin import login_required, table_access_required
+from time import time
 
 
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user')
@@ -70,7 +72,8 @@ def edit(rec_handle=None):
     setExits()
     g.title = "Edit {} Record".format(g.title)
     #import pdb;pdb.set_trace()
-
+    site_config = get_site_config()
+    
     user = User(g.db)
     rec = None
     request_rec_id = cleanRecordID(request.form.get('id',request.args.get('id',-1)))
@@ -176,7 +179,6 @@ def edit(rec_handle=None):
                 return redirect(g.listURL)
                 
             if is_new_user == True and rec.email:
-                from shotglass2.takeabeltof.mailer import send_message
                 
                 # send an email to welcome the new user
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
@@ -225,14 +227,13 @@ def edit(rec_handle=None):
 def register():
     """Allow people to sign up thier own accounts on the web site"""
     setExits()
+    site_config = get_site_config()
+    
     g.title = "Account Registration"
     g.editURL = url_for('.register')
     g.listURL = '/' # incase user cancels
     user = User(g.db)
     rec=user.new()
-    
-    from shotglass2.takeabeltof.mailer import send_message
-    from app import app
     
     is_admin = False
     user_roles=None
@@ -251,11 +252,11 @@ def register():
                 success="waiting"
                 
             #inform the admin
-            to=[(app.config['MAIL_DEFAULT_SENDER'],app.config['MAIL_DEFAULT_ADDR'])]
-            confirmURL = "{}://{}{}?activate={}".format(app.config['HOST_PROTOCOL'],app.config['HOST_NAME'],url_for('.activate'), rec.access_token)
-            deleteURL = "{}://{}{}?delete={}".format(app.config['HOST_PROTOCOL'],app.config['HOST_NAME'],url_for('.delete'), rec.access_token)
+            to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
+            confirmURL = "{}://{}{}?activate={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.activate'), rec.access_token)
+            deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.delete'), rec.access_token)
             context={'rec':rec,'confirmURL':confirmURL,'deleteURL':deleteURL}
-            subject = 'Activate Account Request from - {}'.format(app.config['SITE_NAME'])
+            subject = 'Activate Account Request from - {}'.format(site_config['SITE_NAME'])
             html_template = 'email/admin_activate_acct.html'
             text_template = None
             send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
@@ -284,16 +285,16 @@ def register():
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
                 to=[(full_name,rec.email)]
                 context={'rec':rec,'confirmation_code':rec.access_token}
-                subject = 'Signup Success'
+                subject = 'Please confirm your account registration at {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/registration_confirm.html'
                 text_template = 'email/registration_confirm.txt'
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
                 
                 #inform the admin
-                to=[(app.config['MAIL_DEFAULT_SENDER'],app.config['MAIL_DEFAULT_ADDR'])]
-                deleteURL = "{}://{}{}?delete={}".format(app.config['HOST_PROTOCOL'],app.config['HOST_NAME'],url_for('.delete'), rec.access_token)
+                to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
+                deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.delete'), rec.access_token)
                 context={'rec':rec,'deleteURL':deleteURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
-                subject = 'Unconfirmed Account Request from - {}'.format(app.config['SITE_NAME'])
+                subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/admin_activate_acct.html'
                 text_template = None
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
@@ -305,7 +306,7 @@ def register():
                 mes = "An error occured while new user was attempting to register"
                 printException(mes,"error",e)
                 # Send email to the administrator
-                to=[(app.config['MAIL_DEFAULT_SENDER'],app.config['MAIL_DEFAULT_ADDR'])]
+                to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
                 context={'mes':mes,'rec':rec,'e':str(e)}
                 body = "Signup Error\n{{context.mes}}\n{{context.e}}\nrec:\n{{context.rec}}"
                 send_message(to,context=context,body=body,subject=mes)
@@ -323,7 +324,6 @@ def register():
 @table_access_required(User)
 def activate():
     """Allow administrator to activate a new user"""
-    from shotglass2.takeabeltof.mailer import send_message
     
     activate = request.args.get('activate',None)
     if activate:

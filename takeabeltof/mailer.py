@@ -16,8 +16,8 @@ def send_message(to_address_list=None,**kwargs):
             html_template=<template to render as html message> = None
             subject=<subject text (will be rendered with the current context>)>= a default subject
             subject_prefix=<some text to prepend to the subject: = ''
-            from_address=<from address> = app.config['MAIL_DEFAULT_ADDR']
-            from_sender=<name of sender> = app.config['MAIL_DEFAULT_SENDER']
+            from_address=<from address> = sit_config['MAIL_DEFAULT_ADDR']
+            from_sender=<name of sender> = site_config['MAIL_DEFAULT_SENDER']
             reply_to_address=<replyto address> = from_address
             reply_to_name=<name of reply to account> = from_sender
             attachment = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None

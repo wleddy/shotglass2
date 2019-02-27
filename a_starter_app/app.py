@@ -42,7 +42,7 @@ def get_db(filespec=None):
     If the db path does not exist, create it and initialize the db"""
     
     if not filespec:
-        filespec = app.config['DATABASE_PATH']
+        filespec = shotglass.get_site_config()['DATABASE_PATH']
         
     # This is probobly a good place to change the
     # filespec if you want to use a different database
