@@ -185,7 +185,7 @@ def edit(rec_handle=None):
                 to_address_list=[(full_name,rec.email)]
                 sent,msg = send_message(
                     to_address_list,
-                    subject="Welcome to {{config.SITE_NAME}}",
+                    subject="Welcome to {{ site_config.SITE_NAME}}",
                     context=context,
                     html_template='email/welcome.html',
                     text_template='email/welcome.txt',

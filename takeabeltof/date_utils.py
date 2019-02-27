@@ -40,9 +40,9 @@ def make_tz_aware(the_datetime,time_zone=None):
 def get_time_zone_setting():
     """Return the TIME_ZONE config setting if it exists else None"""
     try:
-        from shotglass2.shotglass import get_app_config
+        from shotglass2.shotglass import get_site_config
         
-        time_zone = get_app_config()['TIME_ZONE']
+        time_zone = get_site_config()['TIME_ZONE']
     except:
         time_zone = None
         

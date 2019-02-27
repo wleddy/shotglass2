@@ -58,7 +58,7 @@ def about():
 def contact():
     setExits()
     g.title = 'Contact Us'
-    from shotglass2.shotglass import get_app_config
+    from shotglass2.shotglass import get_site_config
     from shotglass2.takeabeltof.mailer import send_message
     rendered_html = render_markdown_for('contact.md',mod)
     
@@ -66,7 +66,7 @@ def contact():
     context = {}
     success = True
     passed_quiz = False
-    app_config = get_app_config()
+    site_config = get_site_config()
     mes = "No errors yet..."
     if request.form:
         #import pdb;pdb.set_trace()
@@ -93,9 +93,9 @@ def contact():
                 
             try:
                 if not to:
-                    to = [(app_config['CONTACT_NAME'],app_config['CONTACT_EMAIL_ADDR'],),]
-                if app_config['CC_ADMIN_ON_CONTACT']:
-                    to.append((app_config['MAIL_DEFAULT_SENDER'],app_config['MAIL_DEFAULT_ADDR']))
+                    to = [(site_config['CONTACT_NAME'],site_config['CONTACT_EMAIL_ADDR'],),]
+                if site_config['CC_ADMIN_ON_CONTACT']:
+                    to.append((site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR']))
                 
             except KeyError as e:
                 mes = "Could not get email addresses."
@@ -110,7 +110,7 @@ def contact():
                 # Ok so far... Try to send
                 success, mes = send_message(
                                     to,
-                                    subject = "Contact from {}".format(app_config['SITE_NAME']),
+                                    subject = "Contact from {}".format(site_config['SITE_NAME']),
                                     html_template = "home/email/contact_email.html",
                                     context = context,
                                     reply_to = request.form['email'],
@@ -134,8 +134,8 @@ def contact():
 def docs(filename=None):
     #setExits()
     g.title = "Docs"
-    from shotglass2.shotglass import get_app_config
-    app_config = get_app_config()
+    from shotglass2.shotglass import get_site_config
+    site_config = get_site_config()
     
     #import pdb;pdb.set_trace()
     
@@ -151,8 +151,8 @@ def docs(filename=None):
         # try the default doc dir
         temp_path = os.path.join(os.path.dirname(os.path.abspath(__name__)),'docs',filename)
         
-    if not os.path.isfile(temp_path) and 'DOC_DIRECTORY_LIST' in app_config:
-        for path in app_config['DOC_DIRECTORY_LIST']:
+    if not os.path.isfile(temp_path) and 'DOC_DIRECTORY_LIST' in site_config:
+        for path in site_config['DOC_DIRECTORY_LIST']:
             temp_path = os.path.join(os.path.dirname(os.path.abspath(__name__)),path.strip('/'),filename)
             if os.path.isfile(temp_path):
                 break
@@ -169,6 +169,6 @@ def docs(filename=None):
     
 #@mod.route('/robots.txt', methods=['GET',])
 def robots():
-    #from shotglass2.shotglass import get_app_config
+    #from shotglass2.shotglass import get_site_config
     return redirect('/static/robots.txt')
 

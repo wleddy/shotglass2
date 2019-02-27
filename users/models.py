@@ -121,6 +121,23 @@ class User(SqliteTable):
                 """.format(order_by)
                 
         return  Role(self.db).rows_to_namedlist(self.db.execute(sql,(cleanRecordID(userID),)).fetchall())
+        
+    def get_with_roles(self,role_list):
+        """Return a list of users who have one or more of the roles in role_list
+        Role list may be a list of role id's or it may be a namedlist of role records
+        """
+        if not isinstance(role_list,list) or len(role_list)<1 and (not isinstance(role_list[0],int) or 'DataRow' not in role_list):
+            raise ValueError("role_list must be a list of records or ints")
+            
+        if not isinstance(role_list[0],int):
+            # must be a record list
+            temp_list = [rec.id for rec in role_list]
+            role_list = temp_list
+            
+        role_list = [str(i) for i in role_list]
+            
+        recs = self.select(where="id in ({})".format(','.join(role_list)))
+        return recs
                 
     def select(self,**kwargs):
         """Limit selection to active user only unless 'include_inactive' is true in kwargs"""
@@ -201,12 +218,12 @@ class User(SqliteTable):
 
     def is_admin(self,user):
         """Return True if user (name or id) is an admin"""
-        from shotglass2.shotglass import get_app_config
+        from shotglass2.shotglass import get_site_config
         
         rec = self.get(user)
         if not rec:
             return False
-        admin_roles = get_app_config().get('ADMIN_ROLES',['super','admin',])
+        admin_roles = get_site_config().get('ADMIN_ROLES',['super','admin',])
         user_roles = self.get_roles(rec.id)
         for role in user_roles:
             if role.name in admin_roles:

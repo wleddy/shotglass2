@@ -6,7 +6,7 @@ from shotglass2.users.admin import Admin
 import os    
 
 
-def get_app_config(this_app=None):
+def get_site_config(this_app=None):
     """Returns a copy of the current app.config.
     This makes it possible for other modules to get access to the config
     with the values as updated for the current host.
@@ -30,7 +30,11 @@ def get_app_config(this_app=None):
     except:
         request_in_flight = False
 
-    if request_in_flight and "SHARED_HOST_SETTINGS" in this_app.config and len(this_app.config["SHARED_HOST_SETTINGS"]) > 0:
+    ## Changing the contents of app.config after startup is a bad idea, so work on a copy instead
+    ### This implys that any place you want to get the current site specific config you must use site_config instead of app.config
+    site_config = this_app.config.copy()
+
+    if request_in_flight and "SHARED_HOST_SETTINGS" in site_config and len(site_config["SHARED_HOST_SETTINGS"]) > 0:
         try:
             server = None
             for value in this_app.config['SHARED_HOST_SETTINGS']:
@@ -41,9 +45,9 @@ def get_app_config(this_app=None):
             if not server:
                 #did not find a server to match, use default
                 raise ValueError
-
+                
             for key, value in server.items():
-                this_app.config[key.upper()] = value
+                site_config[key.upper()] = value
 
             # refresh mail since settings changed
             from app import mail
@@ -51,11 +55,11 @@ def get_app_config(this_app=None):
 
         except:
             # Will use the default settings
-            if this_app.config['DEBUG']:
+            if site_config['DEBUG']:
                 #raise ValueError("SHARED_HOST_SETTINGS could not be determined")
              flash("Using Default SHARED_HOST_SETTINGS")
     
-    return this_app.config
+    return site_config
 
 
 def initalize_user_tables(db):
@@ -170,10 +174,10 @@ def static(filename):
     """This takes full responsibility for loading static content"""
     #import pdb;pdb.set_trace()
     from app import app
-    app_config = get_app_config()
+    site_config = get_site_config()
     local_path = []
-    local_config = app_config.get('LOCAL_STATIC_DIRS')
-    static_config = app_config.get('STATIC_DIRS')
+    local_config = site_config.get('LOCAL_STATIC_DIRS')
+    static_config = site_config.get('STATIC_DIRS')
     if local_config:
         if not isinstance(local_config,list):
             raise TypeError('LOCAL_STATIC_DIRS must be a list')

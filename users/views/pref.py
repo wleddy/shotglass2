@@ -145,20 +145,20 @@ def validForm(rec):
     
 def get_contact_email():
     """Return a tuple of the contact name and email address or None"""
-    from shotglass2.shotglass import get_app_config
+    from shotglass2.shotglass import get_site_config
     
-    app_config = get_app_config()
+    site_config = get_site_config()
     
     to = None
     to_name = None
     to_addr = None
     
-    rec = Pref(g.db).get("Contact Name",user_name=app_config.get("HOST_NAME"),default=app_config.get("CONTACT_NAME",app_config.get("MAIL_DEFAULT_SENDER","Site Contact")))
+    rec = Pref(g.db).get("Contact Name",user_name=site_config.get("HOST_NAME"),default=site_config.get("CONTACT_NAME",site_config.get("MAIL_DEFAULT_SENDER","Site Contact")))
     if rec:
         to_name = rec.value
-    rec = Pref(g.db).get("Contact Email Address",user_name=app_config.get("HOST_NAME"),
-            default=app_config.get("CONTACT_EMAIL_ADDR",
-                        app_config.get("MAIL_DEFAULT_ADDR","info@{}".format(app_config.get("HOST_NAME","example.com")))))
+    rec = Pref(g.db).get("Contact Email Address",user_name=site_config.get("HOST_NAME"),
+            default=site_config.get("CONTACT_EMAIL_ADDR",
+                        site_config.get("MAIL_DEFAULT_ADDR","info@{}".format(site_config.get("HOST_NAME","example.com")))))
     if rec:
         to_addr = rec.value
                     

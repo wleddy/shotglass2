@@ -1,6 +1,6 @@
 from flask import g, flash, render_template_string, render_template
 from flask_mail import Message
-from shotglass2.shotglass import get_app_config
+from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
 
 def send_message(to_address_list=None,**kwargs):
@@ -30,7 +30,7 @@ def send_message(to_address_list=None,**kwargs):
     #import pdb;pdb.set_trace()
     from app import mail
     
-    app_config = get_app_config() #update the settings. this also recreates the mail var in app with new settings
+    site_config = get_site_config() #update the settings. this also recreates the mail var in app with new settings
     
     body = kwargs.get('body',None)
     body_is_html = kwargs.get('body_is_html',None)
@@ -48,8 +48,8 @@ def send_message(to_address_list=None,**kwargs):
         attachments = [attachment]
     
     try:
-        admin_addr = app_config['MAIL_DEFAULT_ADDR']
-        admin_name = app_config['MAIL_DEFAULT_SENDER']
+        admin_addr = site_config['MAIL_DEFAULT_ADDR']
+        admin_name = site_config['MAIL_DEFAULT_SENDER']
     except KeyError as e:
         mes = "MAIL Settings not found"
         mes = printException(mes,'error',e)
@@ -155,12 +155,12 @@ def email_admin(subject=None,message=None):
         Shortcut method to send a quick email to the admin
     """
     try:
-        app_config = get_app_config()
+        site_config = get_site_config()
         if subject == None:
-            subject = "An alert was sent from {}".format(app_config['SITE_NAME'])
+            subject = "An alert was sent from {}".format(site_config['SITE_NAME'])
         
         if message == None:
-            message = "An alert was sent from {} with no message...".format(app_config['SITE_NAME'])
+            message = "An alert was sent from {} with no message...".format(site_config['SITE_NAME'])
         
         return send_message(
                 None,

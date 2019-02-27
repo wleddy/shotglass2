@@ -5,7 +5,7 @@
     <div class="w3-contain">
         <div class="w3-col w3-quarter">&nbsp;</div>
 		<form class="entry w3-col w3-panel w3-card-4 w3-half"
-             action="{{ config.HOST_PROTOCOL|default('http') }}://{{config.HOST_NAME}}{{ g.loginURL }}" method="POST" enctype="multipart/form-data">
+             action="{{ site_config.HOST_PROTOCOL|default('http') }}://{{ site_config.HOST_NAME}}{{ g.loginURL }}" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="next" value="{{ next | default('',True)}}" />
 			<div>
 				<p>User Name or Email Address:</p>
@@ -17,7 +17,7 @@
                     value="{{form.password|default('',True)}}"
                     placeholder="Password" /></p>
 				<p><input class="w3-btn w3-round-large w3-primary-color" type="submit" name="login" value="Log In" />
-                    {% if config.ALLOW_USER_SIGNUP %} or <a href="{{ g.registerURL }}">Sign Up</a>{% endif %}
+                    {% if site_config.ALLOW_USER_SIGNUP %} or <a href="{{ g.registerURL }}">Sign Up</a>{% endif %}
                 </p>
             </div>
             <div style="margin-top:20pt;">

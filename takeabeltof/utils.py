@@ -34,10 +34,10 @@ def looksLikeEmailAddress(email=""):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email.strip())
     
 def printException(mes="An Unknown Error Occurred",level="error",err=None):
-    from shotglass2.shotglass import get_app_config 
+    from shotglass2.shotglass import get_site_config 
     from app import app
     
-    app_config = get_app_config()
+    site_config = get_site_config()
     
     exc_type, exc_obj, tb = sys.exc_info()
     debugMes = None
@@ -52,7 +52,7 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
         except ValueError:
             debugMes = "Could not get error location info."
             
-    if level=="error" or app_config["DEBUG"]:
+    if level=="error" or site_config["DEBUG"]:
         #always log errors
         if debugMes:
             app.logger.error(nowString() + " - " + debugMes)
@@ -60,7 +60,7 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
         if err:
             app.logger.error(nowString() + "    " + str(err))
         
-    if app_config["DEBUG"]:
+    if site_config["DEBUG"]:
         if debugMes:
             mes = mes + " -- " +debugMes
         return mes
@@ -77,16 +77,16 @@ def render_markdown_for(file_name,bp=None,**kwargs):
     (In particular, the shotglass.home.docs route depends on this fact.)
     
     """
-    from shotglass2.shotglass import get_app_config
+    from shotglass2.shotglass import get_site_config
     #import pdb;pdb.set_trace()
     
-    app_config = get_app_config()
+    site_config = get_site_config()
     
     def valid_file_path(file_path):
         """Test the file path and return true if exists, else false
         if explain is True, print a report
         """
-        explain = app_config.get('EXPLAIN_TEMPLATE_LOADING',False)
+        explain = site_config.get('EXPLAIN_TEMPLATE_LOADING',False)
         
         if os.path.isfile(file_path):
             if explain:
@@ -131,7 +131,7 @@ def render_markdown_for(file_name,bp=None,**kwargs):
         f.close()
                 
         rendered_html = render_markdown_text(rendered_html,**kwargs)
-    elif app_config['DEBUG']:
+    elif site_config['DEBUG']:
         ### TESTING Note: the test is looking for the text 'no file found' in this return.
         source_script = ''
         if bp:
@@ -152,10 +152,10 @@ def render_markdown_text(text_to_render,**kwargs):
 def handle_request_error(error=None,request=None,status=666):
     """Usually used to handle a basic request error such as a db error"""
     from shotglass2.takeabeltof.mailer import alert_admin
-    from shotglass2.shotglass import get_app_config
-    app_config = get_app_config()
+    from shotglass2.shotglass import get_site_config
+    site_config = get_site_config()
     
-    error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(app_config['SITE_NAME'],status)
+    error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(site_config['SITE_NAME'],status)
     if not error:
         error_mes += "Error message not provided"
     else:
@@ -167,8 +167,8 @@ def handle_request_error(error=None,request=None,status=666):
     printException(error_mes)
     
     try:
-        if (status == 404 and app_config['REPORT_404_ERRORS']) or status != 404:
-            alert_admin("Request error [{}] at {}".format(status,app_config['HOST_NAME']),error_mes)
+        if (status == 404 and site_config['REPORT_404_ERRORS']) or status != 404:
+            alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
     except Exception as e:
         flash(printException("An error was encountered in handle_request_error. {}".format(str(e))))
         
@@ -177,13 +177,13 @@ def handle_request_error(error=None,request=None,status=666):
         
 def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory"""
-    from shotglass2.shotglass import get_app_config
+    from shotglass2.shotglass import get_site_config
     
     path_list = kwargs.get('path_list',['static','shotglass2/static'])
     
     path = None
     
-    explain = get_app_config().get('EXPLAIN_TEMPLATE_LOADING',False)
+    explain = get_site_config().get('EXPLAIN_TEMPLATE_LOADING',False)
     
     if explain:
         print("\nSearching for {}".format(filename))

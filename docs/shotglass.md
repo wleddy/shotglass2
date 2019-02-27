@@ -3,7 +3,7 @@
 This module provides a number of basic services for the site.
 
 ---
-> #### get_app_config(*this_app=None*): => app.config
+> #### get_site_config(*this_app=None*): => app.config
 
 Returns a copy of the current app.config.
 This makes it possible for other modules to get access to the config

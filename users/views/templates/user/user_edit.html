@@ -20,7 +20,7 @@
     {% endif %}
 
     {% set extras = "" %}
-    {% if not config.ALLOW_USERNAME_CHANGE %}{% set extras = 'disabled="disabled"' %}{% endif %}
+    {% if not site_config.ALLOW_USERNAME_CHANGE %}{% set extras = 'disabled="disabled"' %}{% endif %}
     <p>{{ input_field(rec.username,"new_username",label="User Name",extras=extras) }}
     
     {% set label = 'Password <em class="w3-small">(&mdash; Optional &mdash;)</em>' %}

@@ -1,7 +1,7 @@
 <h3>Welcome {{ context.full_name }}</h3>
 
-<p>You have a new account at {{ config.SITE_NAME }}</p>
+<p>You have a new account at {{ site_config.SITE_NAME }}</p>
 
 {% if context.rec.password %}
-<p><a href="{{config.HOST_PROTOCOL}}://{{config.HOST_NAME}}{{url_for('login.login')}}">You can log in to your account with this link.</a></p>
+<p><a href="{{ site_config.HOST_PROTOCOL}}://{{ site_config.HOST_NAME}}{{url_for('login.login')}}">You can log in to your account with this link.</a></p>
 {% endif %}

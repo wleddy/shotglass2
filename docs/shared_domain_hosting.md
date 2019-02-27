@@ -18,9 +18,9 @@ to determine the settings to use. If the host name is not found or if `SHARED_HO
 used.
 
 ----------------    
-> ***IMPORTANT, use get_app_config()! *** You should not import app directly if you need to access to the site specific settings. If you do you'll get the
-> default settings. Instead import `get_app_config` and call `get_app_config()`. It returns a reference to app.config with the 
-> values for the current host. Then you can use them as `get_app_config()['SOME_SETTING']`.
+> ***IMPORTANT, use get_site_config()! *** You should not import app directly if you need to access to the site specific settings. If you do you'll get the
+> default settings. Instead import `get_site_config` and call `get_site_config()`. It returns a reference to app.config with the 
+> values for the current host. Then you can use them as `get_site_config()['SOME_SETTING']`.
 
 ----------------
 

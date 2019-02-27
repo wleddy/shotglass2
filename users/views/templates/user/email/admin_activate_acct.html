@@ -4,7 +4,7 @@
 <p>Click this link to <a href="{{context.confirmURL}}">Confirm and Activate</a></p>
 <p>Click this link to <a href="{{context.deleteURL}}">Delete this account</a></p>
 {% else %}
-<p>Someone has requested a an account at {{ config.SITE_NAME | default("you web site",True)}}</p>
+<p>Someone has requested a an account at {{ site_config.SITE_NAME | default("you web site",True)}}</p>
 <p>
     If you wish to nip this in the bud you can <a href="{{context.deleteURL}}">Delete this account</a> 
     otherwise, wait until you receive another email which will allow you to activate the account.

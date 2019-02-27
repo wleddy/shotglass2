@@ -57,6 +57,12 @@ def get_db(filespec=None):
         initalize_all_tables(g.db)
             
     return g.db
+    
+    
+@app.context_processor
+def inject_site_config():
+    # Add 'site_config' dict to template context
+    return {'site_config':shotglass.get_site_config()}
 
 
 @app.before_request
@@ -71,7 +77,7 @@ def _before():
         
     #import pdb;pdb.set_trace()
     
-    shotglass.get_app_config(app)
+    shotglass.get_site_config(app)
     shotglass.set_template_dirs(app)
     
     get_db()
