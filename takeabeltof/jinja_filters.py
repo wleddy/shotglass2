@@ -48,26 +48,21 @@ def two_decimal_string(value):
     return value
     
     
-def weblink(data,unsafe=False):
-    """Render a hyperlink for the data provided. Data is assumed to be a web address"""
+def weblink(data,safe=True,blank=True):
+    """Render a hyperlink for the data provided. Data is assumed to be a web address
+    Open in new window/tab by default
+    """
     if data:
         data = """<a href="{}">{}</a>""".format(data.strip().lower(),data.strip().replace('http://','').replace("https://",'').strip("/"))
-        if unsafe:
-            return data
-        return Markup(data) # consider "safe"
+        if blank:
+            data = data.replace(">",' target="_blank" >',1)
+        if safe:
+            return Markup(data) # consider "safe"
+        return data
         
     return ''
     
-def weblink_blank(data,unsafe=False):
-    """Same as weblink but with a target of "_blank" """
-    if data:
-        data = weblink(data,unsafe=True).replace(">",' target="_blank" >',1)
-        if unsafe:
-            return data
-        return Markup(data) # Consider "safe"
-        
-    return ''
-
+    
 def register_jinja_filters(app):
     # register the filters
     app.jinja_env.filters['short_date_string'] = short_date_string
@@ -80,4 +75,3 @@ def register_jinja_filters(app):
     app.jinja_env.filters['local_date_string'] = local_date_string
     app.jinja_env.filters['money'] = two_decimal_string
     app.jinja_env.filters['weblink'] = weblink
-    app.jinja_env.filters['weblink_blank'] = weblink_blank
