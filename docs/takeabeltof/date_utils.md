@@ -7,6 +7,25 @@ Some utilities to handle dates.
 
 Attempt to return a date string in the format specified. value may be a datetime or a 'date like' string.
 
+A number of "shortcut" formats are defined:
+
+```
+    'date':"03/04/19",
+    
+    'date_full_year': "03/04/2019",
+    
+    'time':'06:30',
+    
+    'time_long':'06:30:22',
+    
+    'ampm': 'AM' | 'PM',
+    
+    'local_time': '6:20PM',
+    
+    'iso_date': '2019-03-04'
+    
+```
+
 ---
 > #### datetime_as_string(*the_datetime=None*): => str
 
