@@ -79,6 +79,7 @@ def register_jinja_filters(app):
     # register the filters
     app.jinja_env.filters['short_date_string'] = short_date_string
     app.jinja_env.filters['short_day_and_date_string'] = short_day_and_date_string
+    app.jinja_env.filters['short_day_and_date'] = short_day_and_date_string #depricated
     app.jinja_env.filters['abbr_date_string'] = abbr_date_string
     app.jinja_env.filters['short_abbr_date_string'] = short_abbr_date_string
     app.jinja_env.filters['long_date_string'] = long_date_string
