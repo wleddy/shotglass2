@@ -168,7 +168,8 @@ def handle_request_error(error=None,request=None,status=666):
     
     try:
         if (status == 404 and site_config['REPORT_404_ERRORS']) or status != 404:
-            alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
+            if not request or 'apple-touch-icon' in request.url or 'favicon' in request.url:
+                alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
     except Exception as e:
         flash(printException("An error was encountered in handle_request_error. {}".format(str(e))))
         
