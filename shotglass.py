@@ -87,14 +87,6 @@ def make_db_path(filespec):
     return False
 
 
-# @app.errorhandler(404)
-def page_not_found(error):
-    from shotglass2.takeabeltof.utils import handle_request_error
-    handle_request_error(error,request,404)
-    g.title = "Page Not Found"
-    return render_template('404.html'), 404
-
-
 def register_users(app,subdomain=None):
     from shotglass2.users.views import user, login, role, pref
     app.register_blueprint(user.mod, subdomain=subdomain)
@@ -115,6 +107,14 @@ def register_www(app,subdomain=None):
     for key, value in routes.items():
         home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
     app.register_blueprint(home.mod, subdomain=subdomain)
+
+
+# @app.errorhandler(404)
+def page_not_found(error):
+    from shotglass2.takeabeltof.utils import handle_request_error
+    handle_request_error(error,request,404)
+    g.title = "Page Not Found"
+    return render_template('404.html'), 404
 
 
 # @app.errorhandler(500)
