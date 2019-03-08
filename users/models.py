@@ -126,16 +126,22 @@ class User(SqliteTable):
         """Return a list of users who have one or more of the roles in role_list
         Role list may be a list of role id's or it may be a namedlist of role records
         """
-        if not isinstance(role_list,list) or len(role_list)<1 and (not isinstance(role_list[0],int) or 'DataRow' not in role_list):
+        if not isinstance(role_list,list):
             raise ValueError("role_list must be a list of records or ints")
             
-        if not isinstance(role_list[0],int):
-            # must be a record list
-            temp_list = [rec.id for rec in role_list]
-            role_list = temp_list
-            
-        role_list = [str(i) for i in role_list]
-            
+        if isinstance(role_list[0],int):
+            role_list = [str(i) for i in role_list]
+        elif isinstance(role_list[0],str):
+            role_list = [i for i in role_list]
+        else:
+            try:
+                # must be a record list
+                temp_list = [rec.id for rec in role_list]
+                role_list = temp_list
+            except:
+                raise ValueError("Not an expected type")
+                return None
+                
         recs = self.select(where="id in ({})".format(','.join(role_list)))
         return recs
                 
