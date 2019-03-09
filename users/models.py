@@ -138,11 +138,12 @@ class User(SqliteTable):
                 # must be a record list
                 temp_list = [rec.id for rec in role_list]
                 role_list = temp_list
-            except:
-                raise ValueError("Not an expected type")
+            except Exception as e:
+                raise ValueError("Not an expected type. Err> {}".format(str(e)))
                 return None
                 
-        recs = self.select(where="id in ({})".format(','.join(role_list)))
+        sql= """select * from user where id in (select user_id from user_role where role_id in ({})) order by {}""".format(','.join(role_list),self.order_by_col)
+        recs = self.query(sql)
         return recs
                 
     def select(self,**kwargs):
