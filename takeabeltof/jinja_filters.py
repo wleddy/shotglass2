@@ -1,4 +1,5 @@
 from shotglass2.takeabeltof.date_utils import date_to_string
+from shotglass2.takeabeltof.utils import render_markdown_text
 from jinja2 import Markup
 
 
@@ -75,6 +76,14 @@ def weblink(data,safe=True,blank=True):
     return ''
     
     
+def render_markdown(data):
+    """Return the text as html """
+    if data:
+        return Markup(render_markdown_text(data))
+        
+    return ''
+    
+    
 def register_jinja_filters(app):
     # register the filters
     app.jinja_env.filters['short_date_string'] = short_date_string
@@ -89,3 +98,4 @@ def register_jinja_filters(app):
     app.jinja_env.filters['local_date_string'] = local_date_string
     app.jinja_env.filters['money'] = two_decimal_string
     app.jinja_env.filters['weblink'] = weblink
+    app.jinja_env.filters['render_markdown'] = render_markdown
