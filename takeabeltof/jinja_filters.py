@@ -66,6 +66,11 @@ def weblink(data,safe=True,blank=True):
     Open in new window/tab by default
     """
     if data:
+        # Ensute that this is an absolute address
+        data_parts = data.strip().partition('//')
+        if data_parts[0][:4] != 'http':
+            data = 'http://' + data.strip()
+            
         data = """<a href="{}">{}</a>""".format(data.strip().lower(),data.strip().replace('http://','').replace("https://",'').strip("/"))
         if blank:
             data = data.replace(">",' target="_blank" >',1)
