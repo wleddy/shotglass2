@@ -155,7 +155,8 @@ def handle_request_error(error=None,request=None,status=666):
     from shotglass2.shotglass import get_site_config
     site_config = get_site_config()
     error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(site_config['SITE_NAME'],status)
-        
+    import pdb;pdb.set_trace()
+    
     try:
         if not error:
             error_mes += "Error message not provided"
@@ -168,7 +169,7 @@ def handle_request_error(error=None,request=None,status=666):
         printException(error_mes)
     
         if (status == 404 and site_config['REPORT_404_ERRORS']) or status != 404:
-            if request and ('apple-touch-icon' in request.url or 'favicon' in request.url):
+            if request and 'apple-touch-icon' not in request.url and 'favicon' not in request.url:
                 alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
     except Exception as e:
         flash(printException("An error was encountered in handle_request_error. {}".format(str(e))))
