@@ -155,7 +155,6 @@ def handle_request_error(error=None,request=None,status=666):
     from shotglass2.shotglass import get_site_config
     site_config = get_site_config()
     error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(site_config['SITE_NAME'],status)
-    import pdb;pdb.set_trace()
     
     try:
         if not error:
