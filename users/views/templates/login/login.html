@@ -17,7 +17,7 @@
                     value="{{form.password|default('',True)}}"
                     placeholder="Password" /></p>
 				<p><input class="w3-btn w3-round-large w3-primary-color" type="submit" name="login" value="Log In" />
-                    {% if site_config.ALLOW_USER_SIGNUP %} or <a href="{{ g.registerURL }}">Sign Up</a>{% endif %}
+                    {% if site_config.ALLOW_USER_SIGNUP %} or <a href="{{ g.registerURL }}">Register</a>{% endif %}
                 </p>
             </div>
             <div style="margin-top:20pt;">
