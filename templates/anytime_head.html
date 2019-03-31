@@ -1,0 +1,16 @@
+<!-- Add scripts and styles for the anytime date time picker -->
+<link rel="stylesheet" href="{{ url_for('static',filename='anytime/anytime.5.2.0.css')}}" />
+<script src="{{ url_for('static',filename='anytime/anytime.5.2.0.js')}}"></script>
+<script src="{{ url_for('static',filename='anytime/anytime_extras.js')}}"></script>
+<script>
+    function addPicker(input_id,format){
+        $('#' + input_id).AnyTime_noPicker().AnyTime_picker({format: format}).focus();
+    }
+</script>
+<style>
+    .DatePickerButton{
+        border:.5pt #aaa solid;
+        padding: 1.5pt 3pt 3pt 3pt;
+    }
+</style>
+    

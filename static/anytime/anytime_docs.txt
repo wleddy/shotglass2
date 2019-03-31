@@ -1,0 +1,70 @@
+# Notes on the Anytime date-time javascript widget
+
+Developer Site: https://www.ama3.com/anytime/
+
+Basic usage:
+
+```
+   <input type="text" id="field1" size="50" value="2019-03-29 11:18:00" />
+   
+   
+   <script>
+     $("#field1").AnyTime_picker(
+       { format: "%H:%i", } );
+     </script>
+   
+```
+   
+Of course, you need to include the anytime javascript and CSS files in the page header too.
+
+Some more sample code:
+
+## On-demand date picker
+
+Only display popup when a button is clicked, else allow direct input
+
+```
+    <input type="text" id="ButtonCreationDemoInput"/>
+      <button id="ButtonCreationDemoButton">
+        <img src="calendar.png" alt="[calendar icon]"/>
+        </button>
+      <script>
+        $('#ButtonCreationDemoButton').click(
+          function(e) {
+            $('#ButtonCreationDemoInput').AnyTime_noPicker().AnyTime_picker().focus();
+            e.preventDefault();
+            } );
+        </script>
+```
+
+## Tab-over picker
+
+Only show popup when clicked else just tab through. Only problem with this one is the 
+picker appears if there is data in the input.
+
+```
+    Start cursor here: <input type="text"/>
+    Optional picker: <input type="text" id="tabOverDemoInput"/>
+    <input type="button" id="tabOverDemoClear" value="Clear"/>
+    Tab to here: <input type="text"/>
+    <script>
+      (function tabOverDemoSetup() {
+        $('#tabOverDemoInput').
+          click( function(e) { $(this).off('click').AnyTime_picker().focus(); } ).
+          keydown(
+            function(e) {
+              var key = e.keyCode || e.which;
+              if ( ( key != 16 ) && ( key != 9 ) ) { // shift, del, tab
+                $(this).off('keydown').AnyTime_picker().focus();
+                e.preventDefault();
+                }
+              } );
+        $('#tabOverDemoClear').
+          click(
+            function() {
+              $('#tabOverDemoInput').AnyTime_noPicker().val('');
+              tabOverDemoSetup();
+              } );
+        })();
+      </script>
+```
