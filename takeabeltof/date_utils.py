@@ -132,6 +132,23 @@ def getDatetimeFromString(dateString):
         '%y-%m-%d{}%H:%M'.format(timeDelimiter),
         '%y/%m/%d{}%H:%M'.format(timeDelimiter),
         '%Y/%m/%d{}%H:%M'.format(timeDelimiter),
+        
+        '%m/%d/%y{}%I:%M:%S%p'.format(timeDelimiter),
+        '%m/%d/%Y{}%I:%M:%S%p'.format(timeDelimiter),
+        '%m-%d-%y{}%I:%M:%S%p'.format(timeDelimiter),
+        '%m-%d-%Y{}%I:%M:%S%p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M:%S%p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M:%S%p'.format(timeDelimiter),
+        '%y/%m/%d{}%I:%M:%S%p'.format(timeDelimiter),
+        '%Y/%m/%d{}%I:%M:%S%p'.format(timeDelimiter),
+        '%m/%d/%y{}%I:%M%p'.format(timeDelimiter),
+        '%m/%d/%Y{}%I:%M%p'.format(timeDelimiter),
+        '%m-%d-%y{}%I:%M%p'.format(timeDelimiter),
+        '%m-%d-%Y{}%I:%M%p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M%p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M%p'.format(timeDelimiter),
+        '%y/%m/%d{}%I:%M%p'.format(timeDelimiter),
+        '%Y/%m/%d{}%I:%M%p'.format(timeDelimiter),
         ]
 
     theDate = None
