@@ -12,7 +12,7 @@
     {# {{ input_field(rec.name,"name","Your Name",req=True) }} #}
 
 {% macro input_field(value,name,label="",type="text",id=None,class="",req=False,placeholder="",default="",extras="") %}
-{% if type!="hidden"%}
+{% if type!="hidden" and label != None %}
 <label class=" w3-block {{label_color(req)}} {{label_text(req)}}">
     {{ get_label(label,name) }}
     {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}
