@@ -14,17 +14,18 @@ import os
 
 def cleanRecordID(id):
     """ return the integer version of id or else -1 """
-    if id is None:
-        return -1
     if type(id) is str: # or type(id) is unicode:
         if id.isdigit():
             # a negative number like "-1" will fail this test, which is what we want
             return int(id)
         else:
-            return -1
+            pass
             
-    #already a number 
-    return id
+    if isinstance(id,(int,float)):
+        #already a number 
+        return int(id)
+        
+    return -1
     
 def looksLikeEmailAddress(email=""):
     """Return True if str email looks like a normal email address else False"""
