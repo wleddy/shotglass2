@@ -99,7 +99,7 @@ def recover_password():
         pass
     else:
         #find the user with that email
-        rec = User(g.db).select_one(where='email = "{}"'.format(request.form['email'].strip()))
+        rec = User(g.db).select_one(where='lower(email) = lower("{}")'.format(request.form['email'].strip().lower()))
         if rec == None:
             flash("That email address could not be found in the list of users.")
         else:

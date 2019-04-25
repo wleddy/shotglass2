@@ -143,7 +143,7 @@ def edit(rec_handle=None):
             
             #update the record
             user.update(rec,request.form)
-            
+                
             # ensure these are ints
             if 'may_send_email' in rec._fields:
                 rec.may_send_email = cleanRecordID(rec.may_send_email)
@@ -403,7 +403,8 @@ def validForm(rec):
         flash("That doesn't look like a valid email address")
 
     if request.form['email'].strip() != '':
-        found = user.get(request.form['email'].strip(),include_inactive=True)
+        # always test lower case version of email
+        found = user.get(request.form['email'].strip().lower(),include_inactive=True)
         if found:
             if request.form['id'] == 'None' or found.id != int(request.form['id']):
                 goodForm = False
