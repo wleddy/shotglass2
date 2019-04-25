@@ -41,11 +41,18 @@ def delete_test_db():
         
 def test_create_test_data():
     # Populate the test database
-    f = open('shotglass2/users/views/test/test_data_create.sql','r')
-    sql = f.read()
-    f.close()
-    cur = db.cursor()
-    cur.executescript(sql)
+    try:
+        f = open('shotglass2/users/views/test/test_data_create.sql','r')
+        sql = f.read()
+        f.close()
+        cur = db.cursor()
+        cur.executescript(sql)
+        
+        assert True == True
+        
+    except:
+        assert True == False
+    
     
     
 def test_user_get():
