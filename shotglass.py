@@ -109,6 +109,11 @@ def register_www(app,subdomain=None):
     app.register_blueprint(home.mod, subdomain=subdomain)
 
 
+def register_maps(app,subdomain=None):
+    from shotglass2.mapping.views import maps
+    app.register_blueprint(maps.mod,subdomain=subdomain)
+    
+    
 # @app.errorhandler(404)
 def page_not_found(error):
     from shotglass2.takeabeltof.utils import handle_request_error

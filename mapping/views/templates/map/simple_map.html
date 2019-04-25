@@ -1,0 +1,16 @@
+{% include 'map_headers.html' %}
+<script type="text/javascript">
+    // Initialize the map
+    var map = new Map('{{ site_config.MAPBOX_PROJECT_ID }}', '{{ site_config.MAPBOX_ACCESS_TOKEN }}',"{{ target_id }}");
+</script>
+{% if marker_data['markers'] %}
+    <script type="text/javascript">
+        // Add markers
+    	map.addMarkersFromJSON('{{marker_data|tojson|safe}}','{{ url_for("map.map_error") }}');
+    </script>
+{% else %}
+    <script type="text/javascript">
+    // add an empty map...
+        
+    </script>
+{% endif %}

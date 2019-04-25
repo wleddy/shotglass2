@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ g.title }}{% endblock %}
+
+{% block head %}
+    {% include "mapHeaders.html" %}
+{% endblock head %}
+
+{% block body %}
+	<h2>{{ g.title }}</h2>
+    <h2 style="text-align:center;"><span id="display_date">Date: {{ start_date | short_date_string() }}</span> <span id="display_time"></span></h2>
+	{% if marker_data == '' %}
+		<h3>No Map Data Found.</h3>
+	{% endif %}
+		<div id="tripsMap"></div>
+        <script type="text/javascript">
+            // Initialize the map
+            var map = new JumpMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap");
+		</script>
+	{% if marker_data != '' %}
+        <script type="text/javascript">
+            // Add markers
+			map.addMarkersFromJSON('{{marker_data|tojson|safe}}','{{ url_for(".map_error") }}');
+		</script>
+	{% endif %}
+{% endblock body %}

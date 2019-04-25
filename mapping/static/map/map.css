@@ -1,0 +1,55 @@
+
+#tripsMap {
+    height: 800px;
+}
+
+#map {
+    height: 300px;
+}
+.map-popup-title,
+.map-popup-location-name,
+.map-popup-description{
+  margin-top:0 !important;
+  margin-bottom:.4em !important;
+}
+.map-popup-title{
+    font-size:1.5em;
+    line-height:.8;
+  font-weight:900;
+}
+.map-popup-location-name{
+    font-size:1.2em;
+    line-height:.8;
+    font-weight:800;
+    font-style:italic;
+}
+.map-popup-description{
+    font-weight:500;
+}
+.mapPopupTripCount {
+  font-style:italic;
+}
+
+/* style for the map marker div */
+.divIcon {
+	width:40px;
+}
+
+.divIconCount {
+	text-align:center;
+	border: 1pt solid #aaa;
+	border-radius:8px;
+	padding:2px;
+	margin:0;
+	color:black;
+	background-color:white;
+}
+
+.divIconImageContain {
+	text-align:center;
+	margin:4px 0;
+}
+
+.divIconImage {
+	width:30px;
+}
