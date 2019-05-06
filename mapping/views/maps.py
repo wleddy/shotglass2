@@ -6,7 +6,7 @@ import json
 from datetime import timedelta
 from shotglass2.takeabeltof.date_utils import getDatetimeFromString, local_datetime_now
 
-mod = Blueprint('map', __name__,template_folder='templates/map', url_prefix='/map', static_folder='../static')
+mod = Blueprint('map', __name__,template_folder='templates/map', url_prefix='/map', static_folder='static')
 
 def setExits():
     g.title = 'Maps'
@@ -50,7 +50,14 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
             
             if marker['lat'] and marker['lng']:
                 marker_data['markers'].append(marker)
-                marker_data['zoomToFit'] = True
+                # don't zoom in too close if only one point.
+                if len(marker_data['markers']) > 1:
+                    marker_data['zoomToFit'] = True
+                    marker_data['zoom'] = None
+                else:
+                    marker_data['zoomToFit'] = False
+                    marker_data['zoom'] = 16
+                    
                 popup = render_template(marker_template, point=point,**kwargs)
                 popup = escapeTemplateForJson(popup)
                 marker['popup'] = popup

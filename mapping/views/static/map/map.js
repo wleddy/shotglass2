@@ -75,7 +75,7 @@ Map.prototype = {
 				if(	data.lat != undefined && data.lng != undefined &&
 					!this.mapHasMarkerAt(data.lat,data.lng)
 					){
-					
+                        
 					var options = {};
 					var draggable = false;
 					if (data.draggable != undefined){
@@ -134,9 +134,14 @@ Map.prototype = {
 			//this.map.setZoom(initialZoom-1);
             
 
-	        if (marker_data.zoomToFit === undefined || marker_data.zoomToFit != false) {
+	        if (marker_data.zoomToFit != undefined && marker_data.zoomToFit == true) {
 					this.zoomToFitAllMarkers();
-	        } else {
+	        //} else if (marker_data.zoom != undefined && marker_data.zoom >= 0 && marker_data.zoom <= 13 ) {
+	        } else if (marker_data.zoom != undefined) {
+                this.centerOnMarker(marker)
+	            this.map.setZoom(marker_data.zoom,this.map.options);
+	        }
+            else {
 	            // Show the whole world
 				this.map.fitWorld();
 	        }				
@@ -209,6 +214,12 @@ Map.prototype = {
     zoomToFitAllMarkers: function() {
         var bounds = new L.LatLngBounds(this.geocodes);
 		this.map.fitBounds(bounds);
+    },
+    
+    centerOnMarker: function(marker) {
+      var latLngs = [ marker.getLatLng() ];
+      var markerBounds = L.latLngBounds(latLngs);
+      this.map.fitBounds(markerBounds);
     },
 	setDragFunction: function(theMarker){
 		var self = this;
