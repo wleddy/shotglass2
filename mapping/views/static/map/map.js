@@ -31,6 +31,10 @@ function Map(mapboxProjectId, mapboxAccessToken, mapDivId) {
 	
     this.geocodes = [];
     this.locations = [];
+	// Davis Bike Hall of Fame
+	//var lng = -121.74439430236818;
+	//var lat = 38.54422161206573;
+    default_location = {'lat':38.54422161206573, 'lng':-121.74439430236818}
 }
 
 Map.prototype = {
@@ -72,25 +76,45 @@ Map.prototype = {
                     title,
                     popup
                 */
-				if(	data.lat != undefined && data.lng != undefined &&
-					!this.mapHasMarkerAt(data.lat,data.lng)
-					){
-                        
-					var options = {};
-					var draggable = false;
-					if (data.draggable != undefined){
-						draggable = (data.draggable == true );
-					}
-					options.draggable = draggable;
-                    if (data.map_icon != undefined){options.icon = map_icon}
-					
-					var marker = L.marker([data.lat, data.lng],options);
+				var options = {};
+				var draggable = false;
+				if (data.draggable != undefined){
+					draggable = (data.draggable == true );
+				}
+				options.draggable = draggable;
+                if (data.map_icon != undefined){options.icon = map_icon}
+				
+                if (data.lat == null || data.lng == null || data.lat == '' || data.lng == ''){
+                    // get the current location and set this marker there...
+                    if (navigator.geolocation) {
+                        var self = this;
+                        // set the defaults first
+                        data.lat = default_location.lat;
+                        data.lng = default_location.lng;
+
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            // getCurrentPosition only works over secure connections.
+                            if (position != undefined){
+                                // Add the location
+                                data.lat = position.lat;
+                                data.lng = position.lng;
+                            } else {
+                                console.log('Did not get the position from geoloaction');
+                            }
+                        })
+                    } else {
+                        console.log("Geolocation is not supported by this browser.");
+                    }
                     
+                }
+                if (!this.mapHasMarkerAt(data.lat,data.lng)){
+                    var marker = L.marker([data.lat, data.lng],options);
+                
 					this.pushNewLocation(data,marker)
-                    
+                
 					this.setDragFunction(marker);
-					
-                    
+					// Update the location fields is provided.
+                
 					popper = "Un-named Location"
 					if (data.popup != undefined) {
 						popper = data.popup;
@@ -98,10 +122,10 @@ Map.prototype = {
 						if(data.title != undefined){
 							popper = data.title;
 						}
-					
+				
 					} // bindPopup
 					marker.bindPopup(popper);
-                    
+                
                     /*
 					if (data.divIcon != undefined){
 						var divIcon = new L.DivIcon({
@@ -113,16 +137,15 @@ Map.prototype = {
     					marker.options.icon = divIcon;
 					}
                     */
-                    
-                    
+                
+                
 					// Put the maker into the cluster layer if reqested
 					if (marker_data.cluster === true) {
 			            this.cluster.addLayer(marker);
 			        } 
 					// add the marker (layer) to the pushPinLayer LayerGroup
 					this.pushPinLayer.addLayer(marker);
-					
-				} // Have minimal Data
+                }
 					
 			} // end for: all markers created
             this.pushPinLayer.addTo(this.map)
@@ -217,9 +240,11 @@ Map.prototype = {
     },
     
     centerOnMarker: function(marker) {
-      var latLngs = [ marker.getLatLng() ];
-      var markerBounds = L.latLngBounds(latLngs);
-      this.map.fitBounds(markerBounds);
+        if (marker != undefined){
+          var latLngs = [ marker.getLatLng() ];
+          var markerBounds = L.latLngBounds(latLngs);
+          this.map.fitBounds(markerBounds);
+        }
     },
 	setDragFunction: function(theMarker){
 		var self = this;
@@ -249,6 +274,33 @@ Map.prototype = {
                 */
 			});
 		}
-	}
+	},
+
+    /**
+     * Update the location form input fields.
+     *
+     * @param latitudeFieldId
+     * @param longitudeFieldId
+     * @param latitude
+     * @param longitude
+     * @param NSheadingFieldID
+     * @param EWheadingFieldID
+     * @param NSheading
+     * @param EWheading
+     */
+
+    updateFormLocationFields: function(latitudeFieldId, longitudeFieldId, latitude, longitude, NSheadingFieldID, EWheadingFieldID, NSheading, EWheading) {
+        if (latitudeFieldId !== undefined && longitudeFieldId !== undefined) {
+			var theID = document.getElementById(latitudeFieldId);
+			if(theID != null){theID.value = latitude;}
+			theID = document.getElementById(longitudeFieldId);
+			if(theID != null){theID.value = longitude;}
+			theID = document.getElementById(NSheadingFieldID);
+			if(theID != null){theID.value = NSheading;}
+			theID = document.getElementById(EWheadingFieldID);
+			if(theID != null){theID.value = EWheading;}
+        }
+    }
+
 };
 

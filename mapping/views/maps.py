@@ -33,22 +33,25 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
     marker_data = {"markers":[]}
     marker_data["zoomToFit"] = False # can/t zoom if there are no markers.
     marker_data["cluster"] = True
-    
+        
     if map_data and isinstance(map_data,(list,dict,)):
         if not isinstance(map_data,list):
             map_data = [map_data]
             
         for point in map_data:
             marker = {}
-            marker["dragable"] = False
-            marker['map_icon'] = None
+            marker["draggable"] = point.get('draggable',False)
+            marker['map_icon'] = point.get('map_icon')
             marker['lat'] = point.get('lat')
             marker['lng'] = point.get('lng')
             marker['UID'] = point.get('UID')
             marker['title'] = point.get('title')
             marker['location_name'] = point.get('location_name')
+            # for getting lat and lng values interactively from map
+            marker['latitudeFieldId'] = point.get('latitudeFieldId')
+            marker['longitudeFieldId'] = point.get('longitudeFieldId')
             
-            if marker['lat'] and marker['lng']:
+            if (marker['lat'] and marker['lng']) or (marker['latitudeFieldId'] and marker['longitudeFieldId']):
                 marker_data['markers'].append(marker)
                 # don't zoom in too close if only one point.
                 if len(marker_data['markers']) > 1:
