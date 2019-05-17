@@ -1,7 +1,7 @@
-from shotglass2.takeabeltof.date_utils import date_to_string
+from shotglass2.takeabeltof.date_utils import date_to_string, getDatetimeFromString
 from shotglass2.takeabeltof.utils import render_markdown_text
 from jinja2 import Markup
-
+from datetime import datetime
 
 # some custom filters for templates
 def iso_date_string(value):
@@ -33,6 +33,14 @@ def long_date_string(value):
 def abbr_date_string(value):
     """Mon. Mar. 4, 2019"""
     format='%a, %b. %-d, %Y'
+    #No period after May
+    if type(value) is str:
+        # convert the string to a date first then back.
+        temp_date = getDatetimeFromString(value)
+        if temp_date and temp_date.month == 5:
+            format='%a, %b %-d, %Y'
+            value = temp_date
+        
     return date_to_string(value,format)
     
 def short_abbr_date_string(value):

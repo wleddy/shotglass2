@@ -42,3 +42,16 @@ def test_local_date_string():
     assert filters.local_date_string("2018-05-09") == "5/9/18"
     assert filters.local_date_string("05/09/18") == "5/9/18"
     assert filters.local_date_string("5/9/18") == "5/9/18"
+    
+def abbr_date_string():
+    test_date = datetime(2019,5,9)
+    assert filters.abbr_date_string(test_date) == "Thu. May 9, 2019"
+    assert filters.abbr_date_string("2018-05-09") == "Thu. May 9, 2019"
+    assert filters.abbr_date_string("05/09/18") == "Thu. May 9, 2019"
+    assert filters.abbr_date_string("5/9/18") == "Thu. May 9, 2019"
+    test_date = datetime(2019,6,9)
+    assert filters.abbr_date_string(test_date) == "Sun. Jun. 9, 2019"
+    assert filters.abbr_date_string("2019-06-09") == "Sun. Jun. 9, 2019"
+    assert filters.abbr_date_string("06/09/19") == "Sun. Jun. 9, 2019"
+    assert filters.abbr_date_string("6/9/19") == "Sun. Jun. 9, 2019"
+    
