@@ -87,7 +87,6 @@ Map.prototype = {
                 if (data.lat == null || data.lng == null || data.lat == '' || data.lng == ''){
                     // get the current location and set this marker there...
                     if (navigator.geolocation) {
-                        var self = this;
                         // set the defaults first
                         data.lat = default_location.lat;
                         data.lng = default_location.lng;
@@ -96,12 +95,12 @@ Map.prototype = {
                             // getCurrentPosition only works over secure connections.
                             if (position != undefined){
                                 // Add the location
-                                data.lat = position.lat;
-                                data.lng = position.lng;
+                                data.lat = position.coord.latitude;
+                                data.lng = position.coord.longitude;
                             } else {
                                 console.log('Did not get the position from geoloaction');
                             }
-                        })
+                        },function(err){console.log("Geolocation Failed");})
                     } else {
                         console.log("Geolocation is not supported by this browser.");
                     }
