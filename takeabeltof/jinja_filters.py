@@ -71,7 +71,9 @@ def two_decimal_string(value):
     
 def weblink(data,safe=True,blank=True):
     """Render a hyperlink for the data provided. Data is assumed to be a web address
-    Open in new window/tab by default
+    Open in new window/tab by default.
+    
+    5/28/19 - trim the displayed url to end after the tld
     """
     if data:
         # Ensute that this is an absolute address
@@ -79,7 +81,8 @@ def weblink(data,safe=True,blank=True):
         if data_parts[0][:4] != 'http':
             data = 'http://' + data.strip()
             
-        data = """<a href="{}">{}</a>""".format(data.strip().lower(),data.strip().replace('http://','').replace("https://",'').strip("/"))
+        link_text = data.strip().replace('http://','').replace("https://",'').strip("/").split('/')[0]
+        data = """<a href="{}">{}</a>""".format(data.strip().lower(),link_text)
         if blank:
             data = data.replace(">",' target="_blank" >',1)
         if safe:
