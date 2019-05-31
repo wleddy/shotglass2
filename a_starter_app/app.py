@@ -110,6 +110,10 @@ def server_error(error):
 #Register the static route
 app.add_url_rule('/static/<path:filename>','static',shotglass.static)
 
+# To use a different subdomain as asset server, use this instead
+# Direct to a specific server for static content
+#app.add_url_rule('/static/<path:filename>','static',shotglass.static,subdomain="somesubdomain")
+
 
 ## Setup the routes for users
 shotglass.register_users(app)
