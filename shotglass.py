@@ -1,5 +1,7 @@
 from flask import render_template, g, url_for, request, flash
 from flask_mail import Mail
+import logging
+from logging.handlers import RotatingFileHandler
 from shotglass2.takeabeltof.utils import send_static_file
 from shotglass2.users.models import User,Role,Pref
 from shotglass2.users.admin import Admin
@@ -223,3 +225,14 @@ def user_setup():
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
         
 
+def start_logging(app,filename="instance/log.log",maxBytes=10000,backupCount=5):
+    # initialize the log handler
+    logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
+
+    # set the log handler level
+    logHandler.setLevel(logging.INFO)
+
+    # set the app logger level
+    app.logger.setLevel(logging.INFO)
+
+    app.logger.addHandler(logHandler)    

@@ -11,6 +11,9 @@ app = Flask(__name__, instance_relative_config=True,
         static_folder=None)
 app.config.from_pyfile('site_settings.py', silent=True)
 
+@app.before_first_request
+def start_logging():
+    shotglass.start_logging(app)
 
 # work around some web servers that mess up root path
 from werkzeug.contrib.fixers import CGIRootFix

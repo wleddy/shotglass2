@@ -57,9 +57,10 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
         #always log errors
         if debugMes:
             app.logger.error(nowString() + " - " + debugMes)
-        app.logger.error(nowString() + "   " + mes)
-        if err:
-            app.logger.error(nowString() + "    " + str(err))
+        elif err:
+            app.logger.error(nowString() + " - Error: " + str(err))
+        else:
+            app.logger.error(nowString() + " - " + mes)
         
     if site_config["DEBUG"]:
         if debugMes:
