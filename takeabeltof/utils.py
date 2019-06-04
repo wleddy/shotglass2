@@ -173,7 +173,7 @@ def handle_request_error(error=None,request=None,status=666):
             if request and 'apple-touch-icon' not in request.url and 'favicon' not in request.url:
                 alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
     except Exception as e:
-        flash(printException("An error was encountered in handle_request_error. {}".format(str(e))))
+        flash(printException("An error was encountered in handle_request_error.",err=e))
         
     return error_mes # just to make it testable
         
