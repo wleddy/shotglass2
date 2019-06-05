@@ -59,8 +59,9 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
             app.logger.error(nowString() + " - " + debugMes)
         elif err:
             app.logger.error(nowString() + " - Error: " + str(err))
-        else:
-            app.logger.error(nowString() + " - " + mes)
+            
+    if mes:
+        app.logger.error(nowString() + " - " + mes)
         
     if site_config["DEBUG"]:
         if debugMes:
@@ -151,31 +152,31 @@ def render_markdown_text(text_to_render,**kwargs):
     return markdown(text_to_render)
     
     
-def handle_request_error(error=None,request=None,status=666):
+def handle_request_error(error=None,request=None):
     """Usually used to handle a basic request error such as a db error"""
     from shotglass2.takeabeltof.mailer import alert_admin
     from shotglass2.shotglass import get_site_config
     site_config = get_site_config()
-    error_mes = 'The following error was reported from {}. \nRequest status: {}\n\n'.format(site_config['SITE_NAME'],status)
-    
+    #import pdb; pdb.set_trace()
     try:
-        if not error:
-            error_mes += "Error message not provided"
+        if error:
+            mes = 'The following error was reported from {}. Request status: {} '.format(site_config['SITE_NAME'],error.code)
+            if request:
+                mes += ' - Request URL: {}'.format(request.url)
+        
+            level = 'info' if error.code == 404 else "error"
+            if (error.code == 404 and site_config['REPORT_404_ERRORS']) or error.code != 404:
+                if request and 'apple-touch-icon' not in request.url and 'favicon' not in request.url:
+                    alert_admin("Request error [{}] at {}".format(error.code,site_config['HOST_NAME']),mes)
         else:
-            error_mes += str(error)
+            mes = "Error message not provided"
         
-        if request:
-            error_mes += '\n\nRequest URL: {}'.format(request.url)
-        
-        printException(error_mes)
+        printException(mes,level=level)
     
-        if (status == 404 and site_config['REPORT_404_ERRORS']) or status != 404:
-            if request and 'apple-touch-icon' not in request.url and 'favicon' not in request.url:
-                alert_admin("Request error [{}] at {}".format(status,site_config['HOST_NAME']),error_mes)
     except Exception as e:
         flash(printException("An error was encountered in handle_request_error.",err=e))
         
-    return error_mes # just to make it testable
+    return mes # just to make it testable
         
         
 def send_static_file(filename,**kwargs):

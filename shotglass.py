@@ -119,7 +119,7 @@ def register_maps(app,subdomain=None):
 # @app.errorhandler(404)
 def page_not_found(error):
     from shotglass2.takeabeltof.utils import handle_request_error
-    handle_request_error(error,request,404)
+    handle_request_error(error,request)
     g.title = "Page Not Found"
     return render_template('404.html'), 404
 
@@ -127,7 +127,7 @@ def page_not_found(error):
 # @app.errorhandler(500)
 def server_error(error):
     from shotglass2.takeabeltof.utils import handle_request_error
-    handle_request_error(error,request,500)
+    handle_request_error(error,request)
     g.title = "Server Error"
     return render_template('500.html'), 500
 
