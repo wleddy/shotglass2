@@ -59,7 +59,7 @@ def get_site_config(this_app=None):
             # Will use the default settings
             if site_config['DEBUG']:
                 #raise ValueError("SHARED_HOST_SETTINGS could not be determined")
-             flash("Using Default SHARED_HOST_SETTINGS")
+                flash("Using Default SHARED_HOST_SETTINGS")
     
     return site_config
 
