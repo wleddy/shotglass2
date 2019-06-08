@@ -20,6 +20,8 @@ def send_message(to_address_list=None,**kwargs):
             from_sender=<name of sender> = site_config['MAIL_DEFAULT_SENDER']
             reply_to_address=<replyto address> = from_address
             reply_to_name=<name of reply to account> = from_sender
+            cc = address list for carbon copy addresses
+            bcc = address list for blind carbon copy addresses
             attachment = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
             attachments = [<list of attachment tuples>] = None
             
@@ -36,7 +38,7 @@ def send_message(to_address_list=None,**kwargs):
     body_is_html = kwargs.get('body_is_html',None)
     text_template = kwargs.get('text_template',None)
     html_template = kwargs.get('html_template',None)
-    subject_prefix = kwargs.get('subject_prefix','')
+    subject_prefix = kwargs.get('subject_prefix',site_config.get("MAIL_SUBJECT_PREFIX",''))
     attachment = kwargs.get('attachment',None)
     attachments = kwargs.get('attachments',None)
     
@@ -58,8 +60,10 @@ def send_message(to_address_list=None,**kwargs):
     from_address = kwargs.get('from_address',admin_addr)
     from_sender = kwargs.get('from_sender',admin_name)
     reply_to = kwargs.get('reply_to',from_address)
-    
-    subject = subject_prefix + ' ' +kwargs.get('subject','A message from {}'.format(from_sender))
+    cc = kwargs.get('cc',None)
+    bcc = kwargs.get('bcc',None)
+        
+    subject = subject_prefix + ' ' +kwargs.get('subject','A message from {}'.format(from_sender)).strip()
     
     if not text_template and not html_template and not body:
         mes = "No message body was specified"
@@ -108,7 +112,10 @@ def send_message(to_address_list=None,**kwargs):
             #Start a message
             msg = Message( subject,
                           sender=(from_sender, from_address),
-                          recipients=[(name, address)])
+                          recipients=[(name, address)],
+                          cc=cc,
+                          bcc=bcc,
+                          )
     
             #Get the text body verson
             if body:

@@ -21,11 +21,17 @@ MAIL_USE_SSL = True
 MAIL_USERNAME = ""
 MAIL_PASSWORD = ""
 
+MAIL_SUBJECT_PREFIX = ''
+
 MAIL_DEFAULT_SENDER = "Some Name"
 MAIL_DEFAULT_ADDR = "admin@example.com"
 
 CONTACT_NAME = MAIL_DEFAULT_SENDER
 CONTACT_EMAIL_ADDR = MAIL_DEFAULT_ADDR
+
+#Contact info for additional admins to inform
+# A list of tuples: (recipient name,recipient address)
+ADMIN_EMAILS = None #[(CONTACT_NAME,CONTACT_EMAIL_ADDR),]
 
 CC_ADMIN_ON_CONTACT = True
 ADMIN_ROLES = ['super','admin'] 

@@ -9,8 +9,8 @@ Send an email with the parameters as:
     > to_address_list=[list of tuples (recipient name,recipient address)]=None
     > 
     > If the to_address_list is not provided, mail will be sent to the admin
-    > 
-    > -- all templates must use 'context' as their only context variable
+    > All kwargs are passed to the template rendering engine for message
+    >
     > **kwargs:
     >     context = {a dictionary like object with data for rendering all emails} = {}
     >     body = <text for body of email> = None
@@ -23,6 +23,8 @@ Send an email with the parameters as:
     >     from_sender=<name of sender> = site_config['MAIL_DEFAULT_SENDER']
     >     reply_to_address=<replyto address> = from_address
     >     reply_to_name=<name of reply to account> = from_sender
+    >     cc = address list for carbon copy addresses = None
+    >     bcc = address list for blind carbon copy addresses = None
     >     
     > On completion returns a tuple of:
     >     success [True or False]
