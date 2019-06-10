@@ -39,7 +39,7 @@
 <span class="w3-tag {{ label_color(req)}} {{label_text(req)}}">{{ get_label(label,name)}}</span>
 {% endmacro %}
 
-{% macro radio_field(value,name,label="",type="radio",id=None,class="",req=False,placeholder="",default="",extras="",right=False) %}
+{% macro radio_field(value,name,label="",type="radio",id=None,class="",req=False, placeholder="",default="",extras="",right=False) %}
 {% set baseclass = 'w3-radio'%}
 {% if type == "checkbox"%}{% set baseclass = 'w3-check'%}{%endif%}
 {% set class = baseclass + " " + class %}
@@ -50,8 +50,8 @@
 {% endif%}
 {%endmacro%}
 
-{% macro checkbox_field(value,name,label="",type="checkbox",id=None,class="",req=False,placeholder="",default="",extras="") %}
-{{radio_field(value,name,label,type,id,class,req,default,extras)}}
+{% macro checkbox_field(value,name,label="",type="checkbox",id=None,class="",req=False,placeholder="",default="",extras="",right=False) %}
+{{radio_field(value,name,label,type,id,class,req,placeholder,default,extras,right)}}
 {%endmacro%}
 
 {% macro label_only(label="Label",req=False)%}
