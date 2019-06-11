@@ -4,4 +4,7 @@
 
 {% if context.rec.password %}
 <p><a href="{{ site_config.HOST_PROTOCOL}}://{{ site_config.HOST_NAME}}{{url_for('login.login')}}">You can log in to your account with this link.</a></p>
+<p>If you did not create your password yourself or have forgotten it, you can <a href="{{ site_config.HOST_PROTOCOL}}://{{ site_config.HOST_NAME}}{{url_for('login.recover_password')}}">change it</a> to something else and update the rest of your account information.</p>
+{% else %}
+<p><a href="{{ site_config.HOST_PROTOCOL}}://{{ site_config.HOST_NAME}}}/"></a>Go to the home page.</p>
 {% endif %}
