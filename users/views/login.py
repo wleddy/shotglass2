@@ -171,10 +171,16 @@ def authenticate_user(username,password,**kwargs):
     
     result = 0
     
+    #import pdb; pdb.set_trace()
+    
     rec = User(g.db).get(username,include_inactive=include_inactive)
-
-    if rec and matchPasswordToHash(password,rec.password):
-        result = 1
+    
+    if rec:
+        if not rec.password:
+            #User has no password, just login
+            result = 1
+        elif matchPasswordToHash(password,rec.password):
+            result = 1
         if rec.active != 1:
             result = -1
         if rec.active == 1 and login_on_success:
