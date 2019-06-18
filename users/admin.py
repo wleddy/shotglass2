@@ -36,13 +36,14 @@ class Admin():
         minimum_rank_required=kwargs.get('minimum_rank_required',99999999) #No one can access without a qualifiying role
         header_row = kwargs.get('header_row',False)
         roles=kwargs.get('roles',[])
+        add_to_menu = kwargs.get('add_to_menu',True)
         
         
         table_ref = table(self.db)
         if not display_name:
             display_name = table_ref.display_name
             
-        permission = {'table':table,'display_name':display_name,'url':url,'header_row':header_row,'minimum_rank_required':minimum_rank_required,'roles':roles}
+        permission = {'table':table,'display_name':display_name,'url':url,'header_row':header_row,'minimum_rank_required':minimum_rank_required,'roles':roles,'add_to_menu':add_to_menu}
         
         #test that table only has one permission
         # as of 8/22/18 it is now the responsibilty of the developer to not duplicate permissions
