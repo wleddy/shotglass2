@@ -5,6 +5,7 @@ sys.path.append('') ##get import to look in the working dir.
 import pytest
 from app import app
 import shotglass2.takeabeltof.utils as utils
+from werkzeug.exceptions import HTTPException
 
 def test_cleanRecordID():
     """Tesst the cleanRecordID utility fuction"""
@@ -63,8 +64,10 @@ def test_handle_request_error():
     #handle_request_error(error=None,request=None,level='info')
     with app.app_context():
         from shotglass2.takeabeltof.utils import handle_request_error
-        result = handle_request_error("test for error",None,200)
-        assert "test for error" in result
+        error = HTTPException()
+        error.code=404
+        result = handle_request_error(error,None)
+        assert "Request status: 404" in result
         
         
 def test_formatted_phone_number():
