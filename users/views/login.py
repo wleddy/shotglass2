@@ -23,6 +23,7 @@ def login():
     setExits()
     g.user = g.get('user',None)
     next = request.args.get('next',request.form.get('next',''))
+    get_pass=request.form.get('get_pass',False)
     
     if g.user is not None:
         #flash("Already Logged in...")
@@ -51,8 +52,11 @@ def login():
             #If not, there is no point in going on... Also, could be a bot.
             return render_template('no-cookies.html')
         
-        result = authenticate_user(request.form["userNameOrEmail"],request.form['password'])
-        if result != 0:
+        result = authenticate_user(request.form["userNameOrEmail"],request.form.get('password'))
+        if result ==2:
+            # need to get password from user
+            get_pass=True
+        elif result != 0:
             session['loginTries'] = 0
             if result == -1:
                 flash("Your account is inactive")
@@ -73,7 +77,7 @@ def login():
     if session['loginTries'] > 5:
         sleep(session['loginTries']/.8)
         
-    return render_template('login.html', form=request.form, next=next)
+    return render_template('login.html', form=request.form, next=next, get_pass=get_pass)
        
     
 @mod.route('/logout', methods=['GET'])
@@ -159,6 +163,7 @@ def authenticate_user(username,password,**kwargs):
     Check username and password in db and return:
         0 = Authentication Failed
         1 = Authentication Succeeded
+        2 = Need a password for this user
         -1 = User Inactive
         
     Optional kwargs:
@@ -179,11 +184,14 @@ def authenticate_user(username,password,**kwargs):
         if not rec.password:
             #User has no password, just login
             result = 1
+        elif not password:
+            #need a password for this user
+            result = 2
         elif matchPasswordToHash(password,rec.password):
             result = 1
         if rec.active != 1:
             result = -1
-        if rec.active == 1 and login_on_success:
+        if result == 1 and rec.active == 1 and login_on_success:
             # use rec.username if there is one
             if rec.username:
                 username = rec.username

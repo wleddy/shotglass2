@@ -8,14 +8,21 @@
              action="{{ site_config.HOST_PROTOCOL|default('http') }}://{{ site_config.HOST_NAME}}{{ g.loginURL }}" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="next" value="{{ next | default('',True)}}" />
 			<div>
+                {% if not get_pass %}
 				<p>User Name or Email Address:</p>
 				<p><input class="w3-input" type=text size=30 name="userNameOrEmail" 
                     value="{{form.userNameOrEmail|default('',True)}}"
-                    placeholder="Username or Email Address" /></p>
+                    placeholder="Username or Email Address" autofocus /></p>
+                {% else %}{# need to get the password #}
                 <p>Password:</p>
+                <input type="hidden" name="userNameOrEmail" 
+                    value="{{form.userNameOrEmail|default('',True)}}"
+                    />
+                <input type="hidden" name="get_pass" value="get_pass" />
 				<p><input class="w3-input" type=password size=30 name="password" 
                     value="{{form.password|default('',True)}}"
-                    placeholder="Password" /></p>
+                    placeholder="Password" autofocus /></p>
+                {% endif %}
 				<p><input class="w3-btn w3-round-large w3-primary-color" type="submit" name="login" value="Log In" />
                     {% if site_config.ALLOW_USER_SIGNUP %} or <a href="{{ g.registerURL }}">Register</a>{% endif %}
                 </p>
@@ -25,4 +32,5 @@
             </div>
 		</form>
     </div>
+    
 {% endblock %}
