@@ -138,6 +138,7 @@ class SqliteTable:
         If row_data.id == None, insert, else update an existing record
         
         trim_strings=False in kwargs will write to db as received. else strip strings first
+        commit=True in kwargs will commit the changes else changes are un-committed
         
         The data is re read from the db after save and row_data is updated in place so the calling methods has 
         an update version of the data.
@@ -183,6 +184,9 @@ class SqliteTable:
         # need to use a raw cursor so we can retrieve the last row inserted
         cursor = self.db.cursor()
         cursor.execute(sql,(params))
+        
+        if kwargs.get('commit',False):
+            self.db.commit()
                 
         if insert_new:
             row_id = cursor.lastrowid
