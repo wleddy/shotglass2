@@ -1,11 +1,5 @@
 ## Account Activation Complete ##
 
 Your new account at {{ site_config.SITE_NAME}} is now active.
-{% if context.rec.password == None or context.rec.password == ''%}
-You did not enter a password when you created your account so if you want to be able to manage your account
-    information, you will need to add one.
 
-You can do that by pasting this link into your web browser: {{ site_config.HOST_PROTOCOL|default('http')}}://{{ site_config.HOST_NAME}}{{ url_for('login.recover_password')}} to "Reset"" your password.
-{% else %}
 You can log into your account by pasting this link into your web browser: {{ site_config.HOST_PROTOCOL|default('http')}}://{{ site_config.HOST_NAME}}{{ url_for('login.login')}} to Log in.
-{% endif %}

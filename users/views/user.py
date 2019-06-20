@@ -246,6 +246,10 @@ def register():
         #Try to find the user record that requested registration
         rec=user.select_one(where='access_token = "{}"'.format(request.args.get('confirm','')).strip())
         if rec and rec.access_token_expires > time():
+            if site_config.get('ACTIVATE_USER_ON_CONFIRMATION',False):
+                rec.active = 1 
+                user.save(rec,commit=True)
+                
             if rec.active == 1:
                 success="active"
             else:
@@ -277,10 +281,15 @@ def register():
             set_username_from_form(rec)
             rec.access_token = get_access_token()
             rec.access_token_expires = time() + (3600 * 48)
-            
             try:
                 user.save(rec)
                 
+                # give user default roles
+                for role in site_config.get('DEFAULT_USER_ROLES',['user']):
+                    User(g.db).add_role(rec.id,role)
+            
+                g.db.commit()
+               
                 #Send confirmation email to user
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
                 to=[(full_name,rec.email)]
@@ -299,7 +308,6 @@ def register():
                 text_template = None
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
 
-                g.db.commit()
 
             except Exception as e:
                 g.db.rollback()
