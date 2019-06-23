@@ -54,6 +54,11 @@ class SqliteTable:
             id INTEGER NOT NULL PRIMARY KEY{}
             )""".format(self.table_name,definition,)
         self.db.execute(sql)
+        self.init_index()
+        
+    def init_index(self):
+        """Override in instances to create indexes as needed"""
+        pass
         
     @property
     def display_name(self):
