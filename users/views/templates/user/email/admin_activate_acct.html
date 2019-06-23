@@ -6,22 +6,29 @@
 
 {% if context.confirmURL %}
 <p>A new user account has been confirmed
-    {% if not site_config.ACTIVATE_USER_ON_CONFIRMATION %}
+    {% if not context.rec.active %}
      and needs to be activated.
     </p>
     <p>Click this link to <a href="{{context.confirmURL}}">Confirm and Activate</a>
+    {% else %}
+    and is now active on the system.
      {% endif %}
 </p>
 <p>Click this link to <a href="{{context.deleteURL}}">Delete this account</a></p>
 {% else %}
-<p>Someone has requested a an account at {{ site_config.SITE_NAME | default("you web site",True)}}</p>
+<p>Someone has requested an account at {{ site_config.SITE_NAME | default("you web site",True)}}</p>
 <p>
     If you wish to nip this in the bud you can <a href="{{context.deleteURL}}">Delete this account</a> 
 </p>
-<p>You will receive another email when the user has confirmed the account</p>
-<p>This registration request expires: {{ context.registration_exp }}</p>
+    {% if not context.rec.active %}
+    <p>You will receive another email when the user has confirmed the account</p>
+    <p>This registration request expires: {{ context.registration_exp }}</p>
+    {% endif %}
 {% endif %}
 <p>User Info:</p>
+{% if context.editURL %}
+<p>Click here to <a href="{{context.editURL}}">edit this account</a> </p>
+{% endif %}
 <table>
     <tr><th>Name</th><td>&nbsp;&nbsp;&nbsp;{{context.rec.first_name}} {{context.rec.last_name}}</td></tr>
     <tr><th>Email</th><td>&nbsp;&nbsp;&nbsp;{{context.rec.email|default('None',True)}}</td></tr>

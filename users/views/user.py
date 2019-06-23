@@ -281,6 +281,9 @@ def register():
             set_username_from_form(rec)
             rec.access_token = get_access_token()
             rec.access_token_expires = time() + (3600 * 48)
+            if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',False):
+                rec.active = 1
+                success="active"
             try:
                 user.save(rec)
                 
@@ -290,19 +293,25 @@ def register():
             
                 g.db.commit()
                
-                #Send confirmation email to user
+                #Send confirmation email to user if not already active
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
                 to=[(full_name,rec.email)]
                 context={'rec':rec,'confirmation_code':rec.access_token}
                 subject = 'Please confirm your account registration at {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/registration_confirm.html'
                 text_template = 'email/registration_confirm.txt'
+                if rec.active == 1:
+                    subject = 'Your account is now active at {}'.format(site_config['SITE_NAME'])
+                    html_template = 'email/activation_complete.html'
+                    text_template = 'email/activation_complete.txt'
+                    
                 send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
                 
                 #inform the admin
                 to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
                 deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.delete'), rec.access_token)
-                context={'rec':rec,'deleteURL':deleteURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
+                editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
+                context={'rec':rec,'deleteURL':deleteURL,'editURL':editURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
                 subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/admin_activate_acct.html'
                 text_template = None
