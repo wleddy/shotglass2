@@ -78,7 +78,8 @@ class User(SqliteTable):
         
     def add_role(self,user_id,role):
         """Add roles for the user. role param may be int or str of Role name"""
-        role_id = None
+        user_id = cleanRecordID(user_id)
+        role_id = -1
         if type(role) == str:
             rec = Role(self.db).get(role)
             if rec:
@@ -86,13 +87,8 @@ class User(SqliteTable):
         else:
             role_id = cleanRecordID(role)
             
-        user_id = cleanRecordID(user_id)
-        if user_id < 0:
-            raise ValueError("Invalid user id in User.add_role")
-        if role_id < 0:
-            raise ValueError("Invalid role in User.add_role")
-            
-        self.db.execute('insert into user_role (user_id,role_id) values (?,?)',(user_id,role_id,))
+        if user_id < 0 and role_id < 0:
+            self.db.execute('insert into user_role (user_id,role_id) values (?,?)',(user_id,role_id,))
         
     def delete(self,rec_id):
         """Delete a single user record as indicated
