@@ -87,7 +87,7 @@ class User(SqliteTable):
         else:
             role_id = cleanRecordID(role)
             
-        if user_id < 0 and role_id < 0:
+        if user_id > 0 and role_id > 0:
             self.db.execute('insert into user_role (user_id,role_id) values (?,?)',(user_id,role_id,))
         
     def delete(self,rec_id):
@@ -243,9 +243,10 @@ class User(SqliteTable):
             return False
         admin_roles = get_site_config().get('ADMIN_ROLES',['super','admin',])
         user_roles = self.get_roles(rec.id)
-        for role in user_roles:
-            if role.name in admin_roles:
-                return True
+        if user_roles:
+            for role in user_roles:
+                if role.name in admin_roles:
+                    return True
         return False
         
         

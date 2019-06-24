@@ -90,6 +90,14 @@ def test_user_get():
     #and now we can...
     rec = user.get('none',include_inactive=True)
     assert rec.username == 'none'
+    
+    # user 'none' has no roles
+    assert user.get_roles(rec.id) == None
+    
+    #add some roles for none
+    user.add_role(rec.id,'user')
+    assert user.get_roles(rec.id) != None
+    
     #ensure that username is case sensitive
     rec = user.get('doris')
     assert rec.username == 'doris'
