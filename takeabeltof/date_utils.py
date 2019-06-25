@@ -65,7 +65,8 @@ def date_to_string(value,format):
     'time_long':'%H:%M:%S',
     'ampm': '%p',
     'local_time': '%-I:%M%p',
-    'iso_date': '%Y-%m-%d'
+    'iso_date': '%Y-%m-%d',
+    'iso_date_tz': '%Y-%m-%d %H:%M:%S%z',
     }
     
     #try to find the format in the dict

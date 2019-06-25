@@ -24,6 +24,8 @@ A number of "shortcut" formats are defined:
     
     'iso_date': '2019-03-04'
     
+    'iso_date_tz': '2019-03-04 16:04:02-7:00'
+    
 ```
 
 ---
