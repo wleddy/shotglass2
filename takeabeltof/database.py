@@ -259,7 +259,7 @@ class SqliteTable:
             
     def get(self,id,**kwargs):
         """Return a single namedlist for the ID or None"""
-        return self._single_row(self.select(where='id = {}'.format(cleanRecordID(id),)))
+        return self._single_row(self.select(where='{}.id = {}'.format(self.table_name,cleanRecordID(id),)))
         
     def _single_row(self,rows):
         """Return the first element of list rows or else None"""        
