@@ -90,6 +90,7 @@ class SqliteTable:
         Return True or False"""
         
         #import pdb;pdb.set_trace()
+        id = cleanRecordID(id)
         row = self.get(id,**kwargs)
         if row:
             self.db.execute('delete from {} where id = ?'.format(self.table_name),(id,))
@@ -153,10 +154,21 @@ class SqliteTable:
         """
         
         def get_params(row_data):
+            """Get the values for the fields in this table that are included in row_data.
+            
+            Ignore elements of row_data where row_data contains values that are not part of this table
+            such as when a join was used in the query.
+            
+            """
             params = ()
-            for x in range(1,len(row_data)):
-                params += (row_data[x],)
-            return params
+            fields = () # the fields from this table that are included in the row_data
+            cols = self.get_column_names()
+            #import pdb;pdb.set_trace()
+            for x in range(1,len(cols)):
+                if cols[x] in row_data._fields:
+                    params += (row_data[row_data._fields.index(cols[x])],)
+                    fields += (cols[x],)
+            return params, fields
             
         strip_strings = kwargs.get('strip_strings',True) # Strip by default
         if strip_strings == True:
@@ -170,21 +182,21 @@ class SqliteTable:
         if (row_data.id == None):
             insert_new = True
             self.set_defaults(row_data)
-            params = get_params(row_data)
+            params, fields = get_params(row_data)
             
             sql = 'insert into {} ({}) values ({})'.format(
                 self.table_name,
-                ",".join([row_data._fields[x] for x in range(1,len(row_data))]),
-                ','.join(["?" for x in range(1,len(row_data))])
+                ",".join([fields[x] for x in range(len(fields))]),
+                ','.join(["?" for x in range(len(fields))])
             )
         else:
-            params = get_params(row_data)
-            
+            params, fields = get_params(row_data)
+            #import pdb;pdb.set_trace()
             sql = 'update {} set {} where id = ?'.format(
                 self.table_name,
-                ",".join(["{} = ?".format(row_data._fields[x]) for x in range(1,len(row_data))])
+                ",".join(["{} = ?".format(fields[x]) for x in range(len(fields))])
             )
-            params +=(row_data.id,)
+            params +=(row_data.id,) # id to use in update where clause
                     
         # need to use a raw cursor so we can retrieve the last row inserted
         cursor = self.db.cursor()
@@ -205,8 +217,10 @@ class SqliteTable:
             raise TypeError
             #pass # Should really do something with this bit of infomation
         else:
+            # upddate row_data with any values that may have changed
             for x in range(1,len(row_data)):
-                row_data[x] = temp_row[x]
+                if row_data._fields[x] in temp_row.keys():
+                    row_data[x] = temp_row[row_data._fields[x]]
             
         row_data.id = row_id
                     
@@ -217,7 +231,7 @@ class SqliteTable:
         if row_data.id == None and len(self.defaults) > 0:
             row_dict = row_data._asdict()
             for key, value in self.defaults.items():
-                if row_dict[key] == None:
+                if key in row_dict and row_dict[key] == None:
                     row_data._update({key:value})
         
     def _select_sql(self,**kwargs):
@@ -278,6 +292,7 @@ class SqliteTable:
         
         Optionally can save the rec (but not committed) after update
         """
+        #import pdb;pdb.set_trace()
         for key,value in rec._asdict().items():
             if key != 'id' and key in form:
                 rec._update([(key,form[key])])
