@@ -73,4 +73,8 @@ def test_getDatetimeFromString():
     assert dates.getDatetimeFromString("12/14/2012") == dates.make_tz_aware(datetime(2012,12,14),site_config["TIME_ZONE"])
     assert dates.getDatetimeFromString("2/8/19") == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
     assert dates.getDatetimeFromString("2/8/51") == dates.make_tz_aware(datetime(1951,2,8),site_config["TIME_ZONE"])
-  
+    
+    #test what happens when you pass in a date time
+    assert dates.getDatetimeFromString(datetime(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
+    assert dates.getDatetimeFromString(datetime(2019,2,8,6,33,00)) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),site_config["TIME_ZONE"])
+    

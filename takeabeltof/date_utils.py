@@ -100,6 +100,9 @@ def getDatetimeFromString(dateString):
     """
     if type(dateString) is str: # or type(dateString) is unicode:
         pass
+    elif type(dateString) is datetime:
+        #already a datetime. just make sure it's timezone aware
+        return timezone(get_time_zone_setting()).localize(dateString)
     else:
         return None
 
