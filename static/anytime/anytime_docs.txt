@@ -14,7 +14,50 @@ Basic usage:
      </script>
    
 ```
-   
+
+## Formats
+string specifying the date/time format. The following format specifiers are recognized:
+specifier	meaning
+
+```
+    %a	Abbreviated weekday name (Sun...Sat)
+    %B	Abbreviation for Before Common Era (if year<1)*
+    %b	Abbreviated month name (Jan...Dec)
+    %C	Abbreviation for Common Era (if year>=1)*
+    %c	Month, numeric (1..12)
+    %D	Day of the month with English suffix (1st, 2nd, ...)
+    %d	Day of the month, numeric (00...31)
+    %E	Era abbreviation*
+    %e	Day of the month, numeric (0...31)
+    %H	Hour (00...23)
+    %h	Hour (01...12)
+    %I	Hour (01...12)
+    %i	Minutes, numeric (00...59)
+    %k	Hour (0...23)
+    %l	Hour (1...12)
+    %M	Month name (January...December)
+    %m	Month, numeric (01...12)
+    %p	AM or PM
+    %r	Time, 12-hour (hh:mm:ss followed by AM or PM)
+    %S	Seconds (00...59)
+    %s	Seconds (00...59)
+    %T	Time, 24-hour (hh:mm:ss)
+    %W	Weekday name (Sunday...Saturday)
+    %w	Day of the week (0=Sunday...6=Saturday)
+    %Y	Year, numeric, four digits (possibly signed)
+    %y	Year, numeric, two digits (possibly signed)
+    %Z	Year, numeric, four digits (no sign)*
+    %z	Year, numeric, variable length (no sign)*
+    %#	Signed UTC offset in minutes*
+    %+	Signed UTC offset in %h%i format*
+    %-	Signed UTC offset in %l%i format*
+    %:	Signed UTC offset in %h:%i format*
+    %;	Signed UTC offset in %l:%i format*
+    %@	UTC offset time zone label*
+    %%	A literal % character
+```
+
+The default format is "%Y-%m-%d %T".
 Of course, you need to include the anytime javascript and CSS files in the page header too.
 
 Some more sample code:
