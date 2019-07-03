@@ -22,6 +22,16 @@ def test_short_date_string():
     assert filters.short_date_string("2018-05-09") == "05/09/18"
     assert filters.short_date_string("05/09/18") == "05/09/18"
 
+def test_short_day_and_date_string():
+    test_date = datetime(2018,5,9,6,33,15)
+    assert filters.short_day_and_date_string(test_date) == "Wed. 5/9/18"
+
+def test_short_day_and_date_and_time_string():
+    test_date = datetime(2018,5,9,6,33,15)
+    assert filters.short_day_and_date_and_time_string(test_date) == "Wed. 5/9/18 6:33AM"
+    test_date = datetime(2018,5,9,14,33,15)
+    assert filters.short_day_and_date_and_time_string(test_date) == "Wed. 5/9/18 2:33PM"
+    
 
 def test_long_date_string():
     test_date = datetime(2018,5,9)
