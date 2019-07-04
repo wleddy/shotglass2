@@ -19,6 +19,13 @@ def local_date_string(value):
     """3/1/19"""
     format='%-m/%-d/%y'
     return date_to_string(value,format)
+    
+    
+def local_date_and_time_string(value):
+    """3/1/19 6:33AM"""
+    format='%-m/%-d/%y %-I:%M%p'
+    return date_to_string(value,format)
+
 
 def short_day_and_date_string(value):
     """Mon. 3/4/19"""
@@ -119,6 +126,7 @@ def register_jinja_filters(app):
     app.jinja_env.filters['iso_date_string'] = iso_date_string
     app.jinja_env.filters['local_time_string'] = local_time_string
     app.jinja_env.filters['local_date_string'] = local_date_string
+    app.jinja_env.filters['local_date_and_time_string'] = local_date_and_time_string
     app.jinja_env.filters['money'] = two_decimal_string
     app.jinja_env.filters['weblink'] = weblink
     app.jinja_env.filters['render_markdown'] = render_markdown
