@@ -37,6 +37,9 @@ class SqliteTable:
         self.defaults = {}
         self._display_name = None #use to override the name display
         self.use_slots = True #Set to False to allow adding temporary fields to the list at runtime
+        # self.indexes is a dictionary of <index name>:<index field defs>
+        #   So, to create an index provide something like {"my_index":"contact_id, contact_name"}
+        self.indexes = {}
         
     def commit(self):
         """A convenience to be able to call commit on the database from a table object"""
@@ -57,8 +60,9 @@ class SqliteTable:
         self.init_index()
         
     def init_index(self):
-        """Override in instances to create indexes as needed"""
-        pass
+        for index_name,index_ref in self.indexes.items():
+            self.db.execute("DROP INDEX IF EXISTS {}".format(index_name))
+            self.db.execute("CREATE INDEX {} ON {}({})".format(index_name,self.table_name,index_ref))
         
     @property
     def display_name(self):
