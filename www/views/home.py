@@ -27,9 +27,9 @@ def get_default_routes():
 
 
 def setExits():
-    g.homeURL = url_for('.home')
-    g.aboutURL = url_for('.about')
-    g.contactURL = url_for('.contact')
+    g.homeURL = url_for('www.home')
+    g.aboutURL = url_for('www.about')
+    g.contactURL = url_for('www.contact')
     g.title = 'Home'
 
 #@mod.route('/')
