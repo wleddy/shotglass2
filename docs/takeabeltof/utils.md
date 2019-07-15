@@ -15,7 +15,6 @@ Log an error and return `mes` with optional debug information. Usually I call th
 
 `flash(printException("some message",err=e))` where e is the Exception class if there is one.
 
-> _TODO:_ as of Dec. 2108, it does not actually log anything. Need to fix that.
 
 ---
 > #### render_markdown_for(*file_name,bp=None,**kwargs*): => str or None
