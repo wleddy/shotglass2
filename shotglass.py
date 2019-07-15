@@ -225,7 +225,7 @@ def user_setup():
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
         
 
-def start_logging(app,filename="instance/log.log",maxBytes=10000,backupCount=5):
+def start_logging(app,filename="instance/log.log",maxBytes=100000,backupCount=5):
     # initialize the log handler
     logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
 
