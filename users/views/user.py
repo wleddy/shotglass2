@@ -4,11 +4,12 @@ from flask import request, session, g, redirect, url_for, abort, \
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
+from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.users.models import User, Role
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.views.login import setUserStatus
 from shotglass2.users.views.password import getPasswordHash
-from shotglass2.users.admin import login_required, table_access_required
+
 from time import time
 
 
@@ -85,6 +86,7 @@ def edit(rec_handle=None):
     user_roles = ['user'] # default
     roles = Role(g.db).select()
     include_inactive = True
+    next = request.form.get('next',request.args.get('next',''))
     
     if not is_admin:
         g.listURL = g.homeURL # Non admins can't see the list
@@ -212,9 +214,11 @@ def edit(rec_handle=None):
             confirm_password = request.form.get('confirm_password','')
 
     # display form
-    return render_template('user_edit.html', rec=rec, 
+    return render_template('user_edit.html', 
+        rec=rec, 
         no_delete=no_delete, 
-        is_admin=is_admin, 
+        is_admin=is_admin,
+        next=next,
         user_roles=user_roles, 
         roles=roles,
         session_roles=session_roles,
@@ -240,7 +244,8 @@ def register():
     roles=None
     no_delete=True
     success=True
-    help = render_markdown_for("new_account_help.md",mod)        
+    help = render_markdown_for("new_account_help.md",mod)  
+    next = request.form.get('next',request.args.get('next',''))     
     
     if 'confirm' in request.args:
         #Try to find the user record that requested registration
@@ -249,6 +254,8 @@ def register():
             if site_config.get('ACTIVATE_USER_ON_CONFIRMATION',False):
                 rec.active = 1 
                 user.save(rec,commit=True)
+                # log the user in
+                setUserStatus(rec.email,rec.id)
                 
             if rec.active == 1:
                 success="active"
@@ -265,7 +272,7 @@ def register():
             text_template = None
             send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
             
-            return render_template('registration_success.html',success=success)
+            return render_template('registration_success.html',success=success,next=next)
         else:
             flash("That registration request has expired")
             return redirect('/')
@@ -292,7 +299,9 @@ def register():
                     User(g.db).add_role(rec.id,role)
             
                 g.db.commit()
-               
+                # log the user in
+                setUserStatus(rec.email,rec.id)
+                
                 #Send confirmation email to user if not already active
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
                 to=[(full_name,rec.email)]
@@ -329,13 +338,18 @@ def register():
                 send_message(to,context=context,body=body,subject=mes)
                 success = False
             
-            return render_template('registration_success.html',success=success)
+            return render_template('registration_success.html',success=success,next=next,)
         else:
             #validation failed
             user.update(rec,request.form)
             
-    return render_template('user_edit.html', rec=rec, no_delete=no_delete, is_admin=is_admin, user_roles=user_roles, roles=roles, help=help)
-
+    return render_template('user_edit.html',
+        rec=rec, 
+        no_delete=no_delete, 
+        is_admin=is_admin,
+        next=next,
+        )
+        
 
 @mod.route('/activate/', methods=['GET'])
 @table_access_required(User)

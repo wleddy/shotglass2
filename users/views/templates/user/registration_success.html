@@ -7,7 +7,13 @@
 {% if success == 'active' %}
     <h3>Signup Successful</h3>
     <h3>Your account is now active.</h3>
-    <p>Your account is now ready to use. You may <a href="{{url_for('login.login')}}">log in</a> here.</p>
+    <p>Your account is now ready to use. 
+        {% if g.user %}
+        You are logged in. <a href="{{next | default(url_for('signup.home')) }}">Continue</a>
+        {% else %}
+        You may <a href="{{url_for('login.login')}}">log in</a> here.
+        {% endif %}
+    </p>
 {% elif success == 'waiting' %}
     <h3>Your account is awaiting activation</h3>
     <p>Thank you for confirming your email address. Your account is now awaiting activation by the site administrator. This should be completed within a day or so.</p>

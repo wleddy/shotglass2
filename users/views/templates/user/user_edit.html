@@ -3,8 +3,10 @@
 {% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
 
 {% block fieldset %}
+{% if next %}{% set next_loc = next %}{% else %}{% set next_loc = '' %}{% endif %}
 <fieldset>
     <p>{{ input_field(rec.id,"id",type="hidden",default=0) }}</p>
+    <p>{{ input_field(next_loc,"next",type="hidden") }}</p>
     <p>{{ input_field(rec.first_name,"first_name",label="First Name*",req=True) }}</p>
     <p>{{ input_field(rec.last_name,"last_name",label="Last Name*",req=True) }}</p>
     <p>{{ input_field(rec.email,"email",label="Email*",req=True, type="email") }}
