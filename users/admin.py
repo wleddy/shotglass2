@@ -36,6 +36,8 @@ class Admin():
         minimum_rank_required=kwargs.get('minimum_rank_required',99999999) #No one can access without a qualifiying role
         header_row = kwargs.get('header_row',False)
         roles=kwargs.get('roles',[])
+        if roles:
+            roles = [x.lower() for x in roles ]
         add_to_menu = kwargs.get('add_to_menu',True)
         
         
@@ -86,7 +88,7 @@ class Admin():
             
         for role in user_roles:
             for list_item in temp_list:
-                if role.name in list_item['roles']:
+                if role.name.lower() in list_item['roles']:
                     return True
                 if list_item['minimum_rank_required'] <= role.rank:
                     return True
