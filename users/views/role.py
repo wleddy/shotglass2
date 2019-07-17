@@ -67,9 +67,7 @@ def edit(rec_id=None):
         if validForm(rec):
             #update the record
             role.update(rec,request.form)
-            # make names lower case
-            rec.name=request.form['name'].lower().strip()
-                        
+
             try:
                 role.save(rec)
                 g.db.commit()
