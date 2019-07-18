@@ -1,6 +1,6 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
-from shotglass2.users.models import Role
+from shotglass2.users.models import Role, User
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
 
@@ -34,13 +34,12 @@ def edit(rec_id=None):
 
     role = Role(g.db)
     rec = None
+    super_user = User(g.db).user_has_role(session['user_id'],'Super')
     
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-        
-    rec_id = cleanRecordID(rec_id)
+    rec_id = cleanRecordID(request.form.get('id',rec_id))
+    
     #import pdb;pdb.set_trace
-
+    
     if rec_id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
@@ -67,7 +66,7 @@ def edit(rec_id=None):
         if validForm(rec):
             #update the record
             role.update(rec,request.form)
-
+            
             try:
                 role.save(rec)
                 g.db.commit()
@@ -82,7 +81,7 @@ def edit(rec_id=None):
             pass
 
     # display form
-    return render_template('role_edit.html', rec=rec)
+    return render_template('role_edit.html', rec=rec,super_user=super_user,)
     
 
 @mod.route('/delete/', methods=['GET','POST'])

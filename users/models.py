@@ -8,7 +8,7 @@ class Role(SqliteTable):
         super().__init__(db_connection)
         self.table_name = 'role'
         self.order_by_col = 'lower(name)'
-        self.defaults = {'rank':0,}
+        self.defaults = {'rank':0,'lock':0}
         
     def create_table(self):
         """Define and create the role tablel"""
@@ -16,6 +16,7 @@ class Role(SqliteTable):
         sql = """
             'name' TEXT UNIQUE NOT NULL,
             'description' TEXT,
+            'locked' INTEGER DEFAULT 0,
             'rank' INTEGER DEFAULT 0 """
         super().create_table(sql)
         
@@ -35,11 +36,11 @@ class Role(SqliteTable):
         rec = self.db.execute('select * from {}'.format(self.table_name)).fetchone()
         if not rec:
             roles = [
-                (None,'super','Super User',1000),
-                (None,'admin','Admin User',500),
-                (None,'user','Normal user',1),
+                (None,'super','Super User',1,1000),
+                (None,'admin','Admin User',1,500),
+                (None,'user','Normal user',1,1),
             ]
-            self.db.executemany("insert into {} values (?,?,?,?)".format(self.table_name),roles)
+            self.db.executemany("insert into {} values (?,?,?,?,?)".format(self.table_name),roles)
             self.db.commit()
 
 
@@ -132,6 +133,27 @@ class User(SqliteTable):
                 """.format(order_by)
                 
         return  Role(self.db).rows_to_namedlist(self.db.execute(sql,(cleanRecordID(userID),)).fetchall())
+        
+    def user_has_role(self,user_id,role_names):
+        """Return True if user has the role role_name else False
+         role_names may be a string or a list
+        """
+        if not role_names:
+            return False
+            
+        if type(role_names) is not list:
+            role_names = [role_names] # make list
+            
+        role_names = [x.lower() for x in role_names] #make lower
+        
+        roles = self.get_roles(user_id)
+        if roles:
+            role_name_list = [x.name.lower() for x in roles ]
+            for this_role in role_names:
+                if this_role in role_name_list:
+                    return True
+        
+        return False
         
     def get_with_roles(self,role_list):
         """Return a list of users who have one or more of the roles in role_list

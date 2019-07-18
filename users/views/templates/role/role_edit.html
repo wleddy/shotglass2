@@ -5,8 +5,22 @@
 {% block fieldset %}
 <fieldset>
     <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
-    <p>{{ input_field(rec.name,"name",req=True)}}</p>
-    <p>{{ input_field(rec.rank,"rank",req=True)}}</p>
+    {% set is_locked = '' %}
+    {% if rec.locked | int == 1 %}
+        {% set is_locked = ' checked="checked" ' %}
+     {% endif %}
+     {% if not super_user %}
+        {% set is_locked = is_locked + ' disabled="disabled" ' %}
+    {% endif %}
+    <p>{{ checkbox_field(1,"locked", label="Locked for system use", extras=is_locked)}}</p>
+    {% if super_user or not rec.locked | int == 1 %}
+        {% set extras = '' %}
+    {% else %}
+        {% set extras = 'readonly="readonly"' %}
+        <p class="w3-text-grey">Name and Rank are locked for system use.</p>
+    {% endif %}
+    <p>{{ input_field(rec.name,"name",req=True, extras=extras)}}</p>
+    <p>{{ input_field(rec.rank,"rank",req=True, extras=extras)}}</p>
     <p>{{ input_field(rec.description,"description")}}</p>
 </fieldset>
 {% endblock %}
