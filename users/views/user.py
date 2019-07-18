@@ -22,7 +22,7 @@ def setExits():
     g.editURL = url_for('.edit')
     g.registerURL = url_for('.register')
     g.deleteURL = url_for('.delete')
-    g.homeURL = url_for('.home')
+    g.homeURL = '/'
     g.title = 'User'
 
 @mod.route('/')
