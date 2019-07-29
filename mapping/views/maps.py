@@ -30,11 +30,14 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
     if not marker_template:
         marker_template = 'default_popup.html'
             
-    marker_data = {"markers":[]}
-    marker_data["zoomToFit"] = False # can/t zoom if there are no markers.
-    marker_data["cluster"] = True
-        
+    marker_data = None
+    
     if map_data and isinstance(map_data,(list,dict,)):
+            
+        marker_data = {"markers":[]}
+        marker_data["zoomToFit"] = False # can/t zoom if there are no markers.
+        marker_data["cluster"] = True
+        
         if not isinstance(map_data,list):
             map_data = [map_data]
             
