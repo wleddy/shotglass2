@@ -1,8 +1,11 @@
 {% include 'map_headers.html' %}
-
+<script src="https://api.mqcdn.com/sdk/place-search-js/v1.0.0/place-search.js"></script>
+<link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/place-search-js/v1.0.0/place-search.css"/>
+<script>
+    $(document).ready(function(){
+    
 {% if  not marker_data['markers'] %}
     {# A simple map#}
-    <script>
       var map = L.map('map').setView([40.91, -96.63], 4);
 
       L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={{ site_config.MAPBOX_ACCESS_TOKEN }}', {
@@ -12,17 +15,12 @@
           id: '{{ site_config.MAPBOX_PROJECT_ID }}',
           accessToken: '{{ site_config.MAPBOX_ACCESS_TOKEN }}'
       }).addTo(map);
-    </script>
       
 {% if search_field_id %}
     {# a map with a search field #}
     {# See: https://developer.mapquest.com/documentation/place-search-js/v1.0/examples/map-the-results/ #}
     
-    <script src="https://api.mqcdn.com/sdk/place-search-js/v1.0.0/place-search.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/place-search-js/v1.0.0/place-search.css"/>
         
-    <script type="text/javascript">
-      window.onload = function() {
         let ps = placeSearch({
           key: '{{ site_config["MAPQUEST_ACCESS_KEY"] }}',
           container: document.querySelector('#{{ search_field_id }}'),
@@ -47,7 +45,7 @@
                  markers = [marker];
                  marker.setOpacity(1);
                  marker.bindPopup(e.result.name);
-                 map.setView(e.result.latlng, 19);
+                 map.setView(e.result.latlng, 17);
                  // move the map to the top so map controls will work
                  //. The results overlay is on top of map even when empty
                  $('#map').css('z-index',2000);
@@ -146,18 +144,15 @@
      			if(theID != null){theID.value = EWheading;}
              }
          }
-      }
-    </script>
-    {% endif %}{# search_field_id #}
+      
+      {% endif %}{# search_field_id #}
     
 {% else %}
-    {# map from jason data #}
-    <script type="text/javascript">
-        $('window').load(
-            // Initialize the map
-            var map = new Map('{{ site_config.MAPBOX_PROJECT_ID }}', '{{ site_config.MAPBOX_ACCESS_TOKEN }}',"{{ target_id }}");
-            // Add markers
-        	map.addMarkersFromJSON('{{marker_data|tojson|safe}}','{{ url_for("map.map_error") }}');
-        )
-    </script>
+    {# map from json data #}
+    // Initialize the map
+    var map = new Map('{{ site_config.MAPBOX_PROJECT_ID }}', '{{ site_config.MAPBOX_ACCESS_TOKEN }}',"{{ target_id }}");
+    // Add markers
+	map.addMarkersFromJSON('{{marker_data|tojson|safe}}','{{ url_for("map.map_error") }}');
+        
 {% endif %}
+})</script>
