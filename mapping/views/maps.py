@@ -16,14 +16,16 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
     param: map_data, a list of dicts of:
         lat: Latitude
         lng: What do you think?
-    optional data;
-        UID: unique identifier for the point.
-        location_name,
-        title: The title for the marker
-        description: a description, may be markdown
+        optional data;
+            UID: unique identifier for the point.
+            location_name,
+            title: The title for the marker
+            description: a description, may be markdown
         
     param: target_id = optional id of html object that will hold the map. defaults to "map"
     param: marker_template = The path to the template to use to render the marker popup. Defaults to None
+    kwargs:
+        search_field_id = The id of the search field if specified
     
     Returns the javascript text and data to embed into a page, not the page itself.
     """
@@ -31,6 +33,7 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
         marker_template = 'default_popup.html'
             
     marker_data = None
+    search_field_id = kwargs.get('search_field_id')
     
     if map_data and isinstance(map_data,(list,dict,)):
             
@@ -68,7 +71,11 @@ def simple_map(map_data,target_id="map",marker_template=None,**kwargs):
                 popup = escapeTemplateForJson(popup)
                 marker['popup'] = popup
     
-    return render_template('simple_map.html',marker_data=marker_data,target_id=target_id)
+    return render_template('simple_map.html',
+            marker_data=marker_data,
+            target_id=target_id,
+            search_field_id=search_field_id,
+            )
     
     
 @mod.route('/time_lapse', methods=['GET'])
