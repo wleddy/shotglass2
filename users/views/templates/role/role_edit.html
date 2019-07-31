@@ -4,23 +4,25 @@
 
 {% block fieldset %}
 <fieldset>
-    <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
     {% set is_locked = '' %}
+    {% set extras = '' %}
     {% if rec.locked | int == 1 %}
         {% set is_locked = ' checked="checked" ' %}
-     {% endif %}
-     {% if not super_user %}
-        {% set is_locked = is_locked + ' disabled="disabled" ' %}
-    {% endif %}
-    <p>{{ checkbox_field(1,"locked", label="Locked for system use", extras=is_locked)}}</p>
-    {% if super_user or not rec.locked | int == 1 %}
-        {% set extras = '' %}
-    {% else %}
         {% set extras = 'readonly="readonly"' %}
-        <p class="w3-text-grey">Name and Rank are locked for system use.</p>
+    {% endif %}
+    
+    <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
+     {% if not super_user %}
+         {{ input_field(rec.locked,"locked",type="hidden",default=0)}}
+         {% if is_locked %}
+         <p>{{ label_only("This Role is locked for system use. Requires Super user access.")}}</p>
+         {% endif %}
+    {% else %}
+        <p>{{ checkbox_field(1,"locked", label="Lock for system use.", extras=is_locked)}}</p>
+        {% set extras = '' %}
     {% endif %}
     <p>{{ input_field(rec.name,"name",req=True, extras=extras)}}</p>
     <p>{{ input_field(rec.rank,"rank",req=True, extras=extras)}}</p>
-    <p>{{ input_field(rec.description,"description")}}</p>
+    <p>{{ input_field(rec.description,"description", extras=extras)}}</p>
 </fieldset>
 {% endblock %}

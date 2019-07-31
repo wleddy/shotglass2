@@ -55,7 +55,6 @@ def edit(rec_id=None):
                 return redirect(g.listURL)
     else:
         #have the request form
-        #import pdb;pdb.set_trace()
         if rec_id and request.form['id'] != 'None':
             rec = role.get(rec_id)
         else:
@@ -65,7 +64,10 @@ def edit(rec_id=None):
 
         if validForm(rec):
             #update the record
+            #import pdb;pdb.set_trace()
             role.update(rec,request.form)
+            # locked is a checkbox
+            rec.locked = request.form.get('locked',0)
             
             try:
                 role.save(rec)
@@ -81,7 +83,7 @@ def edit(rec_id=None):
             pass
 
     # display form
-    return render_template('role_edit.html', rec=rec,super_user=super_user,)
+    return render_template('role_edit.html', rec=rec,super_user=super_user,no_delete=not super_user)
     
 
 @mod.route('/delete/', methods=['GET','POST'])
