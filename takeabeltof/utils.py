@@ -158,23 +158,34 @@ def handle_request_error(error=None,request=None):
     from shotglass2.shotglass import get_site_config
     site_config = get_site_config()
     #import pdb; pdb.set_trace()
+    mes = "An unknown error occured"
+    level = "error"
+    request_url = "No URL supplied"
+    if request and hasattr(request,'url'):
+        request_url = request.url
+        
     try:
         if error:
-            mes = 'The following error was reported from {}. Request status: {} '.format(site_config['SITE_NAME'],error.code)
-            if request:
-                mes += ' - Request URL: {}'.format(request.url)
+            if hasattr(error,'code'):
+                mes = 'The following error was reported from {}. Request status: {} '.format(site_config['SITE_NAME'],error.code)
+                if request:
+                    mes += ' - Request URL: {}'.format(request_url)
         
-            level = 'info' if error.code == 404 else "error"
-            if (error.code == 404 and site_config['REPORT_404_ERRORS']) or error.code != 404:
-                if request and 'apple-touch-icon' not in request.url and 'favicon' not in request.url:
-                    alert_admin("Request error [{}] at {}".format(error.code,site_config['HOST_NAME']),mes)
+                level = 'info' if error.code == 404 else "error"
+                if (error.code == 404 and site_config['REPORT_404_ERRORS']) or error.code != 404:
+                    if request and 'apple-touch-icon' not in request_url and 'favicon' not in request_url:
+                        alert_admin("Request error [{}] at {}".format(error.code,site_config['HOST_NAME']),mes)
+                        printException(mes,level=level,err=error)
+            else:
+                temp_mes = str(error)
+                mes = printException("The following error occured: {} during request for {}".format(temp_mes,request_url),level=level,err=error)
+                alert_admin("System error from {}".format(site_config['SITE_NAME']),mes)
         else:
             mes = "Error message not provided"
         
-        printException(mes,level=level)
     
     except Exception as e:
-        flash(printException("An error was encountered in handle_request_error.",err=e))
+        alert_admin(printException("An error was encountered in handle_request_error.",err=e))
         
     return mes # just to make it testable
         
