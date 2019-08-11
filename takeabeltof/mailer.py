@@ -9,25 +9,24 @@ def send_message(to_address_list=None,**kwargs):
         
         If the to_address_list is not provided, mail will be sent to the admin
         
-        **kwargs:
-            body = <text for body of email> = None
-            body_is_html = <True | False> = False
-            text_template=<template to render as plain text message> = None
-            html_template=<template to render as html message> = None
-            subject=<subject text (will be rendered with the current context>)>= a default subject
-            subject_prefix=<some text to prepend to the subject: = ''
-            from_address=<from address> = sit_config['MAIL_DEFAULT_ADDR']
-            from_sender=<name of sender> = site_config['MAIL_DEFAULT_SENDER']
-            reply_to_address=<replyto address> = from_address
-            reply_to_name=<name of reply to account> = from_sender
-            cc = address list for carbon copy addresses
-            bcc = address list for blind carbon copy addresses
-            attachment = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
-            attachments = [<list of attachment tuples>] = None
+        kwargs:
+            * body  = <text for body of email> = None
+            * body_is_html  = <True | False> = False
+            * text_template =<template to render as plain text message> = None
+            * html_template =<template to render as html message> = None
+            * subject =<subject text (will be rendered with the current context>)>= a default subject
+            * subject_prefix =<some text to prepend to the subject = ''
+            * from_address =<from address> = sit_config['MAIL_DEFAULT_ADDR']
+            * from_sender =<name of sender> = site_config['MAIL_DEFAULT_SENDER']
+            * reply_to_address =<replyto address> = from_address
+            * reply_to_name =<name of reply to account> = from_sender
+            * cc = address list for carbon copy addresses
+            * bcc  = address list for blind carbon copy addresses
+            * attachment  = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
+            * attachments  = [<list of attachment tuples>] = None
             
         On completion returns a tuple of:
-            success [True or False]
-            message "some message"
+            ( success [`True` or `False`], message <"some message">)
     """
     #import pdb;pdb.set_trace()
     from app import mail

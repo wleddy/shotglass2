@@ -4,8 +4,8 @@ from shotglass2.takeabeltof.utils import cleanRecordID
 
 
 class Database:
-    """Handle the basic database functions"""
-    def __init__(self,filename):        
+    """Handle the basic database functions, `filename` is the path to the sqlite3 database file."""
+    def __init__(self,filename):
         self.filename = filename
         self.connection = None
     
@@ -276,7 +276,7 @@ class SqliteTable:
         return self._single_row(self.select_raw(sql,params))
             
     def get(self,id,**kwargs):
-        """Return a single namedlist for the ID or None"""
+        """Return a single namedlist for the record specified by `id` or None"""
         return self._single_row(self.select(where='{}.id = {}'.format(self.table_name,cleanRecordID(id),)))
         
     def _single_row(self,rows):

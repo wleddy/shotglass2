@@ -86,7 +86,7 @@ def weblink(data,safe=True,blank=True):
     """Render a hyperlink for the data provided. Data is assumed to be a web address
     Open in new window/tab by default.
     
-    5/28/19 - trim the displayed url to end after the tld
+    :note: 5/28/19 - trim the displayed url to end after the tld
     """
     if data:
         # Ensute that this is an absolute address
