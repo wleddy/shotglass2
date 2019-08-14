@@ -33,11 +33,12 @@ function modalFormSuccess(data){
 	return result;
 }
 
-function submitModalToModalForm(formID, postingURL, successTarget, successURL){
+function submitModalToModalForm(formID, postingURL, successTarget, successURL,responseURL){
     /* Just like submitModalForm but doesn't close the modal form div on success */
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (data.toLowerCase() == 'success'){
 			$("#"+successTarget).load(successURL);
+            $("#modal-form").load(responseURL); // a new dialog after success
 		} else {
 			// there were errors, so the form will redisplay
 		}
