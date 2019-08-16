@@ -7,7 +7,10 @@ from shotglass2.users.models import User,Role,Pref
 from shotglass2.users.admin import Admin
 import os    
 
-
+def get_app_config(this_app=None):
+    """Depricated"""
+    return get_site_config(this_app)
+        
 def get_site_config(this_app=None):
     """Returns a copy of the current app.config.
     This makes it possible for other modules to get access to the config
