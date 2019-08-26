@@ -14,7 +14,7 @@
 
 <div class="w3-container">
     {{ left_column_spacer() }}
-    <form action="{{ g.editURL }}" method=post class="entry {{ form_column_class() }}">
+    <form id="main-form" action="{{ g.editURL }}" method=post class="entry {{ form_column_class() }}">
 		{% include "editFormButtons.html" %}
         {% block fieldset %}{% endblock %}
     </form>
