@@ -5,3 +5,103 @@
 {% macro left_column_spacer(class="w3-col m1 l2 w3-hide-small") %}
 <div class="{{class}}">&nbsp;</div>
 {% endmacro %}
+
+
+{# macro to insert the search box for list layouts #}
+{% macro list_search_widget(table_name="sometable", search_columns_dict=None,default_option=0) %}
+
+    {# table name is the name of the db table (or rally anything that is unique to the table being displayed)#}
+    {# search_columns_dict is a dict of <select option name > : < column index > #}
+    {# default_option is the number to select by default (zero based) #}
+    
+    {# Ex: list_search_widget('user_job',{'Event':0,'Job':1,'Name':2,'Job Date':3,'Attendance':5,},2) #}
+    
+    {# set up the vars for search data #}
+    {% set table_search_column =  '' %}
+    {% set table_search_text =  '' %}
+    {% if 'table_search' in session %}
+        {% set table_search = session['table_search'] %}
+        {% if table_name  in table_search %}
+            {% set search_data = table_search[table_name] %}
+            {% if 'table_search_column' in search_data %}
+                {% set table_search_column =  search_data["table_search_column"] %}
+            {% endif %}
+            {% if 'table_search_text' in search_data %}
+                {% set table_search_text =  search_data["table_search_text"] %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    
+    {% if search_columns_dict %}
+    Find in:
+    <select id="col_select" onchange="doSearch()">
+        {% for key, value in search_columns_dict.items() %}
+        <option value="{{ value }}" {% if value == default_option %}selected{% endif %} >{{ key }}</option>
+        {% endfor %}
+    </select>
+        &nbsp;&nbsp;<input id="search_input" type="text" name="user_name" 
+            class="w3-border" placeholder="Type anything" autofocus onkeyup=" doSearch();" 
+            {% if table_search_text %}
+            value="{{ table_search_text }}" 
+            {% endif %}
+        />
+    &nbsp;
+    <input type="checkbox" name="save_search" id="save_search" onclick="if(!this.checked){$('#search_input').val('');} doSearch();" /> <label for='save_search'>Save Search</label>
+    {% endif %}
+
+    <script>
+        function doSearch(){
+            var theText = $('#search_input').val();
+            var theTable = "{{ table_name }}";
+            var theColumn = $('#col_select').val();
+            var saveState = $('#save_search').prop('checked');
+           
+            if(theText == ''){
+                reset_table_search('table_list');
+            } else {
+                table_search('search_input','table_list',$('#col_select').val());
+            }
+            
+            if(saveState != true){
+                var theText = ''; // will cause the search to be deleted from session
+            }
+            
+            // save or delete the search text from session
+            $.post('{{url_for('user.save_table_search')}}',{ table_search_text: theText, search_table_name:  theTable, table_search_column:theColumn })
+            
+         }
+        
+      $(document).ready(function(){
+    
+        {# ex of session['table_search'] = {'user_job': {'table_search_column': '0', 'table_search_text': 'bill'}} #}
+    
+        {% set table_search_column =  '' %}
+        {% set table_search_text =  '' %}
+        $('#save_search').prop('checked','');
+        $('#search_input').val(''); 
+        {% if 'table_search' in session %}
+            {% set table_search = session['table_search'] %}
+            {% if table_name  in table_search %}
+                {% set search_data = table_search[table_name] %}
+                {% if 'table_search_column' in search_data %}
+                    {% set table_search_column =  search_data["table_search_column"] %}
+                {% endif %}
+                {% if 'table_search_text' in search_data %}
+                    {% set table_search_text =  search_data["table_search_text"] %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+
+        {% if table_search_column != ''%}
+            $('#col_select').val('{{ search_data["table_search_column"]}}'); 
+        {% endif %}
+        {% if table_search_text != ''%}
+            $('#search_input').val('{{ search_data["table_search_text"]}}'); 
+            $('#save_search').prop('checked','checked');
+        {% endif %}
+        doSearch();
+    })
+    </script>
+
+{% endmacro %}
+

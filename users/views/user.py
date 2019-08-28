@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import request, session, g, redirect, url_for, abort, \
-     render_template, flash, Blueprint
+     render_template, flash, Blueprint, session
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
@@ -16,6 +16,29 @@ from time import time
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user')
 
 
+
+@mod.route('/save_table_search',methods=['POST'])
+@mod.route('/save_table_search/',methods=['POST'])
+def save_table_search():
+    """Save the table search string and column to the sesstion"""
+    
+    #import pdb;pdb.set_trace()
+    
+    search_table_name = request.form.get('search_table_name')
+    table_search_text = request.form.get('table_search_text')
+    table_search_column = request.form.get('table_search_column')
+    if (table_search_text and table_search_column and search_table_name):
+        session['table_search'] = {search_table_name: {'table_search_text': table_search_text,'table_search_column' :table_search_column,}}
+    else:
+        # if anything is missing, just delete it from session
+        try:
+            del session['table_search']
+        except:
+            pass
+
+    return ''
+            
+            
 def setExits():
     g.listURL = url_for('.display')
     g.adminURL = url_for('.admin',id=0)

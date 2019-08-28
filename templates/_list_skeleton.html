@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
+{% from "_layout_helpers.html" import list_search_widget %}
+
 {% block title %}{{ g.title }}{% endblock %}
+
 {% block body %}
     <div class="w3-col m3 l3 w3-hide-small">&nbsp;</div>
     <div class="w3-col s12 m6 l6">
-      	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new record</a></p>
+      	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new record</a>
+        &nbsp;&nbsp;{{list_search_widget('user',{'Id':0,'Name':1,},1) }}
+        </p>
 	{%if recs %}
 		<table class="datatable w3-table w3-striped w3-hoverable">
 		<tr class="w3-primary-color">
