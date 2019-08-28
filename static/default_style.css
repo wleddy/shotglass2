@@ -20,6 +20,13 @@ pre {
     margin: .3em 0;
 }
 
+/* make list tables look clickable */
+.datatable tr {
+    cursor:pointer;
+}
+
+
+
 /* colors */
 /* Teal & pale green */
 
