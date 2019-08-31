@@ -66,6 +66,7 @@ def date_to_string(value,format):
     'ampm': '%p',
     'local_time': '%-I:%M%p',
     'iso_date': '%Y-%m-%d',
+    'iso_datetime': '%Y-%m-%d %H:%M:%S',
     'iso_date_tz': '%Y-%m-%d %H:%M:%S%z',
     }
     
@@ -119,7 +120,11 @@ def getDatetimeFromString(dateString):
         '%y-%m-%d',
         '%Y-%m-%d',
         '%y/%m/%d',
-        '%Y/%m/%d',
+        '%Y-%m-%d',
+        '%d/%m/%Y',
+        '%d/%m/%y',
+        '%d-%m-%Y',
+        '%d-%m-%y',
         '%m/%d/%y{}%H:%M:%S'.format(timeDelimiter),
         '%m/%d/%Y{}%H:%M:%S'.format(timeDelimiter),
         '%m-%d-%y{}%H:%M:%S'.format(timeDelimiter),
@@ -136,6 +141,10 @@ def getDatetimeFromString(dateString):
         '%y-%m-%d{}%H:%M'.format(timeDelimiter),
         '%y/%m/%d{}%H:%M'.format(timeDelimiter),
         '%Y/%m/%d{}%H:%M'.format(timeDelimiter),
+        '%d/%m/%Y{}%H:%M'.format(timeDelimiter),
+        '%d/%m/%y{}%H:%M'.format(timeDelimiter),
+        '%d-%m-%Y{}%H:%M'.format(timeDelimiter),
+        '%d-%m-%y{}%H:%M'.format(timeDelimiter),
         
         '%m/%d/%y{}%I:%M:%S%p'.format(timeDelimiter),
         '%m/%d/%Y{}%I:%M:%S%p'.format(timeDelimiter),
@@ -145,6 +154,8 @@ def getDatetimeFromString(dateString):
         '%y-%m-%d{}%I:%M:%S%p'.format(timeDelimiter),
         '%y/%m/%d{}%I:%M:%S%p'.format(timeDelimiter),
         '%Y/%m/%d{}%I:%M:%S%p'.format(timeDelimiter),
+        '%d/%m/%Y{}%I:%M:%S%p'.format(timeDelimiter),
+        '%d/%m/%y{}%I:%M:%S%p'.format(timeDelimiter),
         '%m/%d/%y{}%I:%M%p'.format(timeDelimiter),
         '%m/%d/%Y{}%I:%M%p'.format(timeDelimiter),
         '%m-%d-%y{}%I:%M%p'.format(timeDelimiter),
@@ -153,6 +164,8 @@ def getDatetimeFromString(dateString):
         '%y-%m-%d{}%I:%M%p'.format(timeDelimiter),
         '%y/%m/%d{}%I:%M%p'.format(timeDelimiter),
         '%Y/%m/%d{}%I:%M%p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M%p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M%p'.format(timeDelimiter),
         ]
 
     theDate = None
