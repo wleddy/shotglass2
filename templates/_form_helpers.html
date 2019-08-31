@@ -13,9 +13,7 @@
 
 {% macro input_field(value,name,label="",type="text",id=None,class="",req=False,placeholder="",default="",extras="") %}
 {% if type!="hidden" and label != None %}
-<label class=" w3-block {{label_color(req)}} {{label_text(req)}}">
-    {{ get_label(label,name) }}
-    {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}
+    {{ make_label(label,name,req) }}
 </label>
 {% endif %}
 {% set baseclass = "w3-input" %}
@@ -26,7 +24,7 @@
 {% endmacro %}
 
 {% macro select_field(name,label="",type="",id=None,class="",req=False,placeholder="",default="",extras="") %}
-<label class="w3-block {{ label_color(req)}} {{label_text(req)}}">{{ get_label(label,name) }}</label>
+{{ make_label(label,name,req) }}
 <select name="{{name}}" {%if id %}id="{{id}}"{% endif %} class="w3-select {{class}}" {{extras | safe }}>
 {# Be sure to provide the closing </select> tag after inserting your <option> items #}
 {% endmacro %}
@@ -36,7 +34,9 @@
 {% endmacro %}
 
 {% macro _radio_label_element(name,label,req) %}
-<span class="w3-tag {{ label_color(req)}} {{label_text(req)}}">{{ get_label(label,name)}}</span>
+{% if label != None %}
+<span class="w3-tag {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}}</span>
+{% endif %}
 {% endmacro %}
 
 {% macro radio_field(value,name,label="",type="radio",id=None,class="",req=False, placeholder="",default="",extras="",right=False) %}
@@ -55,9 +55,15 @@
 {%endmacro%}
 
 {% macro label_only(label="Label",req=False)%}
-<label class="w3-block {{ label_color(req)}} {{label_text(req)}}">{{ get_label(label,'') }}</label>
+{{ make_label(label,'',req) }}
 {%endmacro%}
 
-{% macro get_label(label,name) %}
+{% macro make_label(label,name,req,class='w3-block') %}
+{% if label != None %}
+<label class="{{ class }} {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}} {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}</label>
+{% endif %}
+{% endmacro %}
+
+{% macro get_label_text(label,name) %}
 {% if label %}{{ label | safe }}{% else%}{{ name | replace("_"," ") | title }}{%endif%}
 {% endmacro %}
