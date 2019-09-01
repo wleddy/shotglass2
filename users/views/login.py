@@ -149,11 +149,6 @@ def setUserStatus(userNameOrEmail,user_id):
         session["user"] = userNameOrEmail.strip()
         session['user_id'] = rec.id
         g.user = session["user"]
-        session["user_roles"] = []
-        recs = user.get_roles(rec.id)
-        if recs:
-            session["user_roles"] = [rec.name for rec in recs]
-        g.user_roles = session['user_roles']
         g.user_has_password = session['user_has_password'] = (rec.password != None and rec.password != '')
     else:
         flash("Unable to locate user")

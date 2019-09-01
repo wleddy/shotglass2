@@ -71,6 +71,9 @@ def test_user_get():
     assert len(admin_roles)>0
     assert admin_roles[0].name == "super"
     
+    assert user.max_role_rank(1) == 1000;
+    assert user.max_role_rank('admin') == 1000;
+    
     # test that user admin is in admins
     assert user.is_admin('admin')
     assert user.is_admin(rec.id)

@@ -66,7 +66,7 @@ class User(SqliteTable):
     def __init__(self,db_connection):
         super().__init__(db_connection)
         self.table_name = 'user'
-        self.order_by_col = 'last_name, first_name'
+        self.order_by_col = 'lower(last_name), lower(first_name)'
         self.defaults = {'active':1,}
         
     def _active_only_clause(self,include_inactive=False,**kwargs):
@@ -134,6 +134,18 @@ class User(SqliteTable):
                 
         return  Role(self.db).rows_to_namedlist(self.db.execute(sql,(cleanRecordID(userID),)).fetchall())
         
+    def max_role_rank(self,userID):
+        """Return the higest role rank for the user specified"""
+        max_rank = 0
+        curr_user=self.get(userID)
+        if curr_user:
+            sql="""select coalesce(max(role.rank),0) as max_rank from user_role join role on user_role.role_id = role.id where user_role.user_id = {}""".format(curr_user.id)
+            max_rank = self.query(sql)
+            if max_rank:
+                max_rank = max_rank[0].max_rank
+            
+        return max_rank
+        
     def user_has_role(self,user_id,role_names):
         """Return True if user has the role role_name else False
          role_names may be a string or a list
@@ -185,7 +197,18 @@ class User(SqliteTable):
             
         order_by = kwargs.get('order_by',self.order_by_col)
         
-        return super().select(where=where,order_by=order_by)
+        sql="""
+        select user.*,0 as max_rank from user where {where} order by {order_by}
+        """.format(where=where,order_by=order_by)
+        
+        recs = self.query(sql)
+        if recs:
+            for rec in recs:
+                rec.max_rank = self.max_role_rank(rec.id)
+                
+            return recs
+            
+        return None
         
     def update(self,rec,form,save=False):
         # active must be an integer

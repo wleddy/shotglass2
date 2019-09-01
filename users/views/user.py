@@ -62,9 +62,10 @@ def display():
     setExits()
     g.title = "{} List".format(g.title)
     include_inactive = True
-    
-    recs = User(g.db).select(include_inactive=include_inactive)
-    return render_template('user_list.html', recs=recs)
+    user = User(g.db)
+    recs = user.select(include_inactive=include_inactive)
+    user_rank = user.max_role_rank(g.user)
+    return render_template('user_list.html', recs=recs,user_rank=user_rank)
     
 @mod.route('/edit/<int:id>/', methods=['POST','GET'])
 @table_access_required(User)
@@ -103,11 +104,14 @@ def edit(rec_handle=None):
     request_rec_id = cleanRecordID(request.form.get('id',request.args.get('id',-1)))
     is_admin = g.admin.has_access(g.user,User)
     no_delete = not is_admin
-    session_roles = session["user_roles"] #roles of currnet user
     new_password = ''
     confirm_password = ''
     user_roles = ['user'] # default
-    roles = Role(g.db).select()
+        
+    #limit roles to roles <= current users rank
+    curr_user_max_rank = user.max_role_rank(g.user)
+    roles = Role(g.db).select(where="rank <= {}".format(curr_user_max_rank))
+        
     include_inactive = True
     next = request.form.get('next',request.args.get('next',''))
     
@@ -130,6 +134,9 @@ def edit(rec_handle=None):
         if rec_handle != g.user and not is_admin:
             flash("You do not have access to that area")
             return redirect(g.homeURL)
+        elif curr_user_max_rank < user.max_role_rank(rec_handle):
+            flash("You don't have sufficiant privelages to edit that user record.")
+            return redirect(g.homeURL)
         elif rec_handle == 0:
             rec = user.new()
         else:
@@ -137,7 +144,7 @@ def edit(rec_handle=None):
             if not rec:
                 flash("Unable to locate user record")
                 return redirect('/')
-                
+            
             user_roles = get_user_role_names(rec)
         
     else:
@@ -244,7 +251,6 @@ def edit(rec_handle=None):
         next=next,
         user_roles=user_roles, 
         roles=roles,
-        session_roles=session_roles,
         new_password=new_password,
         confirm_password=confirm_password,
         )

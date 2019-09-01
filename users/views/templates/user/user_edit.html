@@ -51,10 +51,7 @@
     {% if is_admin %}
     <p>{{ select_field("roles_select","Role",extras='multiple size="5"', class="w3-border") }}
             {% for role in roles %}
-                {% if role.name == "super" and "super" is not in session_roles %}
-                {% else %}
                 <option value="{{role.name}}" {% if role.name in user_roles %}selected="selected" {% endif %}>{{role.name}}</option>
-                {% endif %}
             {% endfor %}
         </select>
         </p>
