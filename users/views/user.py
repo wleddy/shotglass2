@@ -24,13 +24,18 @@ def save_table_search():
     
     #import pdb;pdb.set_trace()
     
-    search_table_name = request.form.get('search_table_name')
-    table_search_text = request.form.get('table_search_text')
-    table_search_column = request.form.get('table_search_column')
-    if (table_search_text and table_search_column and search_table_name):
-        session['table_search'] = {search_table_name: {'table_search_text': table_search_text,'table_search_column' :table_search_column,}}
+    d = {}
+    if request.form:
+        # request form is immutable, so move to simple dict
+        for key in request.form.keys():
+            d[key] = request.form[key]
+    
+    search_table_name = d.pop('search_table_name')
+    save_search = d.get('save_search','false') # this is JS true|false as text
+    if save_search == 'true' and search_table_name:
+        session['table_search'] = {search_table_name: d}
     else:
-        # if anything is missing, just delete it from session
+        # if table name is missing or saveState != 'true', just delete it from session
         try:
             del session['table_search']
         except:
