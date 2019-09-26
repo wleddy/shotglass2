@@ -16,21 +16,6 @@
     
     {# Ex: list_search_widget('user_job',{'Event':0,'Job':1,'Name':2,'Job Date':3,'Attendance':5,},2) #}
     
-    {# set up the vars for search data #}
-    {% set table_search_column =  '' %}
-    {% set table_search_text =  '' %}
-    {% if 'table_search' in session %}
-        {% set table_search = session['table_search'] %}
-        {% if table_name  in table_search %}
-            {% set search_data = table_search[table_name] %}
-            {% if 'table_search_column' in search_data %}
-                {% set table_search_column =  search_data["table_search_column"] %}
-            {% endif %}
-            {% if 'table_search_text' in search_data %}
-                {% set table_search_text =  search_data["table_search_text"] %}
-            {% endif %}
-        {% endif %}
-    {% endif %}
     
     {% if search_columns_dict %}
     Find in:
@@ -41,9 +26,6 @@
     </select>
         &nbsp;&nbsp;<input id="search_input" type="text" name="user_name" 
             class="w3-border" placeholder="Type anything" autofocus onkeyup=" doSearch();" 
-            {% if table_search_text %}
-            value="{{ table_search_text }}" 
-            {% endif %}
         />
     &nbsp;
     <input type="checkbox" name="save_search" id="save_search" onclick="if(!this.checked){$('#search_input').val('');} doSearch();" /> <label for='save_search'>Save Search</label>
@@ -51,8 +33,8 @@
 
     <script>
         function doSearch(){
-            var theText = $('#search_input').val();
             var theTable = "{{ table_name }}";
+            var theText = $('#search_input').val();
             var theColumn = $('#col_select').val();
             var saveState = $('#save_search').prop('checked');
            
@@ -61,46 +43,40 @@
             } else {
                 table_search('search_input','table_list',$('#col_select').val());
             }
-            
-            if(saveState != true){
-                var theText = ''; // will cause the search to be deleted from session
-            }
-            
-            // save or delete the search text from session
-            $.post('{{url_for('user.save_table_search')}}',{ table_search_text: theText, search_table_name:  theTable, table_search_column:theColumn })
-            
-         }
-        
-      $(document).ready(function(){
-    
-        {# ex of session['table_search'] = {'user_job': {'table_search_column': '0', 'table_search_text': 'bill'}} #}
-    
-        {% set table_search_column =  '' %}
-        {% set table_search_text =  '' %}
-        $('#save_search').prop('checked','');
-        $('#search_input').val(''); 
-        {% if 'table_search' in session %}
-            {% set table_search = session['table_search'] %}
-            {% if table_name  in table_search %}
-                {% set search_data = table_search[table_name] %}
-                {% if 'table_search_column' in search_data %}
-                    {% set table_search_column =  search_data["table_search_column"] %}
-                {% endif %}
-                {% if 'table_search_text' in search_data %}
-                    {% set table_search_text =  search_data["table_search_text"] %}
-                {% endif %}
-            {% endif %}
-        {% endif %}
+           // save or delete the search text from session
+           $.post('{{url_for('user.save_table_search')}}',{ save_search: saveState, table_search_text: theText, search_table_name:  theTable, table_search_column:theColumn })
+           
+        }
+       
+        $(document).ready(function(){   
+          {# ex of session['table_search'] = {'user_job': {'save_search': 'true', 'table_search_column': '0', 'table_search_text': 'bill'}} #}
+   
+          {% set table_search_column =  default_option %}
+          {% set table_search_text =  '' %}
+          {% set save_search = ''%}
+          {% if 'table_search' in session %}
+              {% set table_search = session['table_search'] %}
+              {% if table_name in table_search %}
+                  {% set search_data = table_search[table_name] %}
+                  {% if 'table_search_column' in search_data %}
+                      {% set table_search_column =  search_data["table_search_column"] %}
+                  {% endif %}
+                  {% if 'table_search_text' in search_data %}
+                      {% set table_search_text =  search_data["table_search_text"] %}
+                  {% endif %}
+                  {% if 'save_search' in search_data and search_data['save_search'] == 'true' %}
+                      {% set save_search =  'checked' %}
+                  {% endif %}
+              {% else %}
+              // stop here {{ table_name }}
+              {% endif %}
+          {% endif %}
 
-        {% if table_search_column != ''%}
-            $('#col_select').val('{{ search_data["table_search_column"]}}'); 
-        {% endif %}
-        {% if table_search_text != ''%}
-            $('#search_input').val('{{ search_data["table_search_text"]}}'); 
-            $('#save_search').prop('checked','checked');
-        {% endif %}
-        doSearch();
-    })
+          $('#col_select').val('{{ table_search_column }}'); 
+          $('#search_input').val('{{ table_search_text }}'); 
+          $('#save_search').prop('checked','{{ save_search }}');
+          doSearch();
+      })
     </script>
 
 {% endmacro %}
