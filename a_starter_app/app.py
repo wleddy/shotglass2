@@ -15,6 +15,11 @@ app.config.from_pyfile('site_settings.py', silent=True)
 def start_logging():
     shotglass.start_logging(app)
 
+@app.context_processor
+def inject_site_config():
+    # Add 'site_config' dict to template context
+    return {'site_config':shotglass.get_site_config()}
+
 # work around some web servers that mess up root path
 from werkzeug.contrib.fixers import CGIRootFix
 if app.config['CGI_ROOT_FIX_APPLY'] == True:
