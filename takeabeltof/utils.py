@@ -2,7 +2,7 @@
     Some utility functions
 """
 
-from flask import g, render_template_string, flash, send_from_directory, abort
+from flask import g, render_template_string, flash, send_from_directory, abort, url_for
 from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
@@ -133,7 +133,23 @@ def render_markdown_for(file_name,bp=None,**kwargs):
         rendered_html = f.read()
         f.close()
                 
-        rendered_html = render_markdown_text(rendered_html,**kwargs)
+        # - 12/3/2019 - Initial attempt to handle Sphynx documentaion
+        """
+        Sphynx renders complete HTML documents so, in reality we don't want to modify them
+        except, that we want pull the contents out of <body> and throw away everything else
+        
+        Look for "documentation_options" in the text which is something Sphynx puts in the <head> section
+        """
+        if "documentation_options" in rendered_html:
+            x = rendered_html.find('<body>')
+            y = rendered_html.find('</body')
+            if x >= 0 and y > 0:
+                rendered_html = rendered_html[x+6:y]
+                # fix the relative references for images etc.
+                rendered_html = rendered_html.replace('src="../','src="/static/')
+        else:
+            rendered_html = render_markdown_text(rendered_html,**kwargs)
+            
     elif site_config['DEBUG']:
         ### TESTING Note: the test is looking for the text 'no file found' in this return.
         source_script = ''

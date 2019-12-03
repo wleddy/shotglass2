@@ -21,6 +21,8 @@ def get_default_routes():
     route_dict['/contact/'] = ('/contact/','contact',contact,put_options)
     route_dict['/docs/'] = ('/docs/','docs',docs,{})
     route_dict['/docs/<path:filename>'] = ('/docs/<path:filename>','docs',docs,{})
+    route_dict['/help/'] = ('/help/','help',docs,{})
+    route_dict['/help/<path:filename>'] = ('/help/<path:filename>','help',docs,{})
     route_dict['/robots.txt'] = ('/robots.txt','robots',robots,{})
 
     return route_dict
