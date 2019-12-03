@@ -147,6 +147,8 @@ def render_markdown_for(file_name,bp=None,**kwargs):
                 rendered_html = rendered_html[x+6:y]
                 # fix the relative references for images etc.
                 rendered_html = rendered_html.replace('src="../','src="/static/')
+                # fix hrefs too. Mostly for images...
+                rendered_html = rendered_html.replace('href="../','href="/static/')
         else:
             rendered_html = render_markdown_text(rendered_html,**kwargs)
             
