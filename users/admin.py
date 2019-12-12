@@ -1,25 +1,26 @@
-###########################################
-## admin.py
-## Control what tables a user may access as an
-## administrator.
-###########################################
+"""
+admin.py
+-----------
+This module provides user access control.
+
+It's primarily based on which database tables a user can see / update
+
+"""
+
 
 from flask import g, request, redirect, url_for, flash
 from functools import wraps
 
 class Admin():
-    """Register tables to be administered and check a user's access permissions
+    """An object to hold the list of access privilege requirements for database
+    tables.
+    
+    The items in the Admin list may be used to create menu items for the web site and
+    also provides functions to test the current users access privileges.
     
     Instanciate as:
-        admin = Admin(g.db)
+        admin = Admin(*database connection*)
         
-    Register an admin table:
-        Admin.register(TableObj,url,[,display_name=None[,minimum_rank_required=None[,roles=None]]])
-        results in an item being added to self.permissions:
-        self.permissions = [{table,display_name,url,minimum_rank_required(default = 99999999),roles(default = [])},]
-        
-        Registering a table again will replace the previous registration for that table.
-    
     When assessing permissions test that the specified user (by id or username) has:
          a role with at least minimum_rank_required
          OR
@@ -31,7 +32,23 @@ class Admin():
         self.permissions = []
         
     def register(self,table,url,**kwargs):
-        """Add an item to the admin_list"""
+        """Add a table item to the admin_list
+        
+        Parameters:
+            table : Database table object
+            url : str
+                The url to be associated with the menu item created for this table
+                
+        Example:
+            Admin.register(TableObj,url,[,display_name=None[,minimum_rank_required=None[,roles=None]]])
+            
+            results in an item being added to self.permissions:
+                self.permissions = [{table,display_name,url,minimum_rank_required(default = 99999999),roles(default = [])},]
+        
+        Registering a table again will replace the previous registration for that table.
+    
+        
+        """
         display_name=kwargs.get('display_name',None)
         minimum_rank_required=kwargs.get('minimum_rank_required',99999999) #No one can access without a qualifiying role
         header_row = kwargs.get('header_row',False)
@@ -106,6 +123,19 @@ def login_required(f):
     return decorated_function
     
 def table_access_required(table):
+    """A decorator that tests if the current user has sufficient privileges to access
+    the table specified.
+    
+    If the user does not have sufficient access privileges the user is redirected 
+    to the login.login with an appropreate message.
+    
+    Parameters
+        table : Database table object
+            The table to which the user must have access
+        
+    Returns
+        Decorated function or redirect to login.login
+    """
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -118,6 +148,21 @@ def table_access_required(table):
     
     
 def silent_login(alert=True):
+    """A decorator to test that a user is logged in or
+    log in a user without displaying the login page first.
+    
+    If the user is not logged in or if valid credentials are not in the request form
+    redirect to the login.login page, else process the request
+    
+    Parameters
+        alert : bool
+            If True and login fails, Flash a failure message and email the system admin to
+            inform admin of event.
+    
+    Returns
+        Decorated function or redirect to login.login
+        
+    """
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
