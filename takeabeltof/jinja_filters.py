@@ -22,8 +22,9 @@ def local_date_string(value):
     
     
 def local_date_and_time_string(value):
-    """3/1/19 6:33AM"""
-    format='%-m/%-d/%y %-I:%M%p'
+    """Return a datetime as short date and AM/PM time. Ex: '3/1/19 6:33 AM'"""
+    # Added space before AM/PM so excel thinks it's a datetime
+    format='%-m/%-d/%y %-I:%M %p'
     return date_to_string(value,format)
 
 

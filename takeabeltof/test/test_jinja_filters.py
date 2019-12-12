@@ -55,9 +55,11 @@ def test_local_date_string():
     
 def test_local_date_and_time_string():
     test_date = datetime(2018,5,9,6,33,15)
-    assert filters.local_date_and_time_string(test_date) == "5/9/18 6:33AM"
+    assert filters.local_date_and_time_string(test_date) == "5/9/18 6:33 AM"
     test_date = datetime(2018,5,9,18,33,15)
-    assert filters.local_date_and_time_string(test_date) == "5/9/18 6:33PM"
+    assert filters.local_date_and_time_string(test_date) == "5/9/18 6:33 PM"
+    # should return text un-altered
+    assert filters.local_date_and_time_string("this is a test") == "this is a test"
 
 def abbr_date_string():
     test_date = datetime(2019,5,9)
