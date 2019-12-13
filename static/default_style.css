@@ -25,7 +25,8 @@ pre {
     cursor:pointer;
 }
 
-
+/* no underline in navigation menus */
+#nav a {text-decoration:none;}
 
 /* colors */
 /* Teal & pale green */
