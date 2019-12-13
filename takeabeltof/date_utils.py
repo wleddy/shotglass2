@@ -156,6 +156,18 @@ def getDatetimeFromString(dateString):
         '%Y/%m/%d{}%I:%M:%S%p'.format(timeDelimiter),
         '%d/%m/%Y{}%I:%M:%S%p'.format(timeDelimiter),
         '%d/%m/%y{}%I:%M:%S%p'.format(timeDelimiter),
+        
+        '%m/%d/%y{}%I:%M:%S %p'.format(timeDelimiter),
+        '%m/%d/%Y{}%I:%M:%S %p'.format(timeDelimiter),
+        '%m-%d-%y{}%I:%M:%S %p'.format(timeDelimiter),
+        '%m-%d-%Y{}%I:%M:%S %p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M:%S %p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M:%S %p'.format(timeDelimiter),
+        '%y/%m/%d{}%I:%M:%S %p'.format(timeDelimiter),
+        '%Y/%m/%d{}%I:%M:%S %p'.format(timeDelimiter),
+        '%d/%m/%Y{}%I:%M:%S %p'.format(timeDelimiter),
+        '%d/%m/%y{}%I:%M:%S %p'.format(timeDelimiter),
+        
         '%m/%d/%y{}%I:%M%p'.format(timeDelimiter),
         '%m/%d/%Y{}%I:%M%p'.format(timeDelimiter),
         '%m-%d-%y{}%I:%M%p'.format(timeDelimiter),
@@ -166,6 +178,17 @@ def getDatetimeFromString(dateString):
         '%Y/%m/%d{}%I:%M%p'.format(timeDelimiter),
         '%y-%m-%d{}%I:%M%p'.format(timeDelimiter),
         '%Y-%m-%d{}%I:%M%p'.format(timeDelimiter),
+        
+        '%m/%d/%y{}%I:%M %p'.format(timeDelimiter),
+        '%m/%d/%Y{}%I:%M %p'.format(timeDelimiter),
+        '%m-%d-%y{}%I:%M %p'.format(timeDelimiter),
+        '%m-%d-%Y{}%I:%M %p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M %p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M %p'.format(timeDelimiter),
+        '%y/%m/%d{}%I:%M %p'.format(timeDelimiter),
+        '%Y/%m/%d{}%I:%M %p'.format(timeDelimiter),
+        '%y-%m-%d{}%I:%M %p'.format(timeDelimiter),
+        '%Y-%m-%d{}%I:%M %p'.format(timeDelimiter),
         ]
 
     theDate = None
