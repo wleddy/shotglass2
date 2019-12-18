@@ -30,14 +30,16 @@ def save_table_search():
         for key in request.form.keys():
             d[key] = request.form[key]
     
+    if not session['table_search']:
+        session['table_search'] = {}
+        
     search_table_name = d.pop('search_table_name')
     save_search = d.get('save_search','false') # this is JS true|false as text
     if save_search == 'true' and search_table_name:
-        session['table_search'] = {search_table_name: d}
-    else:
-        # if table name is missing or saveState != 'true', just delete it from session
+        session['table_search'].update({search_table_name: d})
+    elif save_search == 'false' and search_table_name:
         try:
-            del session['table_search']
+            del session['table_search'][search_table_name]
         except:
             pass
 
