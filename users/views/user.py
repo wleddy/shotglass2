@@ -30,7 +30,7 @@ def save_table_search():
         for key in request.form.keys():
             d[key] = request.form[key]
     
-    if not session['table_search']:
+    if 'table_search' not in session:
         session['table_search'] = {}
         
     search_table_name = d.pop('search_table_name')
