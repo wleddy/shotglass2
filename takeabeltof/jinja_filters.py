@@ -22,11 +22,19 @@ def local_date_string(value):
     
     
 def local_date_and_time_string(value):
-    """Return a datetime as short date and AM/PM time. Ex: '3/1/19 6:33 AM'"""
-    # Added space before AM/PM so excel thinks it's a datetime
-    format='%-m/%-d/%y %-I:%M %p'
+    """Return a datetime as short date and AM/PM time. Ex: '3/1/19 6:33AM'"""
+    format='%-m/%-d/%y %-I:%M%p'
     return date_to_string(value,format)
 
+def excel_date_and_time_string(value):
+    """Return a datetime as short date and AM/PM time with an extra space. 
+    Ex: '3/1/19 6:33 AM'
+    
+    Excel does not seem to be able to recognize as a datetime without the space 
+    before AM/PM
+    """
+    format='%-m/%-d/%y %-I:%M %p'
+    return date_to_string(value,format)
 
 def short_day_and_date_string(value):
     """Mon. 3/4/19"""
@@ -128,6 +136,7 @@ def register_jinja_filters(app):
     app.jinja_env.filters['local_time_string'] = local_time_string
     app.jinja_env.filters['local_date_string'] = local_date_string
     app.jinja_env.filters['local_date_and_time_string'] = local_date_and_time_string
+    app.jinja_env.filters['excel_date_and_time_string'] = excel_date_and_time_string
     app.jinja_env.filters['money'] = two_decimal_string
     app.jinja_env.filters['weblink'] = weblink
     app.jinja_env.filters['render_markdown'] = render_markdown
