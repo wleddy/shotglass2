@@ -141,13 +141,33 @@ def quite_test_fixture():
     
     
 def setUserStatus(userNameOrEmail,user_id):
-    #Log the user in
+    """After the user's login has authenticated, record some values
+    in the session.
+    
+    user _str_: userNameOrEmail 
+    user_id _int_: user record id
+    user_name _str_: full name of user
+    user_has_password _bool_: True if the user has a password
+    
+    also sets the globals:
+    
+    g.user = session["user]
+    g.user_has_password = session["user_has_password"]
+    
+    """
+    
     user = User(g.db)
     rec = user.get(user_id)
     if rec:
         user.update_last_access(rec.id)
         session["user"] = userNameOrEmail.strip()
         session['user_id'] = rec.id
+        session["user_name"] = ""
+        if rec.first_name:
+            session['user_name'] = rec.first_name + " "
+        if rec.last_name:
+            session["user_name"] = session["user_name"] + rec.last_name
+        session["user_name"] = session['user_name'].strip()
         g.user = session["user"]
         g.user_has_password = session['user_has_password'] = (rec.password != None and rec.password != '')
     else:
