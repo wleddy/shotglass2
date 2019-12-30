@@ -67,6 +67,7 @@ def contact():
     show_form = True
     context = {}
     success = True
+    bcc=None
     passed_quiz = False
     site_config = get_site_config()
     mes = "No errors yet..."
@@ -96,8 +97,8 @@ def contact():
             try:
                 if not to:
                     to = [(site_config['CONTACT_NAME'],site_config['CONTACT_EMAIL_ADDR'],),]
-                if site_config['CC_ADMIN_ON_CONTACT']:
-                    to.append((site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR']))
+                if site_config['CC_ADMIN_ON_CONTACT'] and site_config['ADMIN_EMAILS']:
+                    bcc = site_config['ADMIN_EMAILS']
                 
             except KeyError as e:
                 mes = "Could not get email addresses."
@@ -116,6 +117,7 @@ def contact():
                                     html_template = "home/email/contact_email.html",
                                     context = context,
                                     reply_to = request.form['email'],
+                                    bcc=bcc,
                                 )
         
             show_form = False
