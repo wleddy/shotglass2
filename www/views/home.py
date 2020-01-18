@@ -171,6 +171,54 @@ def docs(filename=None):
         #file not found
         return abort(404)
     
+    
+@mod.route('/render_for/<path:filename>', methods=['GET',])
+@mod.route('/render_for/<path:filename>/', methods=['GET',])
+def render_for(filename=None):
+    """
+    The idea is to create a mechanism to serve simple files without
+    having to modify the www.home module
+
+    create url as {{ url_for('www.render_for', filename='<name of template>' ) }}
+
+    filename must not have an extension. 
+
+    First see if a file ending in the extension .md or .html
+    exists in the /templates/www directroy and serve that if found.
+
+    markdown files will be rendered in the markdown.html template.
+    html files will be rendered as a normal freestanding template.
+    """
+
+    # templates for this function can only be in the root tempalate/www directory
+    temp_path = 'templates/www' 
+    path = None
+
+    if filename:
+        for extension in ['md','html',]:
+            file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename + '.' + extension)
+            if os.path.isfile(file_loc):
+                path = file_loc
+                break
+            else:
+                pass
+
+    if path:
+        setExits()
+        g.title = filename.replace('_',' ').title()
+
+        if extension == 'md':
+            # use the markdown.html default path
+            #rendered_html = render_markdown_for(path)
+            return render_template('markdown.html',rendered_html=render_markdown_for(path))
+        else:
+            # use the standard layout.html template
+            return render_template(filename + '.html')
+
+    else:
+        return abort(404)
+
+
 #@mod.route('/robots.txt', methods=['GET',])
 def robots():
     #from shotglass2.shotglass import get_site_config
