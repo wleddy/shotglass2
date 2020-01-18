@@ -172,8 +172,8 @@ def docs(filename=None):
         return abort(404)
     
     
-@mod.route('/render_for/<path:filename>', methods=['GET',])
-@mod.route('/render_for/<path:filename>/', methods=['GET',])
+@mod.route('/www/<path:filename>', methods=['GET',])
+@mod.route('/www/<path:filename>/', methods=['GET',])
 def render_for(filename=None):
     """
     The idea is to create a mechanism to serve simple files without
