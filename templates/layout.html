@@ -46,55 +46,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css' )}}">
 
     <script>
-        // for navigation buttons
-    function w3_open(id_name) {
-        document.getElementById(id_name).style.display = "block";
-    }
-    function w3_close(id_name) {
-        document.getElementById(id_name).style.display = "none";
-    }
-    function w3_hide(id_name) {
-        document.getElementById(id_name).style.visibility = "hidden";
-    }
-    function w3_show(id_name) {
-        document.getElementById(id_name).style.visibility = "visible";
-    }
+        $(window).resize(function(){set_menu_style();});
     </script>
+
 
     {% block head%}{% endblock %}
 </head>
 <body>
-<div id="contain" >
+    <div id="contain" >    
+        {% block header %}
+        <div id="sg-header">
+            {% include "header.html"%}
+            {% include "top-nav.html"%}
+            <div class="w3-main menu_space"></div>
+        {% endblock header %}
+            
+            <div class="w3-container">
+                {% block page_header %}
+                <div id="sg-page-header">
+                    {% if not g.suppress_page_header %}
+                    {% include "page_header.html" %}
+                    {% endif %}
+                </div>
+                {% endblock page_header %}
+                
+                <div id="sg-flasher">
+                    {% block flasher %}{% include "flasher.html" %}{% endblock flasher%}
+                </div>
+                
+                <div id="sg-body">
+                    {% block body %}{% endblock %}
+                </div>
+                
+                <div id="sg-footer">
+                    {% block footer %}{% endblock footer%}
+                </div>
+            </div>
+        </div>
+    </div>
     {% block dialog %}
     <div id="dialog"></div>
     <div id="modal-form-contain" class="w3-modal" style="overflow:hidden;padding-top:20pt!important;">
         <div id="modal-form" class="w3-container w3-modal-content w3-card-4 w3-animate-top" style="max-height:95vh;overflow:scroll;"></div>
     </div>
     {% endblock dialog %}
-    
-    {% block header %}
-        {% include "header.html"%}
-        {% if g.user or True %}
-            {% include "top-nav.html"%}
-            <div class="w3-main menu_space">
-        {% else %}
-            <div>
-        {% endif %}
-        {% endblock header %}
-        <div class="w3-container">
-            {% block page_header %}
-                {% if not g.suppress_page_header %}
-                {% include "page_header.html" %}
-                {% endif %}
-            {% endblock page_header %}
-        
-            {% block flasher %}{% include "flasher.html" %}{% endblock flasher%}
-        
-            {% block body %}{% endblock %}
-            
-            {% block footer %}{% endblock footer%}
-        </div>
-    </div>
-</div>
 </body>
 </html>
