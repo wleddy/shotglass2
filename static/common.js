@@ -1,5 +1,19 @@
 /* common.js for app */
 
+// for navigation buttons
+function w3_open(id_name) {
+    document.getElementById(id_name).style.display = "block";
+}
+function w3_close(id_name) {
+    document.getElementById(id_name).style.display = "none";
+}
+function w3_hide(id_name) {
+    document.getElementById(id_name).style.visibility = "hidden";
+}
+function w3_show(id_name) {
+    document.getElementById(id_name).style.visibility = "visible";
+}
+
 function confirmRecordDelete(){
 	return confirm("Are you sure you want to delete this record?");
 }
