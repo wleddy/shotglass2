@@ -1,116 +1,79 @@
-{% set as_bar = site_config.MENU_AS_BAR | default(False) %}
-{% if as_bar %}
-    <style>
-        .menu_space {margin-right:0px;}
-        .menu_width {width:0px;}
-    </style>
-{% endif %}
 
 <script>
-  function getMenuValues(){
-    var has_top_bar = false;
-    // test for side or top menu
-    var nav = $("#primary-nav-side");
-    if (nav.lenth == 0){
-    // it should be a top menu
-    nav = $("#primary-nav-top");
-    has_top_bar = true;
+  var isBar = {{ as_bar | lower }};
+  var barClasses = ["w3-mobile","w3-bar","w3-collapse","w3-hide-small","w3-hide-medium"];
+  var sideClasses = ["w3-mobile","w3-sidebar","w3-bar-block","w3-collapse","w3-right","w3-card","w3-animate-right","w3-secondary-color","menu_width","nav-sidebar-extra"];
+
+  function swapClasses(target,addOrRemove,classList){
+    // add or remove classes in target with values from classList
+    for(var i = 0; i<classList.length; i++){
+      if(addOrRemove.toLowerCase() == 'add'){
+       $(target).addClass(classList[i]);
+      } else {
+        $(target).removeClass(classList[i]);
+      }
     }
-    return [nav,has_top_bar]
   }
   
   function set_menu_style(){
     // this is called when screen size changes
-    var menu_values = getMenuValues();
-    var nav = menu_values[0];
-    var has_top_bar = menu_values[1];
+    // but only when the menu bar is specified
+    var w = document.body.offsetWidth;
     
-    var w = document.body.offsetWidth
-    // dd content pushes lower items down when expanded
-    $('.w3-dropdown-content').css({'position':'relative'});
-    
-    if ( w < 993){
-      show_hamburger();
-      // display the small screen menu block
-     if(has_top_bar){
-        nav.removeClass('w3-bar').addClass('w3-bar-block').css({'min-height':'100vh',overflow:'auto',position:'absolute',right:0,top:0});
-        // dd content pushes lower items down when expanded
-        //$('.w3-dropdown-content').css({'position':'relative'});
-      } else {
-        // hide the menu
-        //nav.addClass('w3-sidebar');
-      }
-    } else {
-      // big sceen
-      hide_hamburger();
-      if(has_top_bar){
-      // display horizontal menu bar
-        nav.addClass('w3-bar').removeClass('w3-bar-block').css({position:'static','min-height':0,}).show();
-        // dd content overlays
-        $('.w3-dropdown-content').css({'position':'absolute'});
-      } else {
-      $('.w3-dropdown-content').css({'position':'relative'});
-      //nav.addClass('w3-sidebar');
-      }
-    }
+    swapClasses('#primary-nav', 'remove', barClasses);
+    swapClasses('#primary-nav', 'add', sideClasses);
+    show_hamburger();
+    $('#primary-nav').hide();
+  
+    if(w >= 993 ){
+      if (isBar){
+        swapClasses('#primary-nav', 'remove', sideClasses);
+        swapClasses('#primary-nav', 'add', barClasses);
+        $('#primary-nav').show();
+      } 
+    } 
   }
   
   function show_hamburger(){
-    $('#hamburger').show();
-  }
-  
-  function hide_hamburger(){
-    $('#hamburger').hide();
-  }
-  
-  function primary_nav_toggle() {
-    // this is envocked from the Hamburger
-    var menu_values = getMenuValues();
-    var nav = menu_values[0];
-    var has_top_bar = menu_values[1];
-    if(has_top_bar){
-      if (nav.hasClass('w3-hide-small')){
-        nav.removeClass('w3-hide-small').removeClass('w3-hide-medium');
-      } else {
-        nav.addClass('w3-hide-small').addClass('w3-hide-medium');
-      }
-    } else {
-      if(nav.hasClass('w3-sidebar')){
-        nav.removeClass('w3-sidebar');
-      } else {
-        nav.addClass('w3-sidebar');
-      }
+      $('#hamburger').show();
     }
     
-    set_menu_style();
-  }
+  function hide_hamburger(){
+      $('#hamburger').hide();
+    }
+    
+  function primary_nav_toggle() {
+      $('#primary-nav').toggle();
+    }
+  
 </script>
 
 <div id="nav" style="overflow:hidden;">
+    <button id="hamburger" class="w3-button w3-xlarge  w3-hide-large w3-primary-color w3-secondary-hover-color" style="position:absolute;top:3pt;right:6pt;" onclick="primary_nav_toggle();">&#9776;</button>
     {% if as_bar %}
     <div id="nav-placeholder" class="w3-mobile w3-bar w3-collapse w3-primary-color w3-hide-medium w3-hide-small w3-border-top w3-border-bottom" style="position:absolute;z-index:-1;height:30pt">&nbsp;</div>
     <div id="nav-placeholder_small" class="w3-mobile w3-bar w3-primary-color w3-hide-large" style="position:absolute;z-index:-1;">&nbsp;</div>
     <div id="nav-placeholder_small_headspace" class="w3-mobile w3-bar w3-hide-large" >&nbsp;</div>
-    <div class="w3-mobile w3-bar w3-collapse w3-hide-small w3-hide-medium"  id="primary-nav-top" style="min-width:50%">
-    {% else %}
-    <div class="w3-sidebar w3-bar-block w3-collapse w3-right w3-card w3-animate-right w3-secondary-color menu_width" style="height:100vh;overflow:scroll;position:absolute;right:0;top:0pt;" id="primary-nav-side">
     {% endif %}
-      <a href="javascript:void(0)" onclick="primary_nav_toggle();show_hamburger();" 
-        class="w3-button w3-bar-item w3-hide-large w3-secondary-color">Close &times;</a>
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="/">Home</a>
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.about')}}">About</a>
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.contact')}}">Contact Us</a>
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.docs')}}">Docs</a>
-      {% if not g.user %}
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
-      {% else %}
-      {% if g.admin and not g.admin.has_user_table_access(g.user) %}
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
-      {% endif %}
-      <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.logout')}}">Logout</a>
-      {# the menu items defined in g.admin appear below... #}
-      {% include 'admin_menu.html' %}
-      {% endif %} <!-- g.user -->
+    <div id="primary-nav" class="w3-mobile w3-sidebar w3-bar-block w3-collapse w3-right w3-card w3-animate-right w3-secondary-color menu_width nav-sidebar-extra" >
+        <a href="javascript:void(0)" onclick="primary_nav_toggle();" 
+          class="w3-button w3-bar-item w3-hide-large w3-secondary-color">Close &times;</a>
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="/">Home</a>
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.about')}}">About</a>
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.contact')}}">Contact Us</a>
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.docs')}}">Docs</a>
+        {% if not g.user %}
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
+        {% else %}
+        {% if g.admin and not g.admin.has_user_table_access(g.user) %}
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+        {% endif %}
+        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.logout')}}">Logout</a>
+        {# the menu items defined in g.admin appear below... #}
+        {% include 'admin_menu.html' %}
+        {% endif %} <!-- g.user -->
     </div>
 </div>
+
+
 

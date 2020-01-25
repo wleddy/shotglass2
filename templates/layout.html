@@ -44,45 +44,51 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='w3.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='default_style.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css' )}}">
-
-    <script>
-        $(window).resize(function(){set_menu_style();});
-    </script>
-
+    {% set as_bar = site_config.MENU_AS_BAR | default(True) %}
+    {% if as_bar %}
+        <style>
+            .menu_space {margin-right:0px;}
+        </style>
+    
+        <script>
+            $(window).resize(function(){set_menu_style();});
+            $(document).ready(function(){set_menu_style();});
+        </script>
+    {% endif %}
 
     {% block head%}{% endblock %}
 </head>
 <body>
     <div id="contain" >    
-        {% block header %}
         <div id="sg-header">
+        {% block header %}
             {% include "header.html"%}
             {% include "top-nav.html"%}
-            <div class="w3-main menu_space"></div>
         {% endblock header %}
+        </div>
+        
+        <div class="w3-main w3-container menu_space">
+            <div id="sg-page-header">
+            {% block page_header %}
+                {% if not g.suppress_page_header %}
+                {% include "page_header.html" %}
+                {% endif %}
+            {% endblock page_header %}
+            </div>
             
-            <div class="w3-container">
-                {% block page_header %}
-                <div id="sg-page-header">
-                    {% if not g.suppress_page_header %}
-                    {% include "page_header.html" %}
-                    {% endif %}
-                </div>
-                {% endblock page_header %}
-                
-                <div id="sg-flasher">
-                    {% block flasher %}{% include "flasher.html" %}{% endblock flasher%}
-                </div>
-                
-                <div id="sg-body">
-                    {% block body %}{% endblock %}
-                </div>
-                
-                <div id="sg-footer">
-                    {% block footer %}{% endblock footer%}
-                </div>
+            <div id="sg-flasher">
+                {% block flasher %}{% include "flasher.html" %}{% endblock flasher%}
+            </div>
+            
+            <div id="sg-body">
+                {% block body %}{% endblock %}
+            </div>
+            
+            <div id="sg-footer">
+                {% block footer %}{% endblock footer%}
             </div>
         </div>
+
     </div>
     {% block dialog %}
     <div id="dialog"></div>

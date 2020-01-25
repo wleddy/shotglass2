@@ -27,6 +27,14 @@ pre {
 
 /* no underline in navigation menus */
 #nav a {text-decoration:none;}
+/* add to sidebar navigation menu */
+.nav-sidebar-extra {
+    min-height:100vh;
+    overflow:auto;
+    position:absolute!important;
+    right:0;
+    top:0;
+}
 
 /* colors */
 /* Teal & pale green */
