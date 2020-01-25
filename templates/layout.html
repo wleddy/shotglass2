@@ -44,7 +44,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='w3.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='default_style.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css' )}}">
-    {% set as_bar = site_config.MENU_AS_BAR | default(True) %}
+    
+    {% set as_bar = site_config.MENU_AS_BAR | default(False) %}
     {% if as_bar %}
         <style>
             .menu_space {margin-right:0px;}
