@@ -97,7 +97,12 @@ def _before():
     if 'user' in session:
         g.user = session['user']
         
-        
+    # g.menu_items should be a list of dicts
+    #  with keys of 'title' & 'url' used to construct
+    #  the items in the main menu
+    g.menu_items = shotglass.get_menu_items()
+            
+    # g.admin items are added to the navigation menu by default
     g.admin = Admin(g.db) # This is where user access rules are stored
     shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
 

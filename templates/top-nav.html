@@ -58,10 +58,11 @@
     <div id="primary-nav" class="w3-mobile w3-sidebar w3-bar-block w3-collapse w3-right w3-card w3-animate-right w3-secondary-color menu_width nav-sidebar-extra" >
         <a href="javascript:void(0)" onclick="primary_nav_toggle();" 
           class="w3-button w3-bar-item w3-hide-large w3-secondary-color">Close &times;</a>
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="/">Home</a>
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.about')}}">About</a>
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.contact')}}">Contact Us</a>
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('www.docs')}}">Docs</a>
+        {% if g.menu_items %}
+        {% for item in g.menu_items %}
+          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ item.url }}">{{ item.title }}</a>
+        {% endfor %}
+        {% endif %}
         {% if not g.user %}
         <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
         {% else %}

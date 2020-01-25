@@ -8,6 +8,7 @@
 HOST_NAME = 'localhost:5000' 
 SITE_NAME = "My New Web Site"
 DEBUG = True
+MENU_AS_BAR = False #Bar (True) or sidebar main nav style
 
 ############################################
 ### You Must ABSOLUTELY change this key

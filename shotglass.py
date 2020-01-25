@@ -11,6 +11,24 @@ def get_app_config(this_app=None):
     """Depricated"""
     return get_site_config(this_app)
         
+        
+def get_menu_items():
+    """The default items for the navigation menu
+    
+    So that you can add items to the menu without modifying
+    shotglass2/templates/top-nav.html. 
+    
+    Modify this list instead.
+    """
+    menu_items = [
+        {'title':'Home','url':url_for('www.home')},
+        {'title':'About','url':url_for('www.about')},
+        {'title':'Contact Us','url':url_for('www.contact')},
+        {'title':'Docs','url':url_for('www.docs')},
+        ]
+    return menu_items
+    
+    
 def get_site_config(this_app=None):
     """Returns a copy of the current app.config.
     This makes it possible for other modules to get access to the config
