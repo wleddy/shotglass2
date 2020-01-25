@@ -9,7 +9,7 @@
     <h3>Your account is now active.</h3>
     <p>Your account is now ready to use. 
         {% if g.user %}
-        You are logged in. <a href="{{next | default(url_for('signup.home')) }}">Continue</a>
+        You are logged in. <a href="{{next | default(url_for('www.home')) }}">Continue</a>
         {% else %}
         You may <a href="{{url_for('login.login')}}">log in</a> here.
         {% endif %}
