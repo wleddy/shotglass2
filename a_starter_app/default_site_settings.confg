@@ -78,6 +78,7 @@ PERMANENT_SESSION_LIFETIME = timedelta(days=31)
 MAX_CONTENT_LENGTH = 300000
 
 ## some administrative settings
+SUPPRESS_LOGIN_MENU_ITEM = False ## If True, don't display the login menu item
 ALLOW_USERNAME_CHANGE = True
 ALLOW_USER_SIGNUP = True #User may create their own accounts
 #By default, user accounts are inactive untill approved by Admin.

@@ -64,11 +64,13 @@
         {% endfor %}
         {% endif %}
         {% if not g.user %}
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
+          {% if  not site_config.SUPPRESS_LOGIN_MENU_ITEM | default(False) %}
+          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
+          {% endif %}
         {% else %}
-        {% if g.admin and not g.admin.has_user_table_access(g.user) %}
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
-        {% endif %}
+          {% if g.admin and not g.admin.has_user_table_access(g.user) %}
+          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+          {% endif %}
         <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.logout')}}">Logout</a>
         {# the menu items defined in g.admin appear below... #}
         {% include 'admin_menu.html' %}
