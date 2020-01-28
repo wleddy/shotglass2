@@ -8,7 +8,6 @@
 HOST_NAME = 'localhost:5000' 
 SITE_NAME = "My New Web Site"
 DEBUG = True
-MENU_AS_BAR = False #Bar (True) or sidebar main nav style
 
 ############################################
 ### You Must ABSOLUTELY change this key
@@ -77,8 +76,11 @@ PERMANENT_SESSION_LIFETIME = timedelta(days=31)
 # Uploads ...
 MAX_CONTENT_LENGTH = 300000
 
-## some administrative settings
+# settings for Main Nav Menu
+MENU_AS_BAR = False #if True use Bar style main nav menu else sidebar by default
 SUPPRESS_LOGIN_MENU_ITEM = False ## If True, don't display the login menu item
+
+## some administrative settings
 ALLOW_USERNAME_CHANGE = True
 ALLOW_USER_SIGNUP = True #User may create their own accounts
 #By default, user accounts are inactive untill approved by Admin.
