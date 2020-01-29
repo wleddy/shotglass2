@@ -84,7 +84,11 @@ class Admin():
         
     def has_access(self,user_name,table=None):
         """Test to see if the user represented by user name has access to ANY admin items
-        If a table class is specified, only check to see if user has access to that table"""
+        If a table class is specified, only check to see if user has access to that table
+        
+        If 'table' is a string, look for permissions by the display_name.
+        Useful when testing the permissions from a template where the table object is not available.
+        """
         from shotglass2.users.models import User
         
         if len(self.permissions) == 0:
@@ -101,8 +105,16 @@ class Admin():
             
         temp_list = self.permissions
         if table:
-            temp_list = [x for x in temp_list if x['table'] == table]
-            
+            dict_item = 'table'
+            try:
+                if type(table) is str:
+                    # Look up the table by display name
+                    dict_item = 'display_name'
+                    
+                temp_list = [x for x in temp_list if x[dict_item] == table]
+            except:
+                return False
+
         for role in user_roles:
             for list_item in temp_list:
                 if role.name.lower() in list_item['roles']:
