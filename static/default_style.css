@@ -1,4 +1,9 @@
 
+#sg-body {
+    background-color: white;
+    padding:4pt 0;
+}
+
 /* change the fixed width of the right menu here*/
 .menu_space {
     margin-right:200px;
@@ -8,6 +13,10 @@
 }
 
 p {margin-top:0;margin-bottom:.4em;}
+
+p#addRecord {
+    margin-left:4pt;
+}
 
 hr {
     border-top: 1px solid #737373;
@@ -23,6 +32,7 @@ pre {
 /* make list tables look clickable */
 .datatable tr {
     cursor:pointer;
+    background-color: whitesmoke;
 }
 
 /* no underline in navigation menus */
