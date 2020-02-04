@@ -15,30 +15,7 @@ def client():
     db_fd, app.app.config['DATABASE_PATH'] = tempfile.mkstemp()
     app.app.config['TESTING'] = True
     client = app.app.test_client()
-
-    with app.app.app_context():
-        print(app.app.config['DATABASE_PATH'])
-        app.init_db(app.get_db(app.app.config['DATABASE_PATH']))
-        # Add some more users
-        f = open('users/views/test/test_data_create.sql','r')
-        sql = f.read()
-        f.close()
-        cur = app.g.db.cursor()
-        cur.executescript(sql)
-        # doris and John need passwords
-        rec = app.User(app.g.db).get('doris')
-        rec.password = getPasswordHash('password')
-        app.User(app.g.db).save(rec)
-        rec = app.User(app.g.db).get('John')
-        rec.password = getPasswordHash('password')
-        app.User(app.g.db).save(rec)
-        app.g.db.commit()
-        
-        rec = app.User(app.g.db).get('doris')
-        print(rec)
-        rec = app.User(app.g.db).get('John')
-        print(rec)
-        
+           
     yield client
 
     os.close(db_fd)
@@ -57,6 +34,30 @@ def delete_test_db():
         os.remove(filespec)
 
     
+def test_create_test_data():
+    # Populate the test database
+    from shotglass2.users.models import User
+    try:
+        f = open('shotglass2/users/views/test/test_data_create.sql','r')
+        sql = f.read()
+        f.close()
+        cur = db.cursor()
+        cur.executescript(sql)
+
+        rec = User(db).get('doris')
+        rec.password = getPasswordHash('password')
+        User(db).save(rec)
+        rec = User(db).get('John')
+        rec.password = getPasswordHash('password')
+        User(db).save(rec)
+        db.commit()
+
+        assert True == True
+
+    except:
+        assert True == False
+            
+            
 def test_roles():
     from shotglass2.users.models import Role
     #db = get_test_db()
