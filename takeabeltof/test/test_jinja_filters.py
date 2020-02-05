@@ -69,15 +69,28 @@ def test_excel_date_and_time_string():
     # should return text un-altered
     assert filters.excel_date_and_time_string("this is a test") == "this is a test"
 
-def abbr_date_string():
+def test_abbr_date_string():
     test_date = datetime(2019,5,9)
     assert filters.abbr_date_string(test_date) == "Thu. May 9, 2019"
-    assert filters.abbr_date_string("2018-05-09") == "Thu. May 9, 2019"
-    assert filters.abbr_date_string("05/09/18") == "Thu. May 9, 2019"
-    assert filters.abbr_date_string("5/9/18") == "Thu. May 9, 2019"
+    assert filters.abbr_date_string("2018-05-09") == "Wed. May 9, 2018"
+    assert filters.abbr_date_string("05/09/18") == "Wed. May 9, 2018"
+    assert filters.abbr_date_string("5/9/18") == "Wed. May 9, 2018"
     test_date = datetime(2019,6,9)
     assert filters.abbr_date_string(test_date) == "Sun. Jun. 9, 2019"
     assert filters.abbr_date_string("2019-06-09") == "Sun. Jun. 9, 2019"
     assert filters.abbr_date_string("06/09/19") == "Sun. Jun. 9, 2019"
     assert filters.abbr_date_string("6/9/19") == "Sun. Jun. 9, 2019"
+    
+    
+def test_render_markdown():
+    import app
+    with app.app.app_context():
+        assert filters.render_markdown("# This is a test") == "<h1>This is a test</h1>\n"
+    
+def test_default_if_none():
+    assert filters.default_if_none(None) == ''
+    assert filters.default_if_none(None,'Ok') == 'Ok'
+    assert filters.default_if_none(0,'Ok') == 0
+    assert filters.default_if_none(0,'Ok',True) == 'Ok'
+    assert filters.default_if_none(None,'Ok',True) == 'Ok'
     

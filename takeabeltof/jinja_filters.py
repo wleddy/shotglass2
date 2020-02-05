@@ -54,14 +54,15 @@ def long_date_string(value):
     
 def abbr_date_string(value):
     """Mon. Mar. 4, 2019"""
-    format='%a, %b. %-d, %Y'
-    #No period after May
+    format='%a. %b. %-d, %Y'
+        
     if type(value) is str:
         # convert the string to a date first then back.
-        temp_date = getDatetimeFromString(value)
-        if temp_date and temp_date.month == 5:
-            format='%a, %b %-d, %Y'
-            value = temp_date
+        value = getDatetimeFromString(value)
+        
+    #No period after May
+    if value.month == 5:
+        format='%a. %b %-d, %Y'
         
     return date_to_string(value,format)
     
@@ -122,6 +123,19 @@ def render_markdown(data):
     return ''
     
     
+def default_if_none(data,value='',default_on_false=False):
+    """Return the default value if data is None
+    
+    Optionally, if default_on_false is True, return the default value
+    if data evaluates as False.
+    
+    """
+    if data == None or (not data and default_on_false):
+        return value
+        
+    return data
+    
+    
 def register_jinja_filters(app):
     # register the filters
     app.jinja_env.filters['short_date_string'] = short_date_string
@@ -140,3 +154,4 @@ def register_jinja_filters(app):
     app.jinja_env.filters['money'] = two_decimal_string
     app.jinja_env.filters['weblink'] = weblink
     app.jinja_env.filters['render_markdown'] = render_markdown
+    app.jinja_env.filters['default_if_none'] = default_if_none
