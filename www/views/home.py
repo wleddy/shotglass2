@@ -4,6 +4,7 @@ from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.utils import render_markdown_for, printException, handle_request_error, send_static_file
 from shotglass2.takeabeltof.date_utils import datetime_as_string
 import os
+import json
 
 mod = Blueprint('www',__name__, template_folder='templates/www', url_prefix='')
 
@@ -57,22 +58,55 @@ def about():
 
 #@mod.route('/contact', methods=['POST', 'GET',])
 #@mod.route('/contact/', methods=['POST', 'GET',])
-def contact():
+def contact(**kwargs):
+    """Send an email to the administator or contact specified.
+    
+    kwargs:
+    
+        to_addr: the address to send to
+        
+        to_contact: Name of contact
+        
+        subject: The email subject text
+        
+        custom_message: Message to display at top of contact form. should be html
+        
+        html_template: The template to use for the contact form
+    
+    """
     setExits()
     g.title = 'Contact Us'
     from shotglass2.shotglass import get_site_config
     from shotglass2.takeabeltof.mailer import send_message
-    rendered_html = render_markdown_for('contact.md',mod)
     
+    #import pdb;pdb.set_trace()
+   
+    site_config = get_site_config()
     show_form = True
     context = {}
     success = True
     bcc=None
     passed_quiz = False
-    site_config = get_site_config()
     mes = "No errors yet..."
+    to = []
+    
+    if not kwargs and request.form and 'kwargs' in request.form:
+        kwargs = json.loads(request.form.get('kwargs','{}'))
+        
+    subject = kwargs.get('subject',"Contact from {}".format(site_config['SITE_NAME']))
+    html_template = kwargs.get('html_template',"home/email/contact_email.html")
+    to_addr = kwargs.get('to_addr')
+    to_contact = kwargs.get('to_contact',to_addr)
+    custom_message = kwargs.get('custom_message')
+    if to_addr:
+        to.append((to_contact,to_addr))
+        
+    if custom_message:
+        rendered_html = custom_message
+    else:
+        rendered_html = render_markdown_for('contact.md',mod)
+    
     if request.form:
-        #import pdb;pdb.set_trace()
         quiz_answer = request.form.get('quiz_answer',"A")
         if quiz_answer.upper() == "C":
             passed_quiz = True
@@ -84,40 +118,42 @@ def contact():
                 context.update({key:value})
                 
             # get best contact email
-            to = []
-            # See if the contact info is in Prefs
-            try:
-                from shotglass2.users.views.pref import get_contact_email
-                contact_to = get_contact_email()
-                if contact_to:
-                    to.append(contact_to)
-            except Exception as e:
-                printException("Need to update home.contact to find contacts in prefs.","error",e)
-                
-            try:
-                if not to:
-                    to = [(site_config['CONTACT_NAME'],site_config['CONTACT_EMAIL_ADDR'],),]
-                if site_config['CC_ADMIN_ON_CONTACT'] and site_config['ADMIN_EMAILS']:
-                    bcc = site_config['ADMIN_EMAILS']
-                
-            except KeyError as e:
-                mes = "Could not get email addresses."
-                mes = printException(mes,"error",e)
-                if to:
-                    #we have at least a to address, so continue
-                    pass
-                else:
-                    success = False
+            if not to:
+                # See if the contact info is in Prefs
+                try:
+                    from shotglass2.users.views.pref import get_contact_email
+                    contact_to = get_contact_email()
+                    if contact_to:
+                        to.append(contact_to)
+                except Exception as e:
+                    printException("Need to update home.contact to find contacts in prefs.","error",e)
+                    
+                try:
+                    if not to:
+                        to = [(site_config['CONTACT_NAME'],site_config['CONTACT_EMAIL_ADDR'],),]
+                    if site_config['CC_ADMIN_ON_CONTACT'] and site_config['ADMIN_EMAILS']:
+                        bcc = site_config['ADMIN_EMAILS']
+                    
+                except KeyError as e:
+                    mes = "Could not get email addresses."
+                    mes = printException(mes,"error",e)
+                    if to:
+                        #we have at least a to address, so continue
+                        pass
+                    else:
+                        success = False
                     
             if success:
                 # Ok so far... Try to send
                 success, mes = send_message(
                                     to,
-                                    subject = "Contact from {}".format(site_config['SITE_NAME']),
-                                    html_template = "home/email/contact_email.html",
+                                    subject = subject,
+                                    html_template = html_template,
                                     context = context,
                                     reply_to = request.form['email'],
                                     bcc=bcc,
+                                    custom_message=custom_message,
+                                    kwargs=kwargs,
                                 )
         
             show_form = False
@@ -126,7 +162,13 @@ def contact():
             flash('You left some stuff out.')
             
     if success:
-        return render_template('contact.html',rendered_html=rendered_html, show_form=show_form, context=context,passed_quiz=passed_quiz)
+        return render_template('contact.html',
+            rendered_html=rendered_html, 
+            show_form=show_form, 
+            context=context,
+            passed_quiz=passed_quiz,
+            kwargs=kwargs,
+            )
             
     handle_request_error(mes,request,500)
     flash(mes)

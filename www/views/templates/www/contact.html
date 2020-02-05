@@ -25,6 +25,10 @@
             {{ left_column_spacer() }}
             <form action="{{ g.contactURL }}" method=post class="entry {{ form_column_class() }}">
                 <fieldset>
+                    {% if kwargs %}
+                    {% set kwargs_data = kwargs | tojson %}
+                    <input name="kwargs" type="hidden" value='{{ kwargs_data }}'>
+                    {% endif %}
                     <p>{{ input_field(context['name'],"name",req=True)}}</p>
                     <p>{{ input_field(context['email'],"email",label="Email Address",req=True)}}</p>
                     <p>{{ label_only("Question, Comment, Condemnation:",req=True)}}
