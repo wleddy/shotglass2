@@ -6,4 +6,4 @@
 <p>Name: {{context['name']}}</p>
 <p>email: {{context['email']}}</p>
 <p>Comment:</p>
-<p>{{ context['comment'] | render_markdown | safe }}</p>
+{{ context['comment'] | render_markdown | safe }}
