@@ -1,6 +1,8 @@
 import sqlite3
+from flask import flash
 from namedlist import namedlist #Like namedtuples but mutable
-from shotglass2.takeabeltof.utils import cleanRecordID
+from shotglass2.takeabeltof.utils import cleanRecordID ,printException
+# from shotglass2.takeabeltof.mailer import email_admin
 
 
 class Database:
@@ -41,6 +43,23 @@ class SqliteTable:
         #   So, to create an index provide something like {"my_index":"contact_id, contact_name"}
         self.indexes = {}
         
+        # certain column type should not be set to text values
+        self.float_types = ['FLOAT','REAL','NUMBER']
+        self.integer_types = ['INTEGER','INT',]
+        self.numeric_types = []
+        self.numeric_types.extend(self.float_types)
+        self.numeric_types.extend(self.integer_types)
+        
+    def alert_admin(self,message):
+        """Send an email to the admin address if an error is encountered or
+        if you just fell like talking...
+    
+        """
+        from shotglass2.takeabeltof.mailer import email_admin
+        from shotglass2.shotglass import get_site_config
+    
+        email_admin("Error in database access for {}".format(get_site_config()['HOST_NAME']),message)
+
     def commit(self):
         """A convenience to be able to call commit on the database from a table object"""
         self.db.commit()
@@ -83,7 +102,23 @@ class SqliteTable:
             out.append(col[1])
             
         return out
+ 
+    def get_column_type(self,column_name):
+        """Return the Sqlite column type (as text) for the specifed column name"""
+        #import pdb;pdb.set_trace()
+        out = None
+        cols = self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
         
+        for col in cols:
+            if col[1] == column_name:
+                out = col[2].upper()
+                break
+            
+        if out == None:
+            raise KeyError("That column name is not in this table")
+            
+        return out
+       
     @property
     def _data_tuple(self):
         """return a namedtuple for use with this table"""        
@@ -224,7 +259,18 @@ class SqliteTable:
             # upddate row_data with any values that may have changed
             for x in range(1,len(row_data)):
                 if row_data._fields[x] in temp_row.keys():
-                    row_data[x] = temp_row[row_data._fields[x]]
+                    temp_value = temp_row[row_data._fields[x]]
+                    col_type = self.get_column_type(row_data._fields[x]).upper()
+                    # try to ensure that the data is the correct type
+                    if type(temp_value) is str and col_type in self.numeric_types:
+                        #Try to convert this string to a number
+                        temp_value = self._text_to_numeric(row_data._fields[x],temp_value,col_type)
+                    elif type(temp_value) == int and col_type in self.float_types:
+                        temp_value = temp_value + 0.0
+                    elif type(temp_value) == float and col_type in self.integer_types:
+                        temp_value = int(temp_value)
+                    
+                    row_data[x] = temp_value
             
         row_data.id = row_id
                     
@@ -286,21 +332,78 @@ class SqliteTable:
                  return rows[0]
         return None
         
+    def _text_to_numeric(self,field_name,value,column_type):
+        """Attempt to coerce values for numeric fields to numbers if needed.
+        
+        Params:
+        
+            field_name: the name of the field being updated
+            
+            value: the value to convert
+            
+            column_type: the text name of the field type e.g. INTEGER, REAL, etc.
+            
+        Return the number or the original value if not successful
+        
+        Alerts admin on failure
+        
+        """
+        
+        from shotglass2.shotglass import get_site_config
+
+        value = value.strip()
+        column_type = column_type.upper()
+        
+        if type(value) != str:
+            #safety valve
+            return value
+            
+        if value == '':
+           value = None
+        elif value.isdigit():
+           # convert to int
+           value = int(value)
+        else:
+           # may be a float
+           try:
+               value = float(value)
+               if column_type in self.integer_types:
+                   value = int(value)
+           except Exception as e:
+                mes ="""A problem occurred while attempting to save the record for table {}. 
+                It looks like a non-numeric value ('{}') was entered in the field '{}'.
+                
+                The information in the record may not be what you expect...
+
+                """.format(self.table_name.title(),value,field_name)
+                if not get_site_config()['TESTING']:
+                    flash(mes)
+                self.alert_admin(printException(mes,err=e))
+               
+        return value
+        
+        
     def update(self,rec,form,save=False):
-        """Update the rec with the matching elements in form
-        rec is a record namedlist 
-        form is an InmutableMultiDict or a dictionary object
+        """Update the rec, with the matching elements in form
+        
+        rec is a record namedlist of an existing or new reocrd.
+        
+        form is a dictionary like object with the new data. Usually reques.form
         
         The id element is never updated. Before calling this method be sure that any elements
         in form that have names matching names in rec contain the values you want.
         
         Optionally can save the rec (but not committed) after update
         """
+
         #import pdb;pdb.set_trace()
+        
         for key,value in rec._asdict().items():
-            if key != 'id' and key in form:
+            if key != 'id' and key in form:   
                 rec._update([(key,form[key])])
                 
         if save:
             self.save(rec)
             
+            
+        
