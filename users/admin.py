@@ -36,8 +36,7 @@ class Admin():
         
         Parameters:
             table : Database table object
-            url : str
-                The url to be associated with the menu item created for this table
+            url : str The url to be associated with the menu item created for this table
                 
         Example:
             Admin.register(TableObj,url,[,display_name=None[,minimum_rank_required=None[,roles=None]]])
@@ -46,7 +45,6 @@ class Admin():
                 self.permissions = [{table,display_name,url,minimum_rank_required(default = 99999999),roles(default = [])},]
         
         Registering a table again will replace the previous registration for that table.
-    
         
         """
         display_name=kwargs.get('display_name',None)
