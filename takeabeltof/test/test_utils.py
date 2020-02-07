@@ -76,7 +76,7 @@ def test_formatted_phone_number():
     assert utils.formatted_phone_number('(916) 444-2904') == '916-444-2904'
     assert utils.formatted_phone_number('9164442904') == '916-444-2904'
     assert utils.formatted_phone_number('(916)444-2904') == '916-444-2904'
-    assert utils.formatted_phone_number('444-2904') == ''
-    assert utils.formatted_phone_number('Not a number') == ''
+    assert utils.formatted_phone_number('444-2904') == '444-2904'
+    assert utils.formatted_phone_number('Not a number') == 'Not a number'
     assert utils.formatted_phone_number('(916)444-2904','/') == '916/444/2904'
     assert utils.formatted_phone_number('(916)444-2904',raw=True) == ('916','444','2904','') # returns 4 items

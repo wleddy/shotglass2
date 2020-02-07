@@ -35,10 +35,22 @@ def looksLikeEmailAddress(email=""):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email.strip())
     
 def printException(mes="An Unknown Error Occurred",level="error",err=None):
+    """Generate an error message, write it to the log and return the resulting
+    text.
+    
+    mes: Some message text specific to the supposed cause of the error.
+    
+    level: Any of 'error', 'info', 'debug'
+    
+    When logging or in debug mode attempts to generate a description of the error
+    location.
+    
+    """
     from shotglass2.shotglass import get_site_config 
     from app import app
     
     site_config = get_site_config()
+    level = level.lower()
     
     exc_type, exc_obj, tb = sys.exc_info()
     debugMes = None
@@ -54,7 +66,6 @@ def printException(mes="An Unknown Error Occurred",level="error",err=None):
             debugMes = "Could not get error location info."
             
     if level=="error" or site_config["DEBUG"]:
-        #always log errors
         if debugMes:
             app.logger.error(nowString() + " - " + debugMes)
         elif err:
@@ -163,7 +174,18 @@ def render_markdown_for(file_name,bp=None,**kwargs):
 
 
 def render_markdown_text(text_to_render,**kwargs):
-    # treat the markdown as a template and render url_for and app.config values
+    """Convert text_to_render to html
+    
+    Renders the markdown as a template first so that any included Jinja template values
+    will be rendered to text before markdown conversion to html.
+    
+    __kwargs__ can contain anything that you want to use in the template context.
+    
+    The following kwargs may also be present:
+        escape: Default to True. If false any included html in the text will be left as-is
+        and not escaped for display
+    
+    """ 
     text_to_render = render_template_string(text_to_render,**kwargs)
     escape = kwargs.get('escape',True) #Set to False to preserve included html
     markdown = mistune.Markdown(renderer=mistune.Renderer(escape=escape))
@@ -239,16 +261,29 @@ def send_static_file(filename,**kwargs):
     
     
 def formatted_phone_number(phone,sep="-",raw=False):
-    """Take what may be a phone number and return a formatted version of it or '' or a tuple of found parts
+    """Take what may be a phone number and return a formatted version of it.
+    
+    params:
+        phone: a string that may be a phone number
+        
+        sep: the string value to use as a separator in the converted string
+        
+        raw: if True the function returns a tuple of found parts
+    
+    If the value can't be converted, the value is returned unchanged.
+    
     Taken from: https://www.diveinto.org/python3/regular-expressions.html
     """
     
+    if type(phone) != str:
+        return phone
+        
     phonePattern = re.compile(r'(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$')
     try:
         groups = phonePattern.search(phone).groups()
     except AttributeError:
         # No match found
-        return ''
+        return phone
         
     if groups:
         if raw:
@@ -257,5 +292,5 @@ def formatted_phone_number(phone,sep="-",raw=False):
         if len(groups) > 2:
              return sep.join(groups[:3])
              
-    return '' # conversion failed
+    return phone # conversion failed
     
