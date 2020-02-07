@@ -6,9 +6,9 @@
             <p class="w3-tiny" style="margin:0">&nbsp;</p>
     	{% for message in messages %} 
         <div class="w3-panel w3-leftbar w3-secondary-color w3-primary-border-color" style="">
-        	<p class="flash">
-        		{{ message }}
-        	</p>
+        	<div class="flash">
+        		{{ message | render_markdown | safe }}
+            </div>
         </div>
     	{% endfor %} 
     </div></div>
