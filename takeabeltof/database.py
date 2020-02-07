@@ -388,7 +388,7 @@ class SqliteTable:
         
         rec is a record namedlist of an existing or new reocrd.
         
-        form is a dictionary like object with the new data. Usually reques.form
+        form is a dictionary like object with the new data. Usually request.form
         
         The id element is never updated. Before calling this method be sure that any elements
         in form that have names matching names in rec contain the values you want.
