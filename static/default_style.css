@@ -43,6 +43,16 @@ pre {
     top:0;
 }
 
+/*
+  Add a little blank space between input fields in w3 columns 
+  May want to add more later, but this will do for now...
+*/
+.w3-quarter label, .w3-quarter input,
+.w3-third label, .w3-third input,
+.w3-half label, .w3-half input
+{width:98%;}
+
+
 /* colors */
 /* Teal & pale green */
 
