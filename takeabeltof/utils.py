@@ -27,6 +27,73 @@ def cleanRecordID(id):
         
     return -1
     
+    
+class Numeric():
+    """Try to convert the input value to a number
+    
+    Instanciate as:
+        n = Numeric(<int | float>) or
+        
+        n = Numeric(<number like string>)
+        
+    self.is_number returns True if conversion was successful
+    
+    self.int returns integer value
+    
+    self.float returns float value
+    
+    accessing int or float if is_number is False results in a ValueError
+    """
+    def __init__(self,value):
+        self.value = value
+        self.is_number = False
+        self.int_value = None
+        self.float_value = None
+        
+        if isinstance(value,(int)):
+            self.is_number = True
+            self.int_value = value
+            self.float_value = value + 0.0
+            
+        if isinstance(value,(float)):
+            self.is_number = True
+            self.float_value = value
+            self.int_value = int(value)
+                
+        if type(value) == str and value.strip() != '':
+            value = value.strip()
+            if value.isdigit():
+                self.is_number = True
+                self.int_value = int(value)
+                self.float_value = self.int_value + 0.0
+            elif '.' in value:
+                self.is_number = False
+                try:
+                    self.float_value = float(value)
+                    self.int_value = int(self.float_value)
+                    self.is_number = True
+                except:
+                    pass
+                    
+    @property
+    def int(self):
+        if self.int_value != None:
+            return self.int_value
+        else:
+            self.value_error()
+            
+    @property
+    def float(self):
+        if self.float_value != None:
+            return self.float_value
+        else:
+            self.value_error()
+            
+    def value_error(self):
+            raise ValueError(self.value,"is not a number")
+                    
+        
+            
 def looksLikeEmailAddress(email=""):
     """Return True if str email looks like a normal email address else False"""
     if type(email) is not str:
