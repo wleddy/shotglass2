@@ -38,17 +38,20 @@ with app.app.app_context():
 def delete_test_db():
         os.remove(filespec)
         
+def abs_path(file):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)),file)
         
 def test_create_test_data():
     # Populate the test database
     try:
-        f = open('shotglass2/users/views/test/test_data_create.sql','r')
+        #f = open('shotglass2/users/views/test/test_data_create.sql','r')
+        f = open( abs_path('test_data_create.sql'),'r')
         sql = f.read()
         f.close()
         cur = db.cursor()
         cur.executescript(sql)
         
-        assert True == True
+        assert cur != None
         
     except:
         assert True == False

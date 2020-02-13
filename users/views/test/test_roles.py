@@ -10,6 +10,10 @@ import tempfile
 import app
 from shotglass2.users.views.password import getPasswordHash
 
+def abs_path(file):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)),file)
+        
+
 @pytest.fixture
 def client():
     db_fd, app.app.config['DATABASE_PATH'] = tempfile.mkstemp()
@@ -38,7 +42,7 @@ def test_create_test_data():
     # Populate the test database
     from shotglass2.users.models import User
     try:
-        f = open('shotglass2/users/views/test/test_data_create.sql','r')
+        f = open( abs_path('test_data_create.sql'),'r')
         sql = f.read()
         f.close()
         cur = db.cursor()
