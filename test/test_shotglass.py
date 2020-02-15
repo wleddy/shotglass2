@@ -28,18 +28,33 @@ from shotglass2.takeabeltof.get_client import client
 #    os.unlink(app.app.config['DATABASE_PATH'])
     
     
-filespec = 'instance/test.db'
+filespec = os.path.join(os.path.dirname(os.path.realpath(__file__)),'instance/test.db')
 
 db = None
 
-with app.app.app_context():
-   db = app.get_db(filespec)
-   app.init_db(db)
+def init_test_db():
+    with app.app.app_context():
+        db = app.get_db(filespec)
+        app.init_db(db)
 
         
 def delete_test_db():
+    if os.path.isabs(filespec):
+        # delete the temp backup files
+        test_dir = os.path.basename(filespec)
+        file_list = os.listdir(test_dir)
+        for f in file_list:
+            os.remove(os.path.join(test_dir,f))
+        os.rmdir(test_dir)
+    else:
         os.remove(filespec)
         
+        
+def test_make_db_path():
+    path = 'instance/notad.dat'
+    assert shotglass.make_db_path(path) == True
+    
+    
 def test_home(client):
     result = client.get('/')   
     assert result.status_code == 200
@@ -66,10 +81,15 @@ def test_refuse_instance(client):
     
 
 def test_do_backups():
+    try:
+        init_test_db()
+    except:
+        pass
+    
     script_root = os.path.dirname(os.path.realpath(__file__))
     backup_dir_name = 'backup_test'
     backup_dir = os.path.join(script_root,backup_dir_name)
-    
+        
     with app.app.app_context():
         db_path = os.path.join(app.app.root_path,filespec)
         app.app.config['TESTING'] = True
@@ -83,7 +103,7 @@ def test_do_backups():
         for f in file_list:
             os.remove(os.path.join(backup_dir,f))
         os.rmdir(backup_dir)
-        
+
     
 ############################ The final 'test' ########################
 ######################################################################
@@ -92,8 +112,6 @@ def test_finished():
         db.close()
         del db
         delete_test_db()
-        
-        
         assert True
     except:
         assert True

@@ -98,21 +98,36 @@ def initalize_user_tables(db):
     
         
 def make_db_path(filespec):
-    """Test the filespec path and if not found, create the path
-    but not the file.
-    Returns True if a new path was created, else False
     """
-    root_path = os.path.dirname(os.path.abspath(__name__))
-    if not os.path.isfile(os.path.join(root_path,filespec)):
+    Test the filespec path and if not found, create the path
+    but not the file if a file name is included in the path.
+    Returns True if either the path already existed or was
+    created.
+    
+    If filespec is an absolute path, use as is. If not, use
+    app.root_path (the path to the application file) instead.
+    """
+    
+    if os.path.isabs(filespec):
+        root_path = os.path.dirname(filespec)
+    else:
+        # if filespec is not an absolute path, use app.root_path as the starting point
+        from app import app
+        root_path = os.path.join(app.root_path,os.path.dirname(filespec))
+        
+    if not os.path.isdir(root_path) :
         # split it into directories and create them if needed
-        path_list = filespec.split("/")
-        current_path = root_path
-        for d in range(len(path_list)-1):
-            current_path = os.path.join(current_path,path_list[d])
-            if not os.path.isdir(current_path):
-                os.mkdir(current_path, mode=0o744)
-        return True
-    return False
+        path_list = root_path.split("/")
+        current_path = '/'
+        try:
+            for d in path_list:
+                current_path = os.path.join(current_path,d)
+                if not os.path.isdir(current_path):
+                    os.mkdir(current_path, mode=0o744)
+            return True
+        except Exception as e:
+            return False
+    return True
 
 
 def register_users(app,subdomain=None):
@@ -264,21 +279,27 @@ def start_logging(app,filename="instance/log.log",maxBytes=100000,backupCount=5)
     app.logger.addHandler(logHandler)    
     
     
-def do_backups(source_file_path,exit_after=-1,**kwargs):
+def do_backups(source_file_path,**kwargs):
     """
     Make a series of backups of the sqlite3 database file
     
     **params**:
     
     * **source_file_path**: The path to database file to backup
+    
+    **kwargs**:
+    
     * **exit_after**: An integer to limit howmay times the loop will run.
-    * **kwargs**: The kwargs for SqliteBackup object
     It does not mean that there will be that many backups made. Just that
     many tries. If exit_after is less than 0, run forever.
+    
+    * The remainting kwargs are passed to the SqliteBackup constructor
     
     """
     from app import app
     from shotglass2.takeabeltof.mailer import email_admin
+    
+    exit_after = int(kwargs.pop('exit_after',-1))
     
     bac = SqliteBackup(source_file_path,**kwargs)
     time.sleep(2)
