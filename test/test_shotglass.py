@@ -8,6 +8,7 @@ import pytest
 import tempfile
 
 import app
+from shotglass2 import shotglass
 from shotglass2.takeabeltof.get_client import client
 
 #@pytest.fixture
@@ -31,9 +32,9 @@ filespec = 'instance/test.db'
 
 db = None
 
-#with app.app.app_context():
-#    db = app.get_db(filespec)
-#    app.init_db(db)
+with app.app.app_context():
+   db = app.get_db(filespec)
+   app.init_db(db)
 
         
 def delete_test_db():
@@ -63,6 +64,26 @@ def test_refuse_instance(client):
     result = client.get('/instance/database.sqlite')   
     assert result.status_code == 404
     
+
+def test_do_backups():
+    script_root = os.path.dirname(os.path.realpath(__file__))
+    backup_dir_name = 'backup_test'
+    backup_dir = os.path.join(script_root,backup_dir_name)
+    
+    with app.app.app_context():
+        db_path = os.path.join(app.app.root_path,filespec)
+        app.app.config['TESTING'] = True
+        bac = shotglass.do_backups(db_path,force=True,backup_dir=backup_dir)
+        
+        assert bac.fatal_error == False
+        assert bac.result_code == 0
+        
+        # delete the temp backup files
+        file_list = os.listdir(backup_dir)
+        for f in file_list:
+            os.remove(os.path.join(backup_dir,f))
+        os.rmdir(backup_dir)
+        
     
 ############################ The final 'test' ########################
 ######################################################################
@@ -71,6 +92,8 @@ def test_finished():
         db.close()
         del db
         delete_test_db()
+        
+        
         assert True
     except:
         assert True

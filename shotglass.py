@@ -2,10 +2,15 @@ from flask import render_template, g, url_for, request, flash
 from flask_mail import Mail
 import logging
 from logging.handlers import RotatingFileHandler
+from shotglass2.takeabeltof.sqlite_backup import SqliteBackup
+from shotglass2.takeabeltof.date_utils import local_datetime_now
 from shotglass2.takeabeltof.utils import send_static_file
 from shotglass2.users.models import User,Role,Pref
 from shotglass2.users.admin import Admin
-import os    
+import os  
+import threading
+import time
+  
 
 def get_app_config(this_app=None):
     """Depricated"""
@@ -257,3 +262,57 @@ def start_logging(app,filename="instance/log.log",maxBytes=100000,backupCount=5)
     app.logger.setLevel(logging.INFO)
 
     app.logger.addHandler(logHandler)    
+    
+    
+def do_backups(source_file_path,exit_after=-1,**kwargs):
+    """
+    Make a series of backups of the sqlite3 database file
+    
+    **params**:
+    
+    * **source_file_path**: The path to database file to backup
+    * **exit_after**: An integer to limit howmay times the loop will run.
+    * **kwargs**: The kwargs for SqliteBackup object
+    It does not mean that there will be that many backups made. Just that
+    many tries. If exit_after is less than 0, run forever.
+    
+    """
+    from app import app
+    from shotglass2.takeabeltof.mailer import email_admin
+    
+    bac = SqliteBackup(source_file_path,**kwargs)
+    time.sleep(2)
+    
+    loop_counter = 0
+
+    while not bac.fatal_error and (exit_after < loop_counter):
+        loop_counter += 1
+        bac.backup()
+        
+        if app.config['TESTING']:
+            return bac
+            
+        if bac.fatal_error:
+            mes = "[{}] -- Backup error : {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code)
+            # log the error
+            app.logger.error(mes)
+            # send for the calvery
+            email_admin("Fatal Backup Error Occurred",mes)
+            break
+        else:
+            app.logger.info("[{}] -- Backup Result: {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code))
+            time.sleep(30*60) #sleep for half an hour
+    
+    
+def start_backup_thread(source_file_path,**kwargs):
+    """
+    Create a thread to run do_backups in
+    """
+    from app import app
+    
+    # set daemon to True so the thread will terminate when the originating thread (app) teminates
+    backup_thread = threading.Thread(target=do_backups,args=(source_file_path,),kwargs=kwargs,name='backup_thread',daemon=True)
+
+    backup_thread.start()
+    app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
+    
