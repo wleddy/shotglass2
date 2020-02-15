@@ -1,5 +1,6 @@
-from flask import Flask, g, session, request, redirect, flash, abort, session
+from flask import Flask, g, session, request, redirect, flash, abort, url_for, session
 from flask_mail import Mail
+import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
 from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
@@ -12,8 +13,10 @@ app = Flask(__name__, instance_relative_config=True,
 app.config.from_pyfile('site_settings.py', silent=True)
 
 @app.before_first_request
-def start_logging():
+def start_app():
     shotglass.start_logging(app)
+    get_db() # ensure that the database file exists
+    shotglass.start_backup_thread(os.path.join(app.root_path,app.config['DATABASE_PATH']))
 
 @app.context_processor
 def inject_site_config():
