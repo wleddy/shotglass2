@@ -39,8 +39,9 @@ class SqliteTable:
         self.defaults = {}
         self._display_name = None #use to override the name display
         self.use_slots = True #Set to False to allow adding temporary fields to the list at runtime
-        # self.indexes is a dictionary of <index name>:<index field defs>
-        #   So, to create an index provide something like {"my_index":"contact_id, contact_name"}
+        # self.indexes is a dictionary of <index name>:<field name(s) to index>
+        #   So, to create an index provide something like {"my_index":"contact_id",}
+        #   If you redefine an existing index, be sure to drop it manually before first run.
         self.indexes = {}
         
         # certain column type should not be set to text values
@@ -80,8 +81,7 @@ class SqliteTable:
         
     def init_index(self):
         for index_name,index_ref in self.indexes.items():
-            self.db.execute("DROP INDEX IF EXISTS {}".format(index_name))
-            self.db.execute("CREATE INDEX {} ON {}({})".format(index_name,self.table_name,index_ref))
+            self.db.execute("CREATE INDEX IF NOT EXISTS {} ON {}({})".format(index_name,self.table_name,index_ref))
         
     @property
     def display_name(self):
