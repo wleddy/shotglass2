@@ -133,6 +133,9 @@ class SqliteTable:
         row = self.get(id,**kwargs)
         if row:
             self.db.execute('delete from {} where id = ?'.format(self.table_name),(id,))
+            if kwargs.get('commit',False):
+                self.db.commit()
+                
             return True
                
         return False

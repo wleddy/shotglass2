@@ -17,12 +17,12 @@ with app.app.app_context():
 #table to test save...
 from shotglass2.takeabeltof.database import SqliteTable
 
-class SaveTest(SqliteTable):
-    """Handle some basic interactions with the role table"""
+class PracticeTable(SqliteTable):
+    """Create a simple table to work on"""
     def __init__(self,db_connection):
         super().__init__(db_connection)
-        self.table_name = 'save_test'
-        self.order_by_col = ''
+        self.table_name = 'test_table'
+        self.order_by_col = 'name'
         self.defaults = {}
         
     def create_table(self):
@@ -58,9 +58,10 @@ def test_database_cursor():
     assert type(cursor) == sqlite3.Cursor
     
 def test_numeric_field_save():
-    import app
-    with app.app.app_context():
-        tester = SaveTest(db)
+    from app import app
+    with app.app_context():
+        # need the app_context because some of these raise errors
+        tester = PracticeTable(db)
         tester.create_table()
         rec = tester.new()
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
@@ -84,11 +85,67 @@ def test_numeric_field_save():
         assert rec.real_field == None
         assert rec.float_field == None
         assert rec.number_field == None
-        
-        db.rollback()
-        
     
-### Should test the SqliteTable class here, but too tired now...
+        db.rollback()
+    
+    
+def test_record_save():
+    tester = PracticeTable(db)
+    tester.create_table()
+    form = {'name':"save test",}
+    where = 'name = "{}"'.format(form['name'])
+    rec = tester.new()
+    tester.update(rec,form)
+    tester.save(rec)
+    db.rollback() # this should undo the save
+    rec = tester.select_one(where=where)
+    assert rec == None
+    
+    rec = tester.new()
+    tester.update(rec,form)
+    tester.save(rec,commit=True)
+    db.rollback() # this should have no effect
+    rec = tester.select_one(where=where)
+    assert rec != None
+    
+    
+def test_record_delete():
+    tester = PracticeTable(db)
+    tester.create_table()
+    form = {'name':"delete test",}
+    where = 'name = "delete test"'
+    rec = tester.new()
+    tester.update(rec,form)
+    tester.save(rec,commit=True)
+    db.rollback() # this should have no effect
+    rec = tester.select_one(where=where)
+    assert rec != None
+    assert rec.name == form['name']
+    result = tester.delete(rec.id)
+    assert result == True
+    rec = tester.select_one(where=where)
+    assert rec == None
+
+    # delete was not committed
+    db.rollback()
+    rec = tester.select_one(where=where)
+    assert rec != None
+
+    # delete with commit
+    rec_id = rec.id
+    assert rec_id > 0
+    result = tester.delete(rec.id,commit=True)
+    assert result == True
+    rec = tester.select_one(where=where)
+    assert rec == None
+    db.rollback()
+    # delete was not committed
+    rec = tester.select_one(where=where)
+    assert rec == None
+    
+    #try to delete the record again
+    result = tester.delete(rec_id)
+    assert result == False
     
     
 
