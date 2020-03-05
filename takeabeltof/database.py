@@ -11,6 +11,11 @@ class Database:
         self.filename = filename
         self.connection = None
     
+    def __exit__(self):
+        # close the connection if opened within an "with" block
+        self.connection.close()
+            
+            
     def connect(self):
         """Return a connection to the database"""
         self.connection = sqlite3.connect(self.filename)
@@ -26,8 +31,7 @@ class Database:
             raise sqlite3.DatabaseError('No connection opened to database')
     
     def close(self):
-        if self.connection:
-            self.connection.close()
+        self.__exit__()
             
 
 class SqliteTable:
