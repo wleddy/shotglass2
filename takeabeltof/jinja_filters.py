@@ -2,6 +2,7 @@ from shotglass2.takeabeltof.date_utils import date_to_string, getDatetimeFromStr
 from shotglass2.takeabeltof.utils import render_markdown_text
 from jinja2 import Markup
 from datetime import datetime
+import re
 
 # some custom filters for templates
 def iso_date_string(value):
@@ -98,21 +99,35 @@ def weblink(data,safe=True,blank=True):
     
     :note: 5/28/19 - trim the displayed url to end after the tld
     """
+    out = ''
+    
     if data:
         # Ensute that this is an absolute address
-        data_parts = data.strip().partition('//')
-        if data_parts[0][:4] != 'http':
-            data = 'http://' + data.strip()
+        parts = data.partition("//")
+        data_part = [x.strip() for x in parts] #convert to a list to make it simplier
             
-        link_text = data.strip().replace('http://','').replace("https://",'').strip("/").split('/')[0]
-        data = """<a href="{}">{}</a>""".format(data.strip().lower(),link_text)
-        if blank:
-            data = data.replace(">",' target="_blank" >',1)
-        if safe:
-            return Markup(data) # consider "safe"
-        return data
+        if data_part[0] != '' and data_part[2] == '':
+            # no // present. host name at [0]
+            data_part[2] = data_part[0]
+            data = 'http://' + data_part[2]
         
-    return ''
+        if data_part[2].strip() == '':
+            # there is no host name part
+            data = ''
+            
+        elif data_part[0][:4] != 'http':
+            data = 'http://' + data_part[2]
+            
+        # data should now look like a valid url
+        if data and re.match(r'(http|https)://.*?\.\S\S\S?',data):
+            link_text = data.replace('http://','').replace("https://",'').strip("/").split('/')[0]
+            out = """<a href="{}">{}</a>""".format(data.lower(),link_text)
+            if blank:
+                out = out.replace(">",' target="_blank" >',1)
+            if safe:
+                out = Markup(out) # consider "safe"
+        
+    return out
     
     
 def render_markdown(data):

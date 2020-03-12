@@ -94,3 +94,20 @@ def test_default_if_none():
     assert filters.default_if_none(0,'Ok',True) == 'Ok'
     assert filters.default_if_none(None,'Ok',True) == 'Ok'
     
+def test_weblink():
+    assert filters.weblink(None) == ''
+    assert filters.weblink('http://example.com') == """<a href="http://example.com" target="_blank" >example.com</a>"""
+    assert filters.weblink('example.com') == """<a href="http://example.com" target="_blank" >example.com</a>"""
+    assert filters.weblink('example.co') == """<a href="http://example.co" target="_blank" >example.co</a>"""
+    assert filters.weblink('example.co.uk') == """<a href="http://example.co.uk" target="_blank" >example.co.uk</a>"""
+    assert filters.weblink('example.con.uk') == """<a href="http://example.con.uk" target="_blank" >example.con.uk</a>"""
+    assert filters.weblink('http://example.co') == """<a href="http://example.co" target="_blank" >example.co</a>"""
+    assert filters.weblink('http://example.co.uk') == """<a href="http://example.co.uk" target="_blank" >example.co.uk</a>"""
+    assert filters.weblink('http://example.con.uk') == """<a href="http://example.con.uk" target="_blank" >example.con.uk</a>"""
+    assert filters.weblink('http://example.com',blank=False) == """<a href="http://example.com">example.com</a>"""
+    assert filters.weblink('https://') == ''
+    assert filters.weblink('http://') == ''
+    assert filters.weblink('http//') == ''
+    assert filters.weblink('notarealwebsite') == ''
+    assert filters.weblink('http://notarealwebsite') == ''
+    
