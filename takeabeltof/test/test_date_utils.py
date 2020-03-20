@@ -3,7 +3,7 @@ import sys
 sys.path.append('') ##get import to look in the working dir.
 
 import pytest
-from datetime import datetime
+from datetime import datetime, date
 import shotglass2.takeabeltof.date_utils as dates
 from shotglass2.shotglass import get_site_config
 
@@ -77,4 +77,6 @@ def test_getDatetimeFromString():
     #test what happens when you pass in a date time
     assert dates.getDatetimeFromString(datetime(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
     assert dates.getDatetimeFromString(datetime(2019,2,8,6,33,00)) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),site_config["TIME_ZONE"])
+    # Pass in a date
+    assert dates.getDatetimeFromString(date(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
     

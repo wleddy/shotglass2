@@ -1,6 +1,6 @@
 """Some date utilities"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pytz import timezone
 
 def local_datetime_now(time_zone=None):
@@ -74,9 +74,9 @@ def date_to_string(value,format):
     format = formats.get(format,format)
         
     if value and format:
-        if type(value) is datetime:
+        if isinstance(value,(date,datetime)):
             return value.strftime(format)
-        if type(value) is str:
+        if isinstance(value,str):
             # convert the string to a date first then back.
             temp_date = getDatetimeFromString(value)
             if temp_date:
@@ -101,8 +101,12 @@ def getDatetimeFromString(dateString):
     """
     if type(dateString) is str: # or type(dateString) is unicode:
         pass
-    elif type(dateString) is datetime:
+    elif isinstance(dateString,(date,datetime)):
         #already a datetime. just make sure it's timezone aware
+        if type(dateString) is date:
+            # date object must be converted to datetime to be time zone aware
+            dateString = datetime(dateString.year,dateString.month,dateString.day,0,0,0)
+            
         return timezone(get_time_zone_setting()).localize(dateString)
     else:
         return None
