@@ -66,7 +66,7 @@ class SqliteBackup():
                         11:"Unable to create backup path",
                         12:"Unable to create backup file",
                         13:"Unexpected Backup Error",
-                        20:"Unexpeced System Error",
+                        20:"Unexpected System Error",
                     }
                         
         self.result_code = 0 
@@ -152,7 +152,10 @@ class SqliteBackup():
                 connection.rollback()
         
                 # rollup
-                self._rollup()
+                # self._rollup()
+                
+                # purge old
+                self._purge()
             
             except Exception as e:
                 self._set_result(12)
@@ -244,7 +247,7 @@ class SqliteBackup():
         file_list = self._get_backup_list()
         if file_list:
             # get the creation time for item 0 in list
-            backup_file = os.path.join(self.backup_dir,file_list[0])
+            backup_file = file_list[0]
             father_time = (os.stat(backup_file).st_mtime < (time.time() - (self.frequency*60))) # convert frequency to seconds
         
         return father_time
@@ -252,7 +255,7 @@ class SqliteBackup():
         
     def _get_backup_list(self):
         """Get the list of backup files"""
-        
+   
         file_list = os.listdir(self.backup_dir)
         #Put them in order, newest First
         file_list.sort(reverse=True)
@@ -265,6 +268,9 @@ class SqliteBackup():
                 del file_list[list_element]
             elif not os.path.isfile(os.path.join(self.backup_dir,file_list[list_element])):
                 del file_list[list_element]
+            else:
+                # add path to file_list element
+                file_list[list_element] = os.path.join(self.backup_dir,file_list[list_element])
                 
         return file_list
                     
@@ -288,6 +294,19 @@ class SqliteBackup():
 #                         print "Deleting {0}".format(os.path.basename(backup_file))
 #         else:
 #             print('No Backup files to delete')
+
+    def _purge(self,keep_days=7):
+        """Remove old backup files older than 'keep_days' days old"""
+        
+        file_list = self._get_backup_list()
+        if file_list:
+            for backup_file in file_list:
+                    try:
+                        if os.stat(backup_file).st_mtime < (time.time() - (keep_days * 86400)):
+                            os.remove(backup_file)
+                    except Exception as e:
+                        printException("Error in backup file purge for {}".fomat(backup_file),level="error",err=e)
+        
 
 
 if __name__ == "__main__":

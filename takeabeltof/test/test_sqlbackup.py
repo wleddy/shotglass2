@@ -5,6 +5,7 @@ import os
 import pytest
 #from app import app
 from shotglass2.takeabeltof.sqlite_backup import SqliteBackup
+import time
 
 # create an empty sqlite file for testing
 from shotglass2.takeabeltof.database import Database
@@ -28,6 +29,12 @@ def test_backup():
     assert len(file_list) > 0
     assert 'data_hash.txt' in file_list
     assert any(s.startswith(backup_file_name) for s in file_list) == True
+    # test the file purge
+    bac._purge(0)
+    file_list = os.listdir(backup_dir)
+    assert len(file_list) == 1
+    assert 'data_hash.txt' in file_list
+    
         
 def test_no_data_change():
     bac = SqliteBackup(file_name,frequency=0,backup_dir=backup_dir)
@@ -44,6 +51,9 @@ def test_too_soon():
     bac = SqliteBackup(file_name,backup_dir=backup_dir)
     bac.backup()
     
+    #pause a few secs then try again
+    time.sleep(2)
+    bac.backup()
     assert bac.result_code == 1
     assert bac.fatal_error == False
 
