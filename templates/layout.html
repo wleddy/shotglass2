@@ -14,6 +14,11 @@
     
 	<script src="{{ url_for('static', filename='jquery.1.10.1.js') }}"></script>
 	<script src="{{ url_for('static', filename='common.js') }}"></script>
+	<script src="{{ url_for('static', filename='layout.js') }}"></script>
+    {% set as_bar = site_config.MENU_AS_BAR | default(False) %}
+    <script>
+        set_menu_type({{ as_bar | lower }});
+    </script>
 
     {% if 'docs' in request.path or 'help' in request.path %}
     <!-- For Sphynx Help pages -->
@@ -45,18 +50,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='default_style.css' )}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css' )}}">
     
-    {% set as_bar = site_config.MENU_AS_BAR | default(False) %}
-    {% if as_bar %}
-        <style>
-            .menu_space {margin-right:0px;}
-        </style>
-    
-        <script>
-            $(window).resize(function(){set_menu_style();});
-            $(document).ready(function(){set_menu_style();});
-        </script>
-    {% endif %}
-
     {% block head%}{% endblock %}
 </head>
 <body>
@@ -68,7 +61,7 @@
         {% endblock header %}
         </div>
         
-        <div class="w3-main w3-container menu_space">
+        <div id="sg-content" class="w3-main w3-container menu_space">
             <div id="sg-page-header">
             {% block page_header %}
                 {% if not g.suppress_page_header %}
