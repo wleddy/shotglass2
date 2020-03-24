@@ -12,7 +12,7 @@ from flask import g, request, redirect, url_for, flash
 from functools import wraps
 
 class Admin():
-    """An object to hold the list of access privilege requirements for database
+    """A class to hold the list of access privilege requirements for database
     tables.
     
     The items in the Admin list may be used to create menu items for the web site and
@@ -32,12 +32,29 @@ class Admin():
         self.permissions = []
         
     def register(self,table,url,**kwargs):
-        """Add a table item to the admin_list
+        """Add a table item to the .permissions list
         
-        Parameters:
+        Arguments:
             table : Database table object
             url : str The url to be associated with the menu item created for this table
                 
+        kwargs:
+            display_name: <str> None
+                The name that will be used in the menu item
+            header_row: <bool> False,
+                Is this the header row for a drop down menu. 
+            top_level: <bool> False,
+                Is this a menu stand-alone menu item.
+            add_to_menu: <bool> True,
+                Should this item be included in a menu.
+            minimum_rank_required: <int> None 
+                What is the user's minimum role rank to access the table
+                or for it to be displayed in the menu
+            roles: <list> []
+                If the user does not have one or more of these roles assigned, 
+                they will not have access to the table and it will not appear in
+                the menu
+        
         Example:
             Admin.register(TableObj,url,[,display_name=None[,minimum_rank_required=None[,roles=None]]])
             
@@ -47,9 +64,11 @@ class Admin():
         Registering a table again will replace the previous registration for that table.
         
         """
+        
         display_name=kwargs.get('display_name',None)
         minimum_rank_required=kwargs.get('minimum_rank_required',99999999) #No one can access without a qualifiying role
         header_row = kwargs.get('header_row',False)
+        top_level = kwargs.get('top_level',False)
         roles=kwargs.get('roles',[])
         if roles:
             roles = [x.lower() for x in roles ]
@@ -60,7 +79,7 @@ class Admin():
         if not display_name:
             display_name = table_ref.display_name
             
-        permission = {'table':table,'display_name':display_name,'url':url,'header_row':header_row,'minimum_rank_required':minimum_rank_required,'roles':roles,'add_to_menu':add_to_menu}
+        permission = {'table':table,'display_name':display_name,'url':url,'header_row':header_row,'top_level':top_level,'minimum_rank_required':minimum_rank_required,'roles':roles,'add_to_menu':add_to_menu}
         
         #test that table only has one permission
         # as of 8/22/18 it is now the responsibilty of the developer to not duplicate permissions
