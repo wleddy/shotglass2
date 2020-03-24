@@ -3,6 +3,7 @@ sys.path.append('') ##get import to look in the working dir
 import os
 
 import app
+import pytest
 import sqlite3
 import shotglass2.takeabeltof.database as dbm
 
@@ -26,7 +27,7 @@ class PracticeTable(SqliteTable):
         self.defaults = {}
         
     def create_table(self):
-        """Define and create the role tablel"""
+        """Define and create the role table"""
         
         sql = """
             'name' TEXT,
@@ -41,6 +42,27 @@ class PracticeTable(SqliteTable):
     def init_table(self):
         """Create the table and initialize data"""
         self.create_table()
+        
+    @property
+    def _column_list(self):
+        column_list = [
+        {'name':'added_to_db','definition':'TEXT',},
+        ]
+
+        return column_list
+        
+        
+    def create_with_add(self):
+        sql = """
+            'name' TEXT,
+            'description' TEXT,
+            'int_field' INTEGER,
+            'number_field' NUMBER,
+            'real_field' REAL,
+            'float_field' FLOAT
+             """
+        super().create_table(sql,self._column_list)
+        
         
 
 
@@ -87,6 +109,37 @@ def test_numeric_field_save():
         assert rec.number_field == None
     
         db.rollback()
+        db.execute('DROP TABLE {}'.format(tester.table_name))
+        with pytest.raises(sqlite3.OperationalError):
+            assert tester.select()
+            
+            
+    def test_add_extra_column():
+        tester = PracticeTable(db)
+        tester.create_table()
+        rec = tester.new()
+        form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
+        tester.update(rec,form,True)
+        assert rec.name == "test name"
+        assert rec.int_field == 0
+        assert rec.real_field == "this is not a number"
+        assert rec.float_field == 100.0
+        assert rec.number_field == 30.0
+        
+        tester.create_with_add()
+        rec = tester.select_one()
+        assert rec != None
+        assert rec.name == "test name"
+        assert rec.int_field == 0
+        assert rec.real_field == "this is not a number"
+        assert rec.float_field == 100.0
+        assert rec.number_field == 30.0
+        
+        assert rec.added_to_db == None
+        
+        # run again to be sure it's not added again
+        tester.create_with_add() #added the column twice will raise OperationalError
+         
     
     
 def test_record_save():

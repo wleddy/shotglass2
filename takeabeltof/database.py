@@ -69,7 +69,7 @@ class SqliteTable:
         """A convenience to be able to call commit on the database from a table object"""
         self.db.commit()
         
-    def create_table(self,definition=""):
+    def create_table(self,definition="",column_list=[]):
         """The default table definition script. definition arg is a string of valid SQL"""
         
         # clean up the definition if needed
@@ -81,7 +81,56 @@ class SqliteTable:
             id INTEGER NOT NULL PRIMARY KEY{}
             )""".format(self.table_name,definition,)
         self.db.execute(sql)
+        self._add_columns(column_list)
         self.init_index()
+        
+    @property
+    def _column_list(self):
+        """A list of dicts used to add fields to an existing table.
+        
+        The primary purpose is to allow for a simple way to add columns to a
+        table that already exists. You need to manually create a list of dicts
+        as below in the table class, copy this method as a template and override 
+        the create table method with something like:
+            `self.create_table(sql,self._column_list)`
+            
+        Note: Because of the limitations of Sqlite3, columns created via ALTER TABLE
+        may not contain UNIQUE constraints. There also may not be a NOT NULL constraint
+        unless the definition includes a DEFAULT value
+        
+        The added column definitions look like this:
+            `column_list = [
+            {'name':'name','definition':'TEXT',},
+            {'name':'value','definition':'TEXT',},
+            {'name':'expires','definition':'DATETIME',},
+            {'name':'user_name','definition':'TEXT',},
+            {'name':'a_number_field','definition':'NUMBER',},
+            ]
+            
+            return column_list`
+        """
+    
+        return []
+        
+        
+    def _add_columns(self,column_list=[]):
+        """A simple way to add new columns to the table.
+        
+        Note: Because of the limitations of Sqlite3, columns created via ALTER TABLE
+        may not contain UNIQUE constraints. There also may not be a NOT NULL constraint
+        unless the definition includes a DEFAULT value
+        
+        """
+        for column in column_list:
+            col_name = column.get('name','')
+            col_def = column.get('definition','')
+            if col_name and col_def and col_name not in self.get_column_names():
+                self.db.execute('ALTER TABLE {} ADD COLUMN {} {}'.format(
+                    self.table_name,
+                    col_name,
+                    col_def,
+                    )
+                )
         
     def init_index(self):
         for index_name,index_ref in self.indexes.items():
@@ -108,7 +157,7 @@ class SqliteTable:
         return out
  
     def get_column_type(self,column_name):
-        """Return the Sqlite column type (as text) for the specifed column name"""
+        """Return the Sqlite column type (as text) for the specified column name"""
         #import pdb;pdb.set_trace()
         out = None
         cols = self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
