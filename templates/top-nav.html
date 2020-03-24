@@ -1,4 +1,6 @@
-
+{% macro menu_item_classes() %}
+w3-bar-item w3-button w3-menu-border w3-menu-color w3-menu-hover-color
+{% endmacro %}
 <div id="nav" style="overflow:hidden;">
     <button id="hamburger" class="w3-button w3-xlarge  w3-hide-large w3-primary-color w3-secondary-hover-color" style="position:absolute;top:3pt;right:6pt;" onclick="primary_nav_toggle();">&#9776;</button>
     {% if as_bar %}
@@ -10,21 +12,32 @@
         <a href="javascript:void(0)" onclick="primary_nav_toggle();" 
           class="w3-button w3-bar-item w3-hide-large w3-secondary-color">Close &times;</a>
         {% if g.menu_items %}
-        {% for item in g.menu_items %}
-          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ item.url }}">{{ item.title }}</a>
+        {% for item in g.menu_items %}          
+          {% if 'drop_down_menu' in item %}
+            <div class="w3-dropdown-hover w3-bar-block">
+                <button class="w3-button w3-menu-border w3-drop-menu-section-color w3-drop-menu-section-hover-color"><strong>{{item['title']}}</strong></button>
+                <div class="w3-dropdown-content w3-card-4">
+          	{% for dd_item in item.drop_down_menu %}
+              <a class="w3-bar-item w3-button w3-menu-border w3-drop-menu-color w3-drop-menu-hover-color" href="{{ dd_item.url }}">{{ dd_item.title }}</a>
+          	{% endfor %}
+          		</div></div>
+          {% else %}
+          <a class="{{menu_item_classes()}} " href="{{ item.url }}">{{ item.title }}</a>
+          {% endif %} <!-- drop down menu? -->
         {% endfor %}
-        {% endif %}
+        {% endif %} <!-- g.menu -->
         {% if not g.user %}
           {% if  not site_config.SUPPRESS_LOGIN_MENU_ITEM | default(False) %}
-          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.login')}}">Login</a>
+          <a class="{{menu_item_classes()}} " href="{{ url_for('login.login')}}">Login</a>
           {% endif %}
         {% else %}
           {% if g.admin and not g.admin.has_user_table_access(g.user) %}
-          <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+            <a class="{{menu_item_classes()}} " href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+          {% else %}
+            {# the menu items defined in g.admin appear next... #}
+            {% include 'admin_menu.html' %}
           {% endif %}
-        <a class="w3-bar-item w3-button w3-border w3-secondary-color w3-primary-hover-color" href="{{ url_for('login.logout')}}">Logout</a>
-        {# the menu items defined in g.admin appear below... #}
-        {% include 'admin_menu.html' %}
+          <a class="{{menu_item_classes()}} " href="{{ url_for('login.logout')}}">Logout</a>
         {% endif %} <!-- g.user -->
     </div>
 </div>
