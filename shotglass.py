@@ -23,7 +23,16 @@ def get_menu_items():
     So that you can add items to the menu without modifying
     shotglass2/templates/top-nav.html. 
     
-    Modify this list instead.
+    To modify, copy this list to app.py @before_request function.
+    
+    For a drop down menu, use something like this:
+    
+    `{'title':'Home','drop_down_menu':[
+        {'title':'Events Home','url':url_for('www.home')},
+        {'title':'SABA Home','url':'http://sacbike.org'},
+        ]
+      },`
+    
     """
     menu_items = [
         {'title':'Home','url':url_for('www.home')},
