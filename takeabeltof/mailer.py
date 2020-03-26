@@ -1,14 +1,14 @@
-from flask import g, flash, render_template_string, render_template
-from flask_mail import Message
+from flask import render_template_string, render_template
 from shotglass2.shotglass import get_site_config
+from flask_mail import Message
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
 
-def send_message(to_address_list=None,**kwargs):
+class Mailer:
     """Send an email with the parameters as:
         to_address_list=[list of tuples (recipient name,recipient address)]=None
-        
-        If the to_address_list is not provided, mail will be sent to the admin
-        
+
+        If the address_list is not provided, mail will be sent to the admin
+
         kwargs:
             * body  = <text for body of email> = None
             * body_is_html  = <True | False> = False
@@ -18,154 +18,278 @@ def send_message(to_address_list=None,**kwargs):
             * subject_prefix =<some text to prepend to the subject = ''
             * from_address =<from address> = sit_config['MAIL_DEFAULT_ADDR']
             * from_sender =<name of sender> = site_config['MAIL_DEFAULT_SENDER']
-            * reply_to_address =<replyto address> = from_address
+            * reply_to_address =<reply to address> = from_address
             * reply_to_name =<name of reply to account> = from_sender
             * cc = address list for carbon copy addresses
             * bcc  = address list for blind carbon copy addresses
             * attachment  = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
             * attachments  = [<list of attachment tuples>] = None
             
-        On completion returns a tuple of:
-            ( success [`True` or `False`], message <"some message">)
-    """
-    #import pdb;pdb.set_trace()
-    from app import mail
-    
-    site_config = get_site_config() #update the settings. this also recreates the mail var in app with new settings
-    
-    body = kwargs.get('body',None)
-    body_is_html = kwargs.get('body_is_html',None)
-    text_template = kwargs.get('text_template',None)
-    html_template = kwargs.get('html_template',None)
-    subject_prefix = kwargs.get('subject_prefix',site_config.get("MAIL_SUBJECT_PREFIX",''))
-    attachment = kwargs.get('attachment',None)
-    attachments = kwargs.get('attachments',None)
-    
-    if attachments:
-        if not isinstance(attachments,list):
-            attachments = [attachments]
-        attachments.extend([attachment])
-    elif attachment:
-        attachments = [attachment]
-    
-    try:
-        admin_addr = site_config['MAIL_DEFAULT_ADDR']
-        admin_name = site_config['MAIL_DEFAULT_SENDER']
-    except KeyError as e:
-        mes = "MAIL Settings not found"
-        mes = printException(mes,'error',e)
-        return (False, mes)
-    
-    from_address = kwargs.get('from_address',admin_addr)
-    from_sender = kwargs.get('from_sender',admin_name)
-    reply_to = kwargs.get('reply_to',from_address)
-    cc = kwargs.get('cc',None)
-    bcc = kwargs.get('bcc',None)
-        
-    subject = subject_prefix + ' ' +kwargs.get('subject','A message from {}'.format(from_sender)).strip()
-    
-    if not text_template and not html_template and not body:
-        mes = "No message body was specified"
-        printException(mes,"error")
-        return (False, mes)
-        
-    if not to_address_list or len(to_address_list) == 0:
-        #no valid address, so send it to the admin
-        to_address_list = [(admin_name,admin_addr),]
-        
-    with mail.record_messages() as outbox:
-        sent_cnt = 0
-        err_cnt = 0
-        err_list = []
-        result = True
-        for who in to_address_list:
-            #import pdb;pdb.set_trace()
-            name = ""
-            address = ""
-            body_err_head = ""
-            if type(who) is tuple:
-                if len(who) == 1:
-                    # extend whp
-                    who = who[0] + (who[0],)
-                name = who[0]
-                address = who[1]
-            else:
-                address = who #assume its a str
-                name = who
-                
-            if not looksLikeEmailAddress(address) and looksLikeEmailAddress(name):
-                # swap values
-                temp = address
-                address = name
-                name = temp
-            if not looksLikeEmailAddress(address):
-                # still not a good address...
-                address = admin_addr
-                name = admin_name
-                if not body:
-                    body = ""
-                    
-                body_err_head = "Bad Addres: {}\r\r".format(who,)
-                
-            subject = render_template_string(subject.strip(), **kwargs)
-            #Start a message
-            msg = Message( subject,
-                          sender=(from_sender, from_address),
-                          recipients=[(name, address)],
-                          cc=cc,
-                          bcc=bcc,
-                          )
-    
-            #Get the text body verson
-            if body:
-                if body_is_html:
-                    msg.html = render_template_string("{}{}".format(body_err_head,body,), **kwargs)
-                else:
-                    msg.body = render_template_string("{}{}".format(body_err_head,body,), **kwargs)
-            if html_template:
-                msg.html = render_template(html_template, **kwargs)
-            if text_template:
-                msg.body = render_template(text_template, **kwargs) 
-            
-            msg.reply_to = reply_to
-           
-            if attachments:
-                for attachment in attachments:
-                    if attachment and len(attachment) > 2:
-                        msg.attach(attachment[0],attachment[1],attachment[2])
-                    
-            try:
-                mail.send(msg)
-                sent_cnt += 1
-            except Exception as e:
-                mes = "Error Sending email"
-                printException(mes,"error",e)
-                err_cnt += 1
-                err_list.append("Error sending message to {} err: {}".format(who,str(e)))
+        Methods:
+            * add_address(*args): add one or more recipients to the email. May be a 2 element tuple of 
+            (name,address), a list of tuples, or a string of just an email address, or 2 string arguments,
+            name and address.
+            * add_cc(*args): add a carbon copy address. Same argument as add_address.
+            * add_bcc(*args): add a blind carbon copy address. Same arguments as add_address.
+            * add_attachment(attachment): Add one or more attachments to the email
+            * send(): Send the email. Sets the result properties below.
 
-        # End Loop
-        if sent_cnt == 0:
-            mes = "No messages were sent."
-            result = False
+        Result properties:
+            * self.success <bool> False | True if sent
+            * self.result_text <"some message">
+    """
+
+    def __init__(self,address_list=[],**kwargs):
+        # import pdb;pdb.set_trace()
+        self._to = []
+        # some old code will set address_to to None
+        if address_list == None:
+            address_list = []
+            
+        self.add_address(address_list)
+        
+        site_config = get_site_config() #update the settings. this also recreates the mail var in app with new settings
+        self.admin_name = site_config['MAIL_DEFAULT_SENDER']
+        self.admin_addr = site_config['MAIL_DEFAULT_ADDR']
+        self.kwargs = kwargs # templates may need values here...
+        self.body = kwargs.get('body',None)
+        self.body_is_html = kwargs.get('body_is_html',None)
+        self.text_template = kwargs.get('text_template',None)
+        self.html_template = kwargs.get('html_template',None)
+        self.subject_prefix = kwargs.get('subject_prefix',site_config.get("MAIL_SUBJECT_PREFIX",''))
+        self.from_address = kwargs.get('from_address',self.admin_addr)
+        self.from_sender = kwargs.get('from_sender',self.admin_name)
+        self.reply_to = kwargs.get('reply_to',self.from_address)
+        self._cc = kwargs.get('cc',[])
+        self._bcc = kwargs.get('bcc',[])
+        self._attachments = []
+        self.add_attachment(kwargs.get('attachments',None))
+        self.add_attachment(kwargs.get('attachment',None))
+        self.subject = ' '.join([
+                                self.subject_prefix,
+                                kwargs.get('subject','A message from {}'.format(self.from_sender)).strip(),
+                                ]
+                            )
+        
+        self.success = False
+        self.result_text = 'initialized'
+   
+    def _add_to_address_list(self,target,*args,address_only=False):
+        """        The args may be:
+            * 2 strings like: 'Joe Smith','joe@example.com'
+            * a tuple like: ('Joe Smith','joe@example.com')
+            * a list of tuples like: [('Joe Smith','joe@example.com'), ... ('Jane Smith','jane@example.com'),]
+            
+            if address_only is True, add the email address only to the list
+        """
+        # import pdb;pdb.set_trace()
+        
+        address_to_add = None
+        if target == None:
+            target = []
+        if not isinstance(target,list):
+            target = [target]
+            
+        if len(args) == 2 and isinstance(args[0],str) and isinstance(args[1],str):
+            #assume that these are name, address as str
+            address_to_add = (args[0],args[1])
+        elif len(args) == 1:
+            address_to_add = args[0]
+            
+        if not address_to_add:
+            pass
+        elif isinstance(address_to_add,tuple):
+            if address_only and len(address_to_add) > 1:
+                address_to_add = address_to_add[1]
+            target.append(address_to_add)
+        elif isinstance(address_to_add,list):
+            for item in address_to_add:
+                if isinstance(item,tuple):
+                    if len(item) > 1:
+                        if address_only:
+                            target.append(item[1],)
+                        else:
+                            target.append(item)
+                    elif len(item) == 1:
+                        if address_only:
+                            target.append(item[0],)
+                        else:
+                            target.append((item[0],item[0]),)
+                elif isinstance(item,str):
+                    if address_only:
+                        target.append(item,)
+                    else:
+                        target.append((item,item),)
+        elif isinstance(address_to_add,str):
+            if address_only:
+                target.append(address_to_add)
+            else:
+                target.append((address_to_add,address_to_add),)
+            
+            
+    def add_address(self,*args):
+        """Add one or more recipients to the email.
+        """
+        self._add_to_address_list(self._to,*args)
+            
+    def add_cc(self,*args):
+        self._add_to_address_list(self._cc,*args,address_only=True)
+
+    def add_bcc(self,*args):
+        self._add_to_address_list(self._bcc,*args,address_only=True)
+        
+        
+    def add_attachments(self,attachments):
+        """just a wrapper for send_attachment"""
+        self.add_attachment(attachments)
+        
+        
+    def add_attachment(self,attachment):
+        """Add one or more attachments to the email.
+        
+        Each attachment consists of 3 elements, ideally as a tuple but may be a list of tuples:
+            1 File name: Name to use when attachment is delivered.
+            2 mime type: The mime type of the attachment.
+            3 content: The data to attach.
+        
+        """
+        
+        def _append_attachment(attachment):
+            # add a tuple to self._attacments
+            if isinstance(attachment,tuple) and len(attachment) == 3:
+                self._attachments.append(attachment)
+                
+        # housekeeping... self._attachments must be a list
+        if self._attachments:
+            if not isinstance(self._attachments,list):
+                self._attachments = [self._attachments]
         else:
-            mes = "{} messages sent successfully.".format(sent_cnt)
-        if err_cnt > 0:
-            mes = mes + " {} messages had errors.\r\r{}".format(err_cnt,err_list)
+            self._attachments = []
+        
+        # is attachment a list? Step through them and
+        if isinstance(attachment,list):
+            for item in attachment:
+                _append_attachment(item)
+        else:
+            _append_attachment(attachment)
+
+
+    def _set_result(self,success,mes):
+        self.success = success
+        self.result_text = mes
+
+
+    def send(self):
+        from app import mail
+        with mail.record_messages() as outbox:
+            sent_cnt = 0
+            err_cnt = 0
+            err_list = []
+            result = True
+            # import pdb;pdb.set_trace()
+            if not self.body:
+                self._set_result(False,'Message contained no body content.')
+                return
+                
+            if not self._to:
+                self._to = [(self.admin_name,self.admin_addr),]
+
+            for who in self._to:
+                name = ""
+                address = ""
+                body_err_head = ""
+                if isinstance(who,tuple):
+                    if len(who) == 1:
+                        # extend who
+                        who = who[0] + (who[0],)
+                    name = who[0]
+                    address = who[1]
+                else:
+                    address = who #assume its a str
+                    name = who
+
+                if not looksLikeEmailAddress(address) and looksLikeEmailAddress(name):
+                    # swap values
+                    temp = address
+                    address = name
+                    name = temp
+                if not looksLikeEmailAddress(address):
+                    # still not a good address...
+                    address = self.admin_addr
+                    name = self.admin_name
+                    if not self.body:
+                        self.body = ""
+
+                    body_err_head = "**Bad Address**: {}\r\r".format(who,)
+
+                self.subject = render_template_string(self.subject.strip(), **self.kwargs)
+                #Start a message
+                msg = Message( self.subject,
+                              sender=(self.from_sender, self.from_address),
+                              recipients=[(name, address)],
+                              cc=self._cc,
+                              bcc=self._bcc,
+                              )
+
+                #Get the text body verson
+                if self.body:
+                    if self.body_is_html:
+                        msg.html = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
+                    else:
+                        msg.body = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
+                if self.html_template:
+                    msg.html = render_template(self.html_template, **self.kwargs)
+                if self.text_template:
+                    msg.body = render_template(self.text_template, **self.kwargs)
+
+                msg.reply_to = self.reply_to
+
+                if self._attachments:
+                    for attachment in self._attachments:
+                        if attachment and len(attachment) > 2:
+                            msg.attach(attachment[0],attachment[1],attachment[2])
+
+                try:
+                    mail.send(msg)
+                    sent_cnt += 1
+                except Exception as e:
+                    mes = "Error Sending email"
+                    printException(mes,"error",e)
+                    err_cnt += 1
+                    err_list.append("Error sending message to {} err: {}".format(who,str(e)))
+
+            # End Loop
+            if sent_cnt == 0:
+                mes = "No messages were sent."
+                result = False
+            else:
+                mes = "{} messages sent successfully.".format(sent_cnt)
+            if err_cnt > 0:
+                result = False
+                mes = mes + " {} messages had errors.\r\r{}".format(err_cnt,err_list)
+
+            self._set_result(result, mes)
             
-        return (result, mes)
             
-            
-            
+def send_message(to_address_list=None,**kwargs):
+    """Wrapper for the class to conform with the old function call"""
+        
+    mailer = Mailer(to_address_list,**kwargs)
+    mailer.send()
+    
+    return (mailer.success,mailer.result_text)
+    
+    
 def email_admin(subject=None,message=None):
     """
         Shortcut method to send a quick email to the admin
     """
     try:
         site_config = get_site_config()
-        if subject == None:
+        if not subject:
             subject = "An alert was sent from {}".format(site_config['SITE_NAME'])
         
-        if message == None:
+        if not message:
             message = "An alert was sent from {} with no message...".format(site_config['SITE_NAME'])
         
         return send_message(
@@ -174,7 +298,9 @@ def email_admin(subject=None,message=None):
                 body = message,
                 )
     except Exception as e:
-        flash(printException("Not able to send message to admin.",str(e)))
+        mes = "Not able to send message to admin."
+        printException(mes,err=e)
+        return (False,mes)
     
         
 def alert_admin(subject=None,message=None):
