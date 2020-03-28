@@ -65,11 +65,7 @@ class Mailer:
         self._attachments = []
         self.add_attachment(kwargs.get('attachments',None))
         self.add_attachment(kwargs.get('attachment',None))
-        self.subject = ' '.join([
-                                self.subject_prefix,
-                                kwargs.get('subject','A message from {}'.format(self.from_sender)).strip(),
-                                ]
-                            )
+        self.subject = kwargs.get('subject','').strip()
         
         self.success = False
         self.result_text = 'initialized'
@@ -226,7 +222,10 @@ class Mailer:
                         self.body = ""
 
                     body_err_head = "**Bad Address**: {}\r\r".format(who,)
-
+                    
+                if not self.subject:
+                    self.subject = 'A message from {}'.format(self.from_sender).strip()
+                self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
                 self.subject = render_template_string(self.subject.strip(), **self.kwargs)
                 #Start a message
                 msg = Message( self.subject,
