@@ -75,56 +75,61 @@ class Mailer:
         self.result_text = 'initialized'
    
     def _add_to_address_list(self,target,*args,address_only=False):
-        """        The args may be:
-            * 2 strings like: 'Joe Smith','joe@example.com'
-            * a tuple like: ('Joe Smith','joe@example.com')
-            * a list of tuples like: [('Joe Smith','joe@example.com'), ... ('Jane Smith','jane@example.com'),]
+        """The args may be:
+                * 2 strings like: 'Joe Smith','joe@example.com'
+                * a tuple like: ('Joe Smith','joe@example.com')
+                * a list of tuples like: [('Joe Smith','joe@example.com'), ... ('Jane Smith','jane@example.com'),]
+            
+            Normally, tries to create a tuple of (name,address) to add to the list.
             
             if address_only is True, add the email address only to the list
         """
         # import pdb;pdb.set_trace()
         
-        address_to_add = None
         if target == None:
             target = []
         if not isinstance(target,list):
             target = [target]
             
+        temp_address_list = []
+            
         if len(args) == 2 and isinstance(args[0],str) and isinstance(args[1],str):
             #assume that these are name, address as str
-            address_to_add = (args[0],args[1])
-        elif len(args) == 1:
-            address_to_add = args[0]
+            temp_address_list.append((args[0],args[1]))
+        elif len(args) == 1 and isinstance(args[0],str):
+            temp_address_list.append((args[0],args[0]))
+        else:
+            for arg in args:
+                if isinstance(arg,tuple):
+                    if len(arg) >= 2: 
+                        temp_address_list.append(arg[:2])
+                    elif len(arg) == 1:
+                        temp_address_list.append((arg,arg))
+
+                elif isinstance(arg,list):
+                    for item in arg:
+                        if isinstance(item,tuple):
+                            temp_address_list.append(item)
+                        elif isinstance(item,str):
+                                temp_address_list.append((item,item))
+                            
+                elif isinstance(arg,str):
+                    temp_address_list.append((arg,arg))
             
-        if not address_to_add:
-            pass
-        elif isinstance(address_to_add,tuple):
-            if address_only and len(address_to_add) > 1:
-                address_to_add = address_to_add[1]
-            target.append(address_to_add)
-        elif isinstance(address_to_add,list):
-            for item in address_to_add:
-                if isinstance(item,tuple):
-                    if len(item) > 1:
-                        if address_only:
-                            target.append(item[1],)
-                        else:
-                            target.append(item)
-                    elif len(item) == 1:
-                        if address_only:
-                            target.append(item[0],)
-                        else:
-                            target.append((item[0],item[0]),)
-                elif isinstance(item,str):
-                    if address_only:
-                        target.append(item,)
-                    else:
-                        target.append((item,item),)
-        elif isinstance(address_to_add,str):
+        for x in range(len(temp_address_list)):
+            # try to put the tuples in the correct order if possible
+            name = temp_address_list[x][0]
+            address = temp_address_list[x][1]
+
+            if not looksLikeEmailAddress(address) and looksLikeEmailAddress(name):
+                # swap values
+                temp_address_list[x] = (address,name)
+            
             if address_only:
-                target.append(address_to_add)
-            else:
-                target.append((address_to_add,address_to_add),)
+                temp_address_list[x] = temp_address_list[x][1]
+                    
+        #finally, add the new address(s) to the target list
+        target.extend(temp_address_list)
             
             
     def add_address(self,*args):
@@ -140,7 +145,7 @@ class Mailer:
         
         
     def add_attachments(self,attachments):
-        """just a wrapper for send_attachment"""
+        """just a wrapper for add_attachment"""
         self.add_attachment(attachments)
         
         
