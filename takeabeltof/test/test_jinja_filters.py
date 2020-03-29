@@ -112,3 +112,17 @@ def test_weblink():
     assert filters.weblink('notarealwebsite') == ''
     assert filters.weblink('http://notarealwebsite') == ''
     
+    
+def test_plural():
+    assert filters.plural('man') == 'men'
+    assert filters.plural('man',1) == 'man'
+    assert filters.plural(5) == 5
+    assert filters.plural('canary',4) == 'canaries'
+    assert filters.plural('MAN') == 'MEN'
+    assert filters.plural('Man') == 'Men'
+    assert filters.plural('these',2,'those') == 'those'
+    assert filters.plural('these',1,'those') == 'these'
+    assert filters.plural('aircraft',1) == 'aircraft'
+    assert filters.plural('aircraft',2) == 'aircraft'
+    assert filters.plural('hoof') == 'hooves'
+    

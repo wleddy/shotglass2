@@ -151,6 +151,87 @@ def default_if_none(data,value='',default_on_false=False):
     return data
     
     
+def plural(value,count=2,plural_form=None):
+    """Return the value <str> as a string
+    
+    if plural_form is provided, return that if count != 1
+    """
+    irregulars = {
+        'woman':'women',
+        'man':'men',
+        'person':'people',
+        'tooth':'teeth',
+        'louse':'lice',
+        'cactus':'cacti',
+        'goose':'geese',
+        'mouse':'mice',
+        'appendix':'appendices',
+        'ox':'oxen',
+        'child':'children',
+        'fish':'fishes',
+        'ellipsis':'ellipses',
+        'codex':'codies',
+        'larva':'larvae',
+        'alumna':'alumnae',
+        'erratum':'errata',
+        'ox':'oxen',
+        'oasis':'oases',
+        'swine':'swine',
+        'trout':'trout',
+        'genus':'genera',
+        'diagnosis':'diagnoses',
+        'analysis':'analyses',
+        'foot':'feet',
+        'child':'children',
+        'sheep':'sheep',
+        'leaf':'leaves',
+        'aircraft':'aircraft',
+        'apex':'apices',
+        'bison':'bison',
+        'crisis':'crises',
+        'curriculum':'curricula',
+        'datum':'data',
+        'focus':'foci',
+        'series':'series',
+        'vita':'vitae',
+        'tuna':'tuna',
+        'quiz':'quizzes',
+        'index':'indices',
+    }
+    
+    if not isinstance(value,str):
+        return value
+    if count == 1:
+        return value
+    if plural_form and count != 1:
+        return plural_form
+    
+    is_caps = False
+    if value.upper() == value:
+        is_caps = True
+    is_title = False
+    if value.title() == value:
+        is_title = True
+        
+    plural =  irregulars.get(value.lower())
+    if plural:
+        pass
+    elif value[-1].lower() == 'y':
+        plural =  value[:-1] + 'ies'
+    elif value[-1].lower() == 'f':
+        # 'wolf' => 'wolves'
+        plural =  value[:-1] + 'ves'
+    else:
+        plural = value + 's'
+        
+    if is_caps:
+        plural = plural.upper()
+    elif is_title:
+        plural = plural.title()
+        
+    return plural
+    
+    
 def register_jinja_filters(app):
     # register the filters
     app.jinja_env.filters['short_date_string'] = short_date_string
@@ -170,3 +251,4 @@ def register_jinja_filters(app):
     app.jinja_env.filters['weblink'] = weblink
     app.jinja_env.filters['render_markdown'] = render_markdown
     app.jinja_env.filters['default_if_none'] = default_if_none
+    app.jinja_env.filters['plural'] = plural
