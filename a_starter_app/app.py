@@ -23,11 +23,12 @@ def inject_site_config():
     # Add 'site_config' dict to template context
     return {'site_config':shotglass.get_site_config()}
 
-# work around some web servers that mess up root path
-from werkzeug.contrib.fixers import CGIRootFix
-if app.config['CGI_ROOT_FIX_APPLY'] == True:
-    fixPath = app.config.get("CGI_ROOT_FIX_PATH","/")
-    app.wsgi_app = CGIRootFix(app.wsgi_app, app_root=fixPath)
+# # work around some web servers that mess up root path
+# # This fixer was depricated and removed in flask 1.0
+# from werkzeug.contrib.fixers import CGIRootFix
+# if app.config['CGI_ROOT_FIX_APPLY'] == True:
+#     fixPath = app.config.get("CGI_ROOT_FIX_PATH","/")
+#     app.wsgi_app = CGIRootFix(app.wsgi_app, app_root=fixPath)
 
 register_jinja_filters(app)
 
@@ -48,29 +49,28 @@ def initalize_all_tables(db=None):
     ### setup any other tables you need here....
     
     
-    def get_db(filespec=None):
-        """Return a connection to the database.
-    
-        If the db path does not exist, create it and initialize the db"""
-    
-        if not filespec:
-            filespec = shotglass.get_site_config()['DATABASE_PATH']
-        
-        # This is probobly a good place to change the
-        # filespec if you want to use a different database
-        # for the current request.
-    
-        # test the path, if not found, try to create it
-        if shotglass.make_db_path(filespec):
-            g.db = Database(filespec).connect()
-            initalize_all_tables(g.db)
-            
-            return g.db
-        else:
-            # was unable to create a path to the database
-            raise IOError("Unable to create path to () in app.get_db".format(filespec))
+def get_db(filespec=None):
+    """Return a connection to the database.
 
+    If the db path does not exist, create it and initialize the db"""
+
+    if not filespec:
+        filespec = shotglass.get_site_config()['DATABASE_PATH']
     
+    # This is probobly a good place to change the
+    # filespec if you want to use a different database
+    # for the current request.
+
+    # test the path, if not found, try to create it
+    if shotglass.make_db_path(filespec):
+        g.db = Database(filespec).connect()
+        initalize_all_tables(g.db)
+        
+        return g.db
+    else:
+        # was unable to create a path to the database
+        raise IOError("Unable to create path to () in app.get_db".format(filespec))
+
     
 @app.context_processor
 def inject_site_config():

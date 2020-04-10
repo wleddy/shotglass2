@@ -60,8 +60,9 @@ DATABASE_PATH= 'instance/' + DATABASE_NAME
 ### These settings are probably Ok...
 #############################################
 
-CGI_ROOT_FIX_APPLY = True # Some webservers mess up the root url
-CGI_ROOT_FIX_PATH = "/" #this is usually correct path
+# # This fixer was deprecated and removed in flask 1.0
+# CGI_ROOT_FIX_APPLY = True # Some webservers mess up the root url
+# CGI_ROOT_FIX_PATH = "/" #this is usually correct path
 
 if REQUIRE_SSL:
     HOST_PROTOCOL = "https"
