@@ -31,12 +31,11 @@ w3-bar-item w3-button w3-menu-border w3-menu-color w3-menu-hover-color
           <a class="{{menu_item_classes()}} " href="{{ url_for('login.login')}}">Login</a>
           {% endif %}
         {% else %}
-          {% if g.admin and not g.admin.has_user_table_access(g.user) %}
-            <a class="{{menu_item_classes()}} " href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
-          {% else %}
             {# the menu items defined in g.admin appear next... #}
             {% include 'admin_menu.html' %}
-          {% endif %}
+            {% if g.admin and not g.admin.has_user_table_access(g.user) %}
+            <a class="{{menu_item_classes()}} " href="{{ url_for('user.edit')}}" >Manage Your Profile</a>
+            {% endif %}
           <a class="{{menu_item_classes()}} " href="{{ url_for('login.logout')}}">Logout</a>
         {% endif %} <!-- g.user -->
     </div>
