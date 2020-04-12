@@ -237,11 +237,13 @@ class Mailer:
                         msg.html = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
                     else:
                         msg.body = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
-                else:
-                    if self.html_template:
-                        msg.html = render_template(self.html_template, **self.kwargs)
-                    if self.text_template:
-                        msg.body = render_template(self.text_template, **self.kwargs)
+                if self.html_template:
+                    msg.html = render_template(self.html_template, **self.kwargs)
+                if self.text_template:
+                    msg.body = render_template(self.text_template, **self.kwargs)
+                if not msg.body and not msg.html:
+                    self._set_result(False,'Message contained no body content.')
+                    return
 
                 msg.reply_to = self.reply_to
 
