@@ -75,7 +75,9 @@ from datetime import timedelta
 PERMANENT_SESSION_LIFETIME = timedelta(days=31)
 
 # Uploads ...
-MAX_CONTENT_LENGTH = 300000
+MAX_CONTENT_LENGTH = 1024 * 1024 * 4 # 4MB
+UPLOAD_FOLDER = 'resource/static'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 # settings for Main Nav Menu
 MENU_AS_BAR = False #if True use Bar style main nav menu else sidebar by default
