@@ -117,6 +117,12 @@ def _teardown(exception):
         g.db.close()
 
 
+@app.errorhandler(413)
+def request_too_large(error):
+    flash("The file is too large to save. Max size is {}MB".format(int(shotglass.get_site_config().get("MAX_CONTENT_LENGTH",".25"))/1048576))
+    return redirect('/')
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return shotglass.page_not_found(error)
