@@ -20,6 +20,20 @@ class Role(SqliteTable):
             'rank' INTEGER DEFAULT 0 """
         super().create_table(sql)
         
+        
+    @property
+    def _column_list(self):
+        """A list of dicts used to add fields to an existing table.
+        """
+    
+        column_list = [
+        # {'name':'expires','definition':'DATETIME',},
+        ]
+    
+        return column_list
+
+        
+        
     def get(self,value):
         """Return a role with this value"""
         if isinstance(value,str):

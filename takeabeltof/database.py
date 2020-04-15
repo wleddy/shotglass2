@@ -81,6 +81,8 @@ class SqliteTable:
             id INTEGER NOT NULL PRIMARY KEY{}
             )""".format(self.table_name,definition,)
         self.db.execute(sql)
+        # additional fields?
+        column_list = column_list if column_list else self._column_list
         self._add_columns(column_list)
         self.init_index()
         

@@ -3,7 +3,7 @@ from flask import request, session, g, redirect, url_for, \
 from shotglass2.users.models import Pref
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-
+from shotglass2.takeabeltof.views import TableView
 mod = Blueprint('pref',__name__, template_folder='templates/pref', url_prefix='/pref')
 
 
@@ -16,11 +16,13 @@ def setExits():
 @mod.route('/')
 @table_access_required(Pref)
 def display():
-    setExits()
-    g.title = "{} Record List".format(g.title)
-    # get all records
-    recs = Pref(g.db).select()
-    return render_template('pref_list.html',recs=recs)
+    view = TableView(Pref,g.db)
+    return view.list()
+    # setExits()
+    # g.title = "{} Record List".format(g.title)
+    # # get all records
+    # recs = Pref(g.db).select()
+    # return render_template('pref_list.html',recs=recs)
     
 
 ## Edit the Pref

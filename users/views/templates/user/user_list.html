@@ -15,7 +15,7 @@
   	<p id="addRecord"><a href="{{ g.adminURL }}">Add a new record</a>
     &nbsp;&nbsp;{{ list_search_widget('user',{'Id':0,'Nane':1,'Email':2,'Status':3},1) }}
     </p>
-	{%if recs %}
+	{%if obj.recs %}
 		<table id="table_list" class="datatable w3-table w3-striped w3-hoverable">
 		<tr  class="w3-primary-color">
 			<th>Id</th>
@@ -23,7 +23,7 @@
 			<th class="w3-hide-small">Email</th>
 			<th>Status</th>
 		</tr>
-		{% for rec in recs %}
+		{% for rec in obj.recs %}
 	    <tr>
 			<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.id }}</td>
 			<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.first_name }} {{ rec.last_name}}</td>

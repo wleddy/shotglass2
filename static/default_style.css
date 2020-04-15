@@ -26,11 +26,38 @@ pre {
     margin: .3em 0;
 }
 
+p.clear {
+    font-size:1pt;
+    clear:both;
+    margin:0;
+    padding:0;
+}
+
 /* make list tables look clickable */
 .datatable tr {
     cursor:pointer;
     background-color: whitesmoke;
 }
+
+/* For the Table list form search */
+span.deleteicon {
+    position: relative;
+}
+span.deleteicon span {
+    position: absolute;
+    display: block;
+    top: -3px;
+    right: 3px;
+    width: 22px;
+    height: 24px;
+    background: url('/static/images/clear_input.png');
+    cursor: pointer;
+}
+span.deleteicon input {
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
 
 /* no underline in navigation menus */
 #nav a {text-decoration:none;}

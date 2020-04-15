@@ -1,0 +1,19 @@
+{#build table_list_data#}
+<tr class="w3-primary-color">
+{% for col in data.list_fields %}
+    <th class="{{ col.label }}" id="{{ col.name }}" >{{ col.label }}</th>
+{% endfor %}
+</tr>
+{% if data.recs %}
+    {% for rec in data.recs %}
+    <tr>
+		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.id }}</td>
+		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.first_name }}</td>
+		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.last_name}}</td>
+		<td class="w3-hide-small {% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.email|default("",true) }}</td>
+		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{% if rec.active == 1 %}Active{% else %}<em>Inactive</em>{% endif %}</td>
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr><td colspan='{{ data.list_fields | length }}'>No records match your search</td></tr>
+{% endif %}

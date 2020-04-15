@@ -1,0 +1,21 @@
+{# the contents of the table list table WITHOUT the <table>..</table> tags #}
+{# this may be replace via AJAX response following a search targeting <table id="sg-table-list"> #}
+
+{#build table_list_data#}
+<tr class="w3-primary-color">
+{% for col in data.list_fields %}
+    <th class="{{ col.label }}" id="{{ col.name }}" >{{ col.label }}</th>
+{% endfor %}
+</tr>
+{% if data.recs %}
+    {% for rec in data.recs %}
+    <tr>
+        {% for col in data.list_fields%}
+            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.css}}">{{rec.__getattribute__(col['name'])}}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+{% else %}
+    <tr><td colspan='{{ data.list_fields | length }}'>No records match your search</td></tr>
+{% endif %}
+

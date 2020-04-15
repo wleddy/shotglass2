@@ -1,0 +1,66 @@
+{# a search form for table lists #}
+
+{% set search_id_prefix = 'text-search-id-' %}
+{% set has_date_search = [] %}
+<div class="w3-col l8 m9 s12">
+    <div class="w3-row">
+        <span class="w3-hide-small">Find in:</span>
+        <select class="w3-select" style="width:auto;" id="{{ search_id_prefix }}col_select" name="col_select" 
+        kind='text' id_prefix='{{ search_id_prefix }}' onchange="search_changed(this)" >
+        {% for field in data.list_fields %}
+            {% if field.search == 'date' %}{% set _ = has_date_search.append(True) %}{% endif %}
+            {% if field.search and field.search != 'date' %}<option value="{{ field.name }}" >{{ field.label }}</option>
+            {% endif %} {# search #}
+        {% endfor %}
+        </select>
+        &nbsp;&nbsp;<input id="{{ search_id_prefix }}search_input" name="search_input" type="text"
+            class="w3-border deletable" kind='text' id_prefix='{{ search_id_prefix }}' 
+            placeholder="Type anything" autofocus onkeyup="search_changed(this)" 
+            />
+        </p>
+
+        {% if has_date_search %}
+        {% set search_id_prefix = [] %}
+        {% set _ = search_id_prefix.append('')%}
+            {% for field in data.list_fields %}
+                {% set _ = search_id_prefix.pop(0) %}
+                {% set _ = search_id_prefix.append(field.name) %}
+                {% if field.search and field.search == 'date' %}
+                    <p>
+                        <span class="w3-hide-small">Find by</span> {{ field.label }} 
+                        <input id="{{ search_id_prefix[0] }}start_date" name="{{ field.name }}" type="text"
+                        class="DatePickerButton w3-border deletable" kind='date' id_prefix='{{ search_id_prefix[0] }}' 
+                        placeholder="Start Date" onchange="search_changed(this)" 
+                        />&nbsp;thru&nbsp;
+                        <input id="{{ search_id_prefix[0] }}end_date" name="{{ field.name }}" type="text"
+                        class="DatePickerButton w3-border deletable" kind='date' id_prefix='{{ search_id_prefix[0] }}' 
+                        placeholder="End Date" onchange="search_changed(this)" 
+                        />
+                    </p>
+                    <script>addPicker("{{ search_id_prefix[0] }}start_date","%m/%d/%Y")</script>
+                    <script>addPicker("{{ search_id_prefix[0] }}end_date","%m/%d/%Y")</script>
+                {% endif %} {# date search field #}
+            {% endfor %}
+        {% endif %}{# has date search #}
+    </div>
+</div>
+
+<script>
+    function search_changed(which){
+        var id_prefix = $(which).attr('id_prefix');
+        preProcessKey('#'+id_prefix+'search_input');
+        setDBsearch('{{data.table.table_name}}',which,"{{ g.listURL }}filter/","{{ g.listURL }}");
+    }
+    
+    function preProcessKey(target){
+        // check for specal keys pressed
+        target = $(target)
+        target.keypress(function(event){
+            // clear input on escape
+            if(event.key == 'Escape'){
+                target.val('')
+            }
+        });
+    }
+</script>
+    

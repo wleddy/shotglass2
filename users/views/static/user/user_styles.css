@@ -1,0 +1,6 @@
+/*  Styles for user pages */
+
+.no_access{
+    color:#888;
+    cursor:no-drop;
+}

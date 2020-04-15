@@ -37,7 +37,29 @@ pre {
     cursor:pointer;
     background-color: whitesmoke;
 }
+
+
 */
+
+/* For the Table list form search */
+/*span.deleteicon {
+    position: relative;
+}
+span.deleteicon span {
+    position: absolute;
+    display: block;
+    top: -3px;
+    right: 3px;
+    width: 22px;
+    height: 24px;
+    background: url('/static/images/clear_input.png');
+    cursor: pointer;
+}
+span.deleteicon input {
+    padding-right: 20px;
+    box-sizing: border-box;
+}*/
+
 /* no underline in navigation menus */
 /*#nav a {text-decoration:none;}*/
 /* add to sidebar navigation menu */

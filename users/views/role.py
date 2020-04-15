@@ -2,43 +2,61 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from shotglass2.users.models import Role, User
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
+from shotglass2.takeabeltof.views import TableView, ListFilter
 from shotglass2.users.admin import login_required, table_access_required
 
 mod = Blueprint('role',__name__, template_folder='templates/role', url_prefix='/role')
 
+PRIMARY_TABLE = Role
 
+class RoleTableView(TableView):
+    def __init__(self,table,db,**kwargs):
+        super().__init__(table,db,**kwargs)
+        self.list_fields = [
+            {'name':'id','label':'ID','class':'w3-hide-small','search':True},
+            {'name':'description'},
+            {'name':'rank'},
+        ]
+
+# from app import app
+# app.add_url_rule('/role/users/', view_func=RoleTableView.as_view('role_users'))
+#
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
-    g.deleteURL = url_for('.delete')
+    g.deleteURL = url_for('.display') + 'delete/'
     g.title = 'Role'
 
-@mod.route('/')
-@table_access_required(Role)
-def display():
-    setExits()
-    g.title = "{} Record List".format(g.title)
-    # get all records
-    recs = Role(g.db).select()
-    return render_template('role_list.html',recs=recs)
+@mod.route('/delete/<path:path>', methods=['POST', 'GET'])
+@mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
+@mod.route('/delete/', methods=['POST', 'GET'])
+# @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
+@mod.route('/<path:path>',methods=['GET','POST',])
+@mod.route('/<path:path>/',methods=['GET','POST',])
+@mod.route('/',methods=['GET','POST',])
+@table_access_required(PRIMARY_TABLE)
+def display(path=None):
+    # import pdb;pdb.set_trace()
+    
+    return RoleTableView(PRIMARY_TABLE,g.db).dispatch_request()
+    
     
 
-## Edit the role
+# Edit the role
 @mod.route('/edit', methods=['POST', 'GET'])
 @mod.route('/edit/', methods=['POST', 'GET'])
 @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
-@table_access_required(Role)
+@table_access_required(PRIMARY_TABLE)
 def edit(rec_id=None):
     setExits()
     g.title = "Edit {} Record".format(g.title)
 
-    role = Role(g.db)
+    role = PRIMARY_TABLE(g.db)
     rec = None
     super_user = User(g.db).user_has_role(session['user_id'],'Super')
     
     rec_id = cleanRecordID(request.form.get('id',rec_id))
     
-    #import pdb;pdb.set_trace
     
     if rec_id < 0:
         flash("That is not a valid ID")
@@ -86,26 +104,14 @@ def edit(rec_id=None):
     return render_template('role_edit.html', rec=rec,super_user=super_user,no_delete=not super_user)
     
 
-@mod.route('/delete/', methods=['GET','POST'])
-@mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
-@table_access_required(Role)
+# @mod.route('/delete/', methods=['GET','POST'])
+# @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
+@table_access_required(PRIMARY_TABLE)
 def delete(rec_id=None):
-    setExits()
-    g.title = "Delete {} Record".format(g.title)
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-    
-    rec_id = cleanRecordID(rec_id)
-    if rec_id <=0:
-        flash("That is not a valid record ID")
-        return redirect(g.listURL)
-        
-    rec = Role(g.db).get(rec_id)
-    if not rec:
-        flash("Record not found")
-    else:
-        Role(g.db).delete(rec.id)
-        g.db.commit()
+    obj = TableView(PRIMARY_TABLE,g.db)
+    obj.delete(rec_id if rec_id else request.form.get('id',request.args.get('id',-1)))
+    if not obj.success:
+        flash(obj.result_text)
         
     return redirect(g.listURL)
 
@@ -122,7 +128,7 @@ def validForm(rec):
         where = 'lower(name)="{}"'.format(request.form['name'].lower().strip(),)
         if rec.id:
             where += ' and id <> {}'.format(rec.id)
-        if Role(g.db).select(
+        if PRIMARY_TABLE(g.db).select(
             where=where
             ) != None:
             goodForm = False

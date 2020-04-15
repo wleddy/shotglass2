@@ -9,9 +9,15 @@ import shotglass2.takeabeltof.database as dbm
 
 filespec = 'instance/test_database.db'
 db = None
-app.app.testing = True
 
+from flask_mail import Mail
 with app.app.app_context():
+    app.app.config['TESTING'] = True
+    # need to recreate mail obj to get new TESTING value
+    from app import mail
+    del mail
+    mail = Mail(app.app)
+
     db = app.get_db(filespec)
     app.init_db(db)
 
@@ -140,6 +146,47 @@ def test_numeric_field_save():
         # run again to be sure it's not added again
         tester.create_with_add() #added the column twice will raise OperationalError
          
+def test_get():
+    from app import app
+    with app.app_context():
+        # need the app_context because some of these raise errors
+        form = {'name':"test name",'int_field':"0",}
+        tester = PracticeTable(db)
+        tester.create_table()
+        rec = tester.new()
+        tester.update(rec,form,True)
+        
+        rec2 = tester.get(rec.id)
+        assert rec2
+        assert rec2.name == 'test name'
+        
+        #Get with kwargs
+        rec2 = tester.get(rec.id,commit=True)
+        assert rec2
+        assert rec2.name == 'test name'
+
+class SecondHand:
+    def __init__(self,connection):
+        self.table = connection
+        
+    def delete(self,id):
+        return self.table.delete(id,commit=True)
+    
+def test_secondhand_get():    
+    tester = PracticeTable(db)
+    tester.create_table()
+    rec = tester.new()
+    form = {'name':"test name",'int_field':"0",}
+    tester.update(rec,form,True)
+    
+    rec = tester.get(1)
+    assert rec
+    sh = SecondHand(tester)
+    success = sh.delete(1)
+    assert success == True
+    db.rollback()
+    rec = tester.get(1)
+    assert not rec
     
     
 def test_record_save():

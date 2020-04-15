@@ -13,7 +13,62 @@ from shotglass2.users.views.password import getPasswordHash
 from time import time
 
 
-mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user')
+from shotglass2.takeabeltof.views import TableView
+class UserView(TableView):
+    def __init__(self,table,db,**kwargs):
+        super().__init__(table,db,**kwargs)
+        
+        self.list_fields = [
+            {'name':'id','label':'ID','class':'w3-hide-small','search':True},
+            {'name':"first_name"},
+            {'name':"last_name"},
+            {'name':'email','class':'w3-hide-small'},
+            {'name':'active','label':"Status",'class':'w3-hide-small'},
+        ]
+        
+        
+        # self.list_template = 'user_list.html'
+        self.list_table_template = 'user_list_table.html'
+        g.listURL = url_for('.display')
+        g.adminURL = url_for('.admin',id=0)
+        g.editURL = url_for('.edit')
+        g.registerURL = url_for('.register')
+        g.deleteURL = url_for('.delete')
+        g.homeURL = '/'
+        g.title = 'User'
+        
+        self.head = """<link rel="stylesheet" href="{}">""".format( url_for('static', filename='user/user_styles.css' ))
+       
+        
+    def delete(self,rec_id=None,**kwargs):
+        
+        delete_by_admin = request.args.get('delete',None)
+        if delete_by_admin:
+            rec=self.table.select_one(where='access_token = "{}"'.format(delete_by_admin.strip()))
+            if rec:
+                rec_id = rec.id
+
+        if rec_id == None:
+            rec_id = request.form.get('id',request.args.get('id',-1))
+
+        rec_id = cleanRecordID(rec_id)
+        if rec_id < 1:
+            self.success = False
+            self.result_text = "That is not a valid record ID"
+            return
+            
+        rec = self.table.get(rec_id,include_inactive=True)
+        if not rec:
+            self.success = False
+            self.result_text = "Record not found"
+            return
+        else:
+            self.table.delete(rec.id)
+            g.db.commit()
+            self.result_text = 'User Record Deleted'
+    
+        
+mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user', static_folder="static")
 
 
 
@@ -22,7 +77,7 @@ mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/
 def save_table_search():
     """Save the table search string and column to the sesstion"""
     
-    #import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     
     d = {}
     if request.form:
@@ -45,7 +100,7 @@ def save_table_search():
 
     return ''
             
-            
+
 def setExits():
     g.listURL = url_for('.display')
     g.adminURL = url_for('.admin',id=0)
@@ -55,7 +110,7 @@ def setExits():
     g.homeURL = '/'
     g.title = 'User'
 
-@mod.route('/')
+#@mod.route('/')
 def home():
     setExits()
     if g.user:
@@ -63,16 +118,27 @@ def home():
         
     return redirect('/')
     
-@mod.route('/list/', methods=['GET'])
+@mod.route('/delete/<path:path>', methods=['POST', 'GET'])
+@mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
+@mod.route('/delete/', methods=['POST', 'GET'])
+# @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
+@mod.route('/<path:path>',methods=['GET','POST',])
+@mod.route('/<path:path>/',methods=['GET','POST',])
+@mod.route('/',methods=['GET','POST',])
 @table_access_required(User)
-def display():
-    setExits()
-    g.title = "{} List".format(g.title)
-    include_inactive = True
+def display(path=""):
     user = User(g.db)
-    recs = user.select(include_inactive=include_inactive)
     user_rank = user.max_role_rank(g.user)
-    return render_template('user_list.html', recs=recs,user_rank=user_rank)
+    user_list = UserView(User,g.db)
+    return user_list.dispatch_request(include_inactive=True,user_rank=user_rank)
+            
+    # setExits()
+#     g.title = "{} List".format(g.title)
+#     include_inactive = True
+#     user = User(g.db)
+#     recs = user.select(include_inactive=include_inactive)
+#     user_rank = user.max_role_rank(g.user)
+#     return render_template('user_list.html', recs=recs,user_rank=user_rank)
     
 @mod.route('/edit/<int:id>/', methods=['POST','GET'])
 @table_access_required(User)
@@ -431,31 +497,35 @@ def activate():
 @mod.route('/delete/<int:rec_id>/', methods=['GET'])
 @table_access_required(User)
 def delete(rec_id=None):
-    setExits()
-    delete_by_admin = request.args.get('delete',None)
-    if delete_by_admin:
-        user = User(g.db)
-        rec=user.select_one(where='access_token = "{}"'.format(delete_by_admin.strip()))
-        if rec:
-            rec_id = rec.id
-    
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-    
-    rec_id = cleanRecordID(rec_id)
-    if rec_id <=0:
-        flash("That is not a valid record ID")
-        return redirect(g.listURL)
-        
-    rec = User(g.db).get(rec_id,include_inactive=True)
-    if not rec:
-        flash("Record not found")
-    else:
-        User(g.db).delete(rec.id)
-        g.db.commit()
-        flash('User Record Deleted')
-        
+    obj = UserView(User,g.db)
+    obj.delete(rec_id)
+    flash(obj.result_text)
     return redirect(g.listURL)
+    # setExits()
+#     delete_by_admin = request.args.get('delete',None)
+#     if delete_by_admin:
+#         user = User(g.db)
+#         rec=user.select_one(where='access_token = "{}"'.format(delete_by_admin.strip()))
+#         if rec:
+#             rec_id = rec.id
+#
+#     if rec_id == None:
+#         rec_id = request.form.get('id',request.args.get('id',-1))
+#
+#     rec_id = cleanRecordID(rec_id)
+#     if rec_id <=0:
+#         flash("That is not a valid record ID")
+#         return redirect(g.listURL)
+#
+#     rec = User(g.db).get(rec_id,include_inactive=True)
+#     if not rec:
+#         flash("Record not found")
+#     else:
+#         User(g.db).delete(rec.id)
+#         g.db.commit()
+#         flash('User Record Deleted')
+#
+#     return redirect(g.listURL)
 
 
 def validForm(rec):
