@@ -5,6 +5,7 @@ from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
 from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
 from shotglass2.users.admin import Admin
+from shotglass2.users.models import User
 
 # Create app
 # setting static_folder to None allows me to handle loading myself
@@ -23,8 +24,8 @@ def inject_site_config():
     # Add 'site_config' dict to template context
     return {'site_config':shotglass.get_site_config()}
 
+# # Depricated and removed in Flask 1.0
 # # work around some web servers that mess up root path
-# # This fixer was depricated and removed in flask 1.0
 # from werkzeug.contrib.fixers import CGIRootFix
 # if app.config['CGI_ROOT_FIX_APPLY'] == True:
 #     fixPath = app.config.get("CGI_ROOT_FIX_PATH","/")
@@ -49,6 +50,16 @@ def initalize_all_tables(db=None):
     ### setup any other tables you need here....
     
     
+def initalize_all_tables(db=None):
+    """Place code here as needed to initialze all the tables for this site"""
+    if not db:
+        db = get_db()
+    
+    shotglass.initalize_user_tables(db)
+
+    ### setup any other tables you need here....
+    # Starter(db).init_table()
+
 def get_db(filespec=None):
     """Return a connection to the database.
 
@@ -56,7 +67,7 @@ def get_db(filespec=None):
 
     if not filespec:
         filespec = shotglass.get_site_config()['DATABASE_PATH']
-    
+
     # This is probobly a good place to change the
     # filespec if you want to use a different database
     # for the current request.
@@ -65,7 +76,7 @@ def get_db(filespec=None):
     if shotglass.make_db_path(filespec):
         g.db = Database(filespec).connect()
         initalize_all_tables(g.db)
-        
+    
         return g.db
     else:
         # was unable to create a path to the database
@@ -88,8 +99,8 @@ def _before():
     if 'instance' in request.url:
         return abort(404)
         
-    #import pdb;pdb.set_trace()
-
+    # import pdb;pdb.set_trace()
+    # print(app.url_map)
     session.permanent = True
     
     shotglass.get_site_config(app)
@@ -104,23 +115,31 @@ def _before():
         
     # g.menu_items should be a list of dicts
     #  with keys of 'title' & 'url' used to construct
-    #  the items in the main menu
-    g.menu_items = shotglass.get_menu_items()
-            
+    #  the non-table based items in the main menu
+    g.menu_items = [
+        {'title':'Home','url':url_for('www.home')},
+        {'title':'About','url':url_for('www.about')},
+        {'title':'Contact Us','url':url_for('www.contact')},
+        {'title':'Docs','url':url_for('www.docs')},
+        ]
+        
     # g.admin items are added to the navigation menu by default
     g.admin = Admin(g.db) # This is where user access rules are stored
+    
+    # # Add a module to the menu
+    # g.admin.register(Starter,
+    #         url_for('starter.display'),
+    #         display_name='Starter',
+    #         top_level=True,
+    #         minimum_rank_required=500,
+    #     )
+    
     shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
 
 @app.teardown_request
 def _teardown(exception):
     if 'db' in g:
         g.db.close()
-
-
-@app.errorhandler(413)
-def request_too_large(error):
-    flash("The file is too large to save. Max size is {}MB".format(int(shotglass.get_site_config().get("MAX_CONTENT_LENGTH",".25"))/1048576))
-    return redirect('/')
 
 
 @app.errorhandler(404)
@@ -145,13 +164,17 @@ shotglass.register_users(app)
 # setup www.routes...
 shotglass.register_www(app)
 
+# # add more modules...
+# from starter_module.views import starter
+# app.register_blueprint(starter.mod)
+
 if __name__ == '__main__':
     
     with app.app_context():
         # create the default database if needed
         initalize_all_tables()
         
-    #app.run(host='localhost', port=8000)
-    app.run()
+    app.run(host='localhost', port=5000)
+    #app.run()
     
     
