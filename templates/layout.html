@@ -78,12 +78,14 @@
                 {% block body %}{% endblock %}
             </div>
             
-            <div id="sg-footer">
-                {% block footer %}{% endblock footer%}
-            </div>
         </div>
 
     </div>
+
+    <div id="sg-footer">
+        {% block footer %}{% include 'footer.html'%}{% endblock footer%}
+    </div>
+
     {% block dialog %}
     <div id="dialog"></div>
     <div id="modal-form-contain" class="w3-modal" style="overflow:hidden;padding-top:20pt!important;z-index:auto;">
