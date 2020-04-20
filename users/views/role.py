@@ -13,24 +13,18 @@ class RoleTableView(TableView):
     def __init__(self,table,db,**kwargs):
         super().__init__(table,db,**kwargs)
         self.list_fields = [
-            {'name':'id','label':'ID','class':'w3-hide-small','search':True},
+            {'name':'id','label':'ID','class':'w3-hide-small','search':True,},
             {'name':'description'},
             {'name':'rank'},
         ]
 
-# from app import app
-# app.add_url_rule('/role/users/', view_func=RoleTableView.as_view('role_users'))
-#
+
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
     g.deleteURL = url_for('.display') + 'delete/'
     g.title = 'Role'
 
-@mod.route('/delete/<path:path>', methods=['POST', 'GET'])
-@mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
-@mod.route('/delete/', methods=['POST', 'GET'])
-# @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
 @mod.route('/<path:path>',methods=['GET','POST',])
 @mod.route('/<path:path>/',methods=['GET','POST',])
 @mod.route('/',methods=['GET','POST',])
@@ -44,8 +38,8 @@ def display(path=None):
 
 # Edit the role
 @mod.route('/edit', methods=['POST', 'GET'])
-@mod.route('/edit/', methods=['POST', 'GET'])
 @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
+@mod.route('/edit/', methods=['POST', 'GET'])
 @table_access_required(PRIMARY_TABLE)
 def edit(rec_id=None):
     setExits()

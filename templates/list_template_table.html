@@ -1,12 +1,9 @@
-{# the contents of the table list table WITHOUT the <table>..</table> tags #}
-{# this may be replace via AJAX response following a search targeting <table id="sg-table-list"> #}
+{# this may be replace via AJAX response following a search targeting <div id="sg-table-list"> #}
+
 
 {#build table_list_data#}
-<tr class="w3-primary-color">
-{% for col in data.list_fields %}
-    <th class="{{ col.label }}" id="{{ col.name }}" >{{ col.label }}</th>
-{% endfor %}
-</tr>
+{% include 'list_header_row.html'%}
+
 {% if data.recs %}
     {% for rec in data.recs %}
     <tr>
@@ -19,3 +16,4 @@
     <tr><td colspan='{{ data.list_fields | length }}'>No records match your search</td></tr>
 {% endif %}
 
+</table>

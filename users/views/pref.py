@@ -10,14 +10,16 @@ mod = Blueprint('pref',__name__, template_folder='templates/pref', url_prefix='/
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
-    g.deleteURL = url_for('.delete')
+    g.deleteURL = url_for('.diplay') + '/delete/'
     g.title = 'Preferences'
 
-@mod.route('/')
+@mod.route('/<path:path>',methods=['GET','POST',])
+@mod.route('/<path:path>/',methods=['GET','POST',])
+@mod.route('/',methods=['GET','POST',])
 @table_access_required(Pref)
-def display():
+def display(path=None):
     view = TableView(Pref,g.db)
-    return view.list()
+    return view.dispatch_request()
     # setExits()
     # g.title = "{} Record List".format(g.title)
     # # get all records
@@ -94,8 +96,8 @@ def edit(rec_id=None):
     return render_template('pref_edit.html', rec=rec)
     
 
-@mod.route('/delete/', methods=['GET','POST'])
-@mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
+# @mod.route('/delete/', methods=['GET','POST'])
+# @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
 @table_access_required(Pref)
 def delete(rec_id=None):
     setExits()

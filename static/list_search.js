@@ -22,7 +22,32 @@ function setDBsearch(table_name,which,session_save_URL,result_target_URL){
         $.ajaxSetup({async:true});
         doDBsearch(result_target_URL);
     }
-   
+
+function setDBorder(table_name,which,session_save_URL,result_target_URL){
+    var direction = $(which).attr('direction');
+    var field_name = $(which).attr('name');
+    var id = which.id
+    
+    $.ajaxSetup({async:false});
+    $.post(session_save_URL,{ 'id': id, 'field_name': field_name, 'table_name':table_name, 'direction':direction})
+
+    $.ajaxSetup({async:true});
+    doDBsearch(result_target_URL);
+    
+}
+
+function resetOrderClasses(){
+    $('.sg-sortable').removeClass('.sg-sortable-asnd .sg-sortable-decnd')
+}
+
+function setOrderClasses(id,dir){
+    if (id != undefined && dir != undefined){
+        $('#'+id).removeClass('sg-sortable-asnd sg-sortable-decnd')
+        if(parseInt(dir) == 1) $('#'+id).addClass('sg-sortable-decnd')
+        if(parseInt(dir) == -1) $('#'+id).addClass('sg-sortable-asnd')
+    }
+}
+
 function doDBsearch(result_target_URL){
     // trigger a database search and have the results loaded into current page
     $("#sg-table-list").load(result_target_URL)

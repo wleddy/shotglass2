@@ -1,9 +1,7 @@
 {#build table_list_data#}
-<tr class="w3-primary-color">
-{% for col in data.list_fields %}
-    <th class="{{ col.label }}" id="{{ col.name }}" >{{ col.label }}</th>
-{% endfor %}
-</tr>
+
+{% include 'list_header_row.html'%}
+
 {% if data.recs %}
     {% for rec in data.recs %}
     <tr>

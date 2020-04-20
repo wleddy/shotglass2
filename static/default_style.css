@@ -58,7 +58,23 @@ span.deleteicon input {
     box-sizing: border-box;
 }
 
+/* sortable icon for list table columns */
+.sg-sortable, .sg-sortable-asnd, .sg-sortable-decnd{
+    background: url('/static/images/order_default_icon.png');
+    background-repeat: no-repeat;
+    padding-left:16pt !important;
+ }
+   
+.sg-sortable-asnd{
+    background: url('/static/images/order_acnd_icon.png');
+    background-repeat: no-repeat; /*required after image change*/
+}
 
+.sg-sortable-decnd{
+    background: url('/static/images/order_decnd_icon.png');
+    background-repeat: no-repeat; /*required after image change*/
+}
+    
 /* no underline in navigation menus */
 #nav a {text-decoration:none;}
 /* add to sidebar navigation menu */

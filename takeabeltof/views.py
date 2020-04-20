@@ -43,7 +43,7 @@ class TableView:
             self.path = ['/']
         self.root = self.path.pop(0)
         
-        self.handlers = ['/','edit','delete','filter']
+        self.handlers = ['/','edit','delete','filter','order']
         
         self._ajax_request = request.headers.get('X-Requested-With') ==  'XMLHttpRequest'
         
@@ -105,7 +105,8 @@ class TableView:
                         return redirect(g.listURL)
                     if handler == 'filter':
                         return ListFilter()._save_list_filter()
-                        # return 'handle filter'
+                    if handler == 'order':
+                        return ListFilter()._save_list_order()
                     
         return self.list(**kwargs)
         
@@ -213,11 +214,11 @@ class ListFilter:
         'table_filters':{
             {<table name 1>:
                 filters:[{< id of input element>:{'type':<'text' | 'date'>,field_name':<field name>,'value':< filter value >}},{...},],
-                orders:[{<field name>:{'direction':<int>}},{...},],
+                'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
             {<table name 2>:
                 'filters':[{'id':< DOM id of input element>,'type':<text | date>,'field_name:<field name>,'value':< filter value >},{...},],
-                'orders':[{'id':< DOM id of input element>,'field_name':<field name>,'direction':<int>},{...},],
+                'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
         }
             The values for sort direction are -1 (descending), 0 (no sort), 1 (ascending)
@@ -246,8 +247,7 @@ class ListFilter:
                             self.DATE_END:'',
                             }
                             
-        self.sort_dict = {self.DOM_ID:'',
-                          self.FIELD_NAME:None,
+        self.sort_dict = {self.FIELD_NAME:None,
                           self.DIRECTION:0,
                           }
     
@@ -264,47 +264,58 @@ class ListFilter:
                         pass
                     break
         
+
+    def _create_filter_session(self,table_name):
+        """Create the session dict to hold the filter data if needed"""
+        # import pdb;pdb.set_trace()
+        if not self.HEADER_NAME in session:
+            session[self.HEADER_NAME] = {}
+        if not table_name in session[self.HEADER_NAME]:
+            session[self.HEADER_NAME][table_name] = {self.FILTERS_NAME:{},self.ORDERS_NAME:[]}
+            
+        return session[self.HEADER_NAME][table_name]
+
         
     def get_list_filter(self,table=None,**kwargs):
         """Return a dict of items to use to filter the list"""
         # import pdb;pdb.set_trace()
-        self.where=1
+        self.where = 1
         self.order_by = 'id'
         if not isinstance(table,SqliteTable):
             return
             
+        self._create_filter_session(table.table_name) # ensure it exists
+        
         where_list = []
-        order_list = []
         session_data = session.get(self.HEADER_NAME)
         if session_data and table.table_name in session_data:
-            session_data = session_data[table.table_name]
-            if session_data.get(self.FILTERS_NAME):
-                session_data = session_data[self.FILTERS_NAME]
-                for k,v in session_data.items():
-                    col = v.get(self.FIELD_NAME)
-                    val = v.get(self.VALUE)
-                    kind = v.get(self.TYPE)
-                    start = v.get(self.DATE_START)
-                    end = v.get(self.DATE_END)
-                    if col and (val or start or end):
-                        if kind == 'date':
-                            start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
-                            end = iso_date_string(end if end else self.END_OF_TIME)
-                            print(start,end)
-                            where_list.append("""date({col}) >= date('{start}') and date({col}) <= date('{end}')""".format(col=col,start=start,end=end))
-                            print(where_list[-1])
-                        else:
-                            where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
-                    
-            # if session_data.get(self.ORDERS_NAME):
-            #     for order in session_data.get(self.ORDERS_NAME):
-            #         col = order.get(self.FIELD_NAME)
-            #         val = order.get(self.DIRECTION) #direction will be -1,0 or 1
-            #         if not isinstance(val,int):
-            #             val = 0
-            #         if col and val:
-            #             direction = 'DESC' if val < 0 else ''
-            #             order_list.append("""{col} {direction}""".format(col=col,direction=direction))
+            filter_data = session_data[table.table_name][self.FILTERS_NAME]
+            for k,v in filter_data.items():
+                col = v.get(self.FIELD_NAME)
+                val = v.get(self.VALUE)
+                kind = v.get(self.TYPE)
+                start = v.get(self.DATE_START)
+                end = v.get(self.DATE_END)
+                if col and (val or start or end):
+                    if kind == 'date':
+                        start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
+                        end = iso_date_string(end if end else self.END_OF_TIME)
+                        print(start,end)
+                        where_list.append("""date({col}) >= date('{start}') and date({col}) <= date('{end}')""".format(col=col,start=start,end=end))
+                        print(where_list[-1])
+                    else:
+                        where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
+                        
+                        
+            # import pdb;pdb.set_trace()
+            order_list = []
+            for order_data in session_data[table.table_name][self.ORDERS_NAME]:
+                for dom_id in order_data.keys():
+                    col = order_data[dom_id].get(self.FIELD_NAME)
+                    direction = int(order_data[dom_id].get(self.DIRECTION,0)) #direction will be -1,0 or 1
+                    if col and direction:
+                        direction = 'DESC' if direction < 0 else 'ASC'
+                        order_list.append("""{col} {direction}""".format(col=col,direction=direction))
         
         if where_list:
             self.where = ' and '.join(where_list)
@@ -316,19 +327,43 @@ class ListFilter:
             
     def _save_list_order(self,*args,**kwargs):
         table_name = request.form.get('table_name')
-        
+        # import pdb;pdb.set_trace()
         if table_name:
+            self._create_filter_session(table_name)
+            order_data = session[self.HEADER_NAME][table_name][self.ORDERS_NAME]
+            
             order_dict = self.sort_dict.copy()
             for k,v in self.sort_dict.items():
-                order_dict[k] = request.form.get(k,v)
+                order_dict[k] = request.form.get(k)
             
-            if request.form.get(self.DOM_ID) and order_dict[self.FIELD_NAME]:
-                if not self.HEADER_NAME in session:
-                    session[self.HEADER_NAME] = {}
-                if not table_name in session[self.HEADER_NAME]:
-                    session[self.HEADER_NAME][table_name] = {self.FILTERS_NAME:{},self.ORDERS_NAME:{}}
+            column_id = request.form.get(self.DOM_ID)
+            new_column_defs = []
+            if column_id:
+                # order_data should be a list
+                if not order_data:
+                    order_data.append({column_id:order_dict}) # session is set here...
+                else:
+                    for i in range(len(order_data)-1,-1,-1):
+                        # row is a dict
+                        if column_id in order_data[i]:
+                            if not int(order_dict[self.DIRECTION]):
+                                #dont sort on this column
+                                del(order_data[i])
+                                break
+                            else:
+                                order_data[i][column_id].update(order_dict)
+                                break
+                        else:
+                            # add new sort col
+                            new_column_defs.append({column_id:order_dict})
+                        
+                for col in new_column_defs:
+                    # add new sort columns
+                    order_data.append(col)
                     
-                session[self.HEADER_NAME][table_name][self.ORDERS_NAME][request.form.get(self.DOM_ID)] = order_dict
+                # session[self.HEADER_NAME][table_name][self.ORDERS_NAME] = order_data
+        # always return something
+        return 'Ok'
         
         
     def _save_list_filter(self,*args,**kwargs):
@@ -336,13 +371,8 @@ class ListFilter:
         
         table_name = request.form.get('table_name')
         
-        # create the filter storage structure if needed
-        if not self.HEADER_NAME in session:
-            session[self.HEADER_NAME] = {}
-            
         if table_name:
-            if not table_name in session[self.HEADER_NAME]:
-                session[self.HEADER_NAME][table_name] = {self.FILTERS_NAME:{},self.ORDERS_NAME:{}}
+            session_data = self._create_filter_session(table_name)
             
             # import pdb;pdb.set_trace()
             filter_dict = self.filter_dict.copy()

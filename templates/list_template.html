@@ -10,6 +10,22 @@
 
 {% include "anytime_head.html"%}
 
+<script>
+    function order_changed(which){
+        var dir = $(which).attr('direction') || 0;
+        // dir == int(dir) || 0;
+        dir = parseInt(dir) + 1;
+        if (dir > 1){
+            dir = -1; // Decending
+        } // else {
+//             dir = 0 // no sort
+//         }
+        setOrderClasses(which.id,dir)
+        $(which).attr('direction',dir);
+        setDBorder('{{data.table.table_name}}',which,"{{ g.listURL }}order/","{{ g.listURL }}");
+    }
+</script>
+
 {{ data.head | safe }}
 
 {% endblock head %}
@@ -22,7 +38,8 @@
         {% endif %}
     </div>
     <p class="clear" style="margin-bottom:4pt;">&nbsp;</p>
-    <table id="sg-table-list" class="datatable w3-table w3-striped w3-hoverable">
+    <div id="sg-table-list">
         {% include data.list_table_template %}
-    </table>
+    </div>
+    
 {% endblock %}
