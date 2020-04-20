@@ -65,19 +65,19 @@ span.deleteicon input {
 }
 
 /* sortable icon for list table columns */
-.sg-sortable, .sg-sortable-asnd, .sg-sortable-decnd{
+.sg-sortable, .sg-sortable-asc, .sg-sortable-desc{
     background: url('/static/images/order_default_icon.png');
     background-repeat: no-repeat;
     padding-left:16pt !important;
  }
    
-.sg-sortable-asnd{
-    background: url('/static/images/order_acnd_icon.png');
+.sg-sortable-asc{
+    background: url('/static/images/order_asc_icon.png');
     background-repeat: no-repeat; /*required after image change*/
 }
 
-.sg-sortable-decnd{
-    background: url('/static/images/order_decnd_icon.png');
+.sg-sortable-desc{
+    background: url('/static/images/order_desc_icon.png');
     background-repeat: no-repeat; /*required after image change*/
 }
     

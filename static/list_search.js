@@ -37,14 +37,14 @@ function setDBorder(table_name,which,session_save_URL,result_target_URL){
 }
 
 function resetOrderClasses(){
-    $('.sg-sortable').removeClass('.sg-sortable-asnd .sg-sortable-decnd')
+    $('.sg-sortable').removeClass('.sg-sortable-asc .sg-sortable-desc')
 }
 
 function setOrderClasses(id,dir){
     if (id != undefined && dir != undefined){
-        $('#'+id).removeClass('sg-sortable-asnd sg-sortable-decnd')
-        if(parseInt(dir) == 1) $('#'+id).addClass('sg-sortable-decnd')
-        if(parseInt(dir) == -1) $('#'+id).addClass('sg-sortable-asnd')
+        $('#'+id).removeClass('sg-sortable-asc sg-sortable-desc')
+        if(parseInt(dir) == 1) $('#'+id).addClass('sg-sortable-desc')
+        if(parseInt(dir) == -1) $('#'+id).addClass('sg-sortable-asc')
     }
 }
 
