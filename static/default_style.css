@@ -39,6 +39,12 @@ p.clear {
     background-color: whitesmoke;
 }
 
+#sg-list-template-contain {
+    background-color:white;
+    padding-top:6pt;
+    padding-bottom:6pt;
+}
+
 /* For the Table list form search */
 span.deleteicon {
     position: relative;

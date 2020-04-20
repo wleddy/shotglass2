@@ -31,6 +31,7 @@
 {% endblock head %}
 
 {% block body %}
+<div id="sg-list-template-contain">
     <div class="w3-row ">
       	<p class="w3-col l2 m3 s12" style="position:relative;top:-2pt;" id="addRecord">&nbsp;&nbsp;<a href="{{ g.editURL }}0/">Add a new record</a></p>
         {% if data.has_search_fields %}
@@ -41,5 +42,5 @@
     <div id="sg-table-list">
         {% include data.list_table_template %}
     </div>
-    
+</div>
 {% endblock %}
