@@ -1,5 +1,5 @@
 from flask import request, session, g, url_for, \
-     render_template, render_template_string
+     render_template, render_template_string, redirect
 from flask.views import View
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
@@ -101,7 +101,10 @@ class TableView:
                         break
                     if handler == 'delete':
                         self.delete()
-                        # redirect to clear the old path name in browser
+                        if self._ajax_request:
+                            resp = 'success' if self.success else 'failue: {}'.format(self.result_text)
+                            return resp
+                            # redirect to clear the old path name in browser
                         return redirect(g.listURL)
                     if handler == 'filter':
                         return ListFilter()._save_list_filter()
@@ -145,7 +148,7 @@ class TableView:
                 if len(self.list_fields) > max_cols:
                     break
                 
-                if col[:-3].lower() == '_id':
+                if col[-3:].lower() == '_id':
                     # foreign key
                     continue
             
@@ -155,6 +158,7 @@ class TableView:
                     'label':'{}'.format(self.make_label(col)),
                     # limit the number of visible fields on small screen
                     'class':'{}'.format('w3-hide-small' if len(self.list_fields) == 0 or len(self.list_fields) > 3  else ''),
+                    'type':self.table.get_column_type(col),
                     })
                     
                     
@@ -181,7 +185,7 @@ class TableView:
         for field in fields:
             if isinstance(field,str):
                 # assume to be a field name
-                field = {'name':field,'label':'{}'.format(self.make_label(field)),'class':'','search':True}
+                field = {'name':field,'label':'{}'.format(self.make_label(field)),'class':'','search':True,'type':"TEXT"}
             if not isinstance(field,dict):
                 continue # it must be a dict
             for x in range(len(list_fields_temp)-1,-1,-1): # turkey shoot loop
@@ -191,10 +195,12 @@ class TableView:
                     del list_fields_temp[x]
                     continue
                 if list_fields_temp[x].get('name',False) == field.get('name',None):
-                    default_field_dict = {'label':'','class':'','search':True}
+                    default_field_dict = {'label':'','class':'','search':True,'type':'TEXT'}
                     for k in default_field_dict.keys():
                         if k in field:
                             default_field_dict.update({k:field[k]})
+                        elif k == 'type':
+                            default_field_dict.update({k:self.table.get_column_type(field['name'])})
                     break
                         
             list_fields_temp[x].update(default_field_dict)
