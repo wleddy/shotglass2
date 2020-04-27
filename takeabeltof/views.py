@@ -1,6 +1,7 @@
 from flask import request, session, g, url_for, \
-     render_template, render_template_string, redirect
+     render_template, render_template_string, redirect, flash
 from flask.views import View
+from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
@@ -200,7 +201,14 @@ class TableView:
                         if k in field:
                             default_field_dict.update({k:field[k]})
                         elif k == 'type':
-                            default_field_dict.update({k:self.table.get_column_type(field['name'])})
+                            field_type = "TEXT"
+                            try:
+                                field_type = self.table.get_column_type(field['name'])
+                            except KeyError:
+                                # the field name may be defined in the query 
+                                pass
+                            default_field_dict.update({k:field_type})
+                                
                     break
                         
             list_fields_temp[x].update(default_field_dict)
