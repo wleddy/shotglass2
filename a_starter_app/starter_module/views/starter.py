@@ -2,7 +2,6 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.takeabeltof.views import TableView
 from starter_module.models import StarterTable
 
 PRIMARY_TABLE = StarterTable
@@ -17,6 +16,8 @@ def setExits():
     g.title = 'Starter'
 
 
+from shotglass2.takeabeltof.views import TableView
+
 # this handles table list and record delete
 @mod.route('/<path:path>',methods=['GET','POST',])
 @mod.route('/<path:path>/',methods=['GET','POST',])
@@ -25,15 +26,15 @@ def setExits():
 def display(path=None):
     # import pdb;pdb.set_trace()
     
-    sample = TableView(PRIMARY_TABLE,g.db)
+    view = TableView(PRIMARY_TABLE,g.db)
     # optionally specify the list fields
-    sample.list_fields = [
+    view.list_fields = [
             {'name':'id','label':'ID','class':'w3-hide-small','search':True},
             {'name':'description'},
             {'name':'rank'},
         ]
     
-    return sample.dispatch_request()
+    return view.dispatch_request()
     
 
 ## Edit the PRIMARY_TABLE
