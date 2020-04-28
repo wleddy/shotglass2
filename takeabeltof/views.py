@@ -26,7 +26,7 @@ class TableView:
         self.edit_fields = None # define the fields (by name) to display in edit form
         
         self.list_template = kwargs.get('list_template','list_template.html')
-        self.list_table_template = kwargs.get('list_template','list_template_table.html')
+        self.list_table_template = kwargs.get('list_template_table','list_template_table.html')
         self.edit_template = kwargs.get('edit_template','edit_template.html')
         
         # set the exits
@@ -314,9 +314,9 @@ class ListFilter:
                     if kind == 'date':
                         start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
                         end = iso_date_string(end if end else self.END_OF_TIME)
-                        print(start,end)
+                        # print(start,end)
                         where_list.append("""date({col}) >= date('{start}') and date({col}) <= date('{end}')""".format(col=col,start=start,end=end))
-                        print(where_list[-1])
+                        # print(where_list[-1])
                     else:
                         where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
                         
