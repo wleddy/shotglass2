@@ -4,17 +4,19 @@
 {% include 'list_header_row.html'%}
 
 {% if data.recs %}
+    {% set value = [''] %}
     {% for rec in data.recs %}
     <tr>
         {% for col in data.list_fields%}
-            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.css}}">
+            {% set _ = value.pop(0) %}
             {% if col.type.upper() in ['DATE','DATETIME'] and rec.__getattribute__(col['name']) != None %}
-            {{ rec.__getattribute__(col['name']) | default_if_none('')  | local_date_string }}</td>
+            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_string) %}
             {% elif col.type.upper() in ['INT','INTEGER','NUMBER','REAL'] %}
-            {{ rec.__getattribute__(col['name']) | default_if_none('') }}</td>
+            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'].True) ) %}
             {% else %}
-            {{ rec.__getattribute__(col['name']) | default_if_none('')  | string  |  truncate(35,True) }}</td>
+            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | string  |  truncate(35,True) ) %}
             {% endif %}
+            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.css}}">{{ value[0] }}</td>
         {% endfor %}
     </tr>
     {% endfor %}

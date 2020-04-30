@@ -1,11 +1,12 @@
 from flask import request, session, g, url_for, \
-     render_template, render_template_string, redirect, flash
+     render_template, render_template_string, redirect, flash, Response
 from flask.views import View
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.database import SqliteTable
+from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string
+from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
 from datetime import date
 
 
@@ -22,6 +23,10 @@ class TableView:
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         self._set_default_list_fields() # set the defaults if needed
         self.has_search_fields = False # set to true if any fields have search == true
+        
+        # set fields to use for export
+        self.export_fields = kwargs.get('export_fields',None) # define the fields (by name) to display in list
+        self.export_template = kwargs.get('export_temlate',None)
         
         self.edit_fields = None # define the fields (by name) to display in edit form
         
@@ -44,7 +49,7 @@ class TableView:
             self.path = ['/']
         self.root = self.path.pop(0)
         
-        self.handlers = ['/','edit','delete','filter','order']
+        self.handlers = ['/','edit','delete','filter','order','export']
         
         self._ajax_request = request.headers.get('X-Requested-With') ==  'XMLHttpRequest'
         
@@ -111,19 +116,73 @@ class TableView:
                         return ListFilter()._save_list_filter()
                     if handler == 'order':
                         return ListFilter()._save_list_order()
+                    if handler == 'export':
+                        # export the currently selected records
+                        return self.export()
                     
         return self.list(**kwargs)
+        
+        
+    def export(self,**kwargs):
+        """Export the current record selection as .csv file"""
+        
+        # import pdb;pdb.set_trace()
+        
+        self.select_recs(**kwargs)
+        if self.recs:
+            filename = "{table_name}_report_{datetime}.csv".format(
+                        table_name = self.table.display_name,
+                        datetime = date_to_string(local_datetime_now(),'iso_datetime'),
+                        ).replace(' ','_').lower()
+                        
+            if not self.export_fields:
+                self.export_fields = self.list_fields.copy()
+
+            self.set_list_fields(self.export_fields)
+            
+            if self.export_template:
+                result = render_template(self.export_template, data=self)
+            else:
+                result = ','.join([x['label'] for x in self.export_fields]) + '\n'
+                for rec in self.recs:
+                    rec_row = []
+                    for field in self.export_fields:
+                        data = rec.__getattribute__(field['name'])
+                        if field['type'].upper() == "DATE":
+                            data = local_date_string(data)
+                        elif field['type'].upper() == "DATETIME":
+                            data = excel_date_and_time_string(data)
+                        else:
+                            data = '"' + str(data) + '"'
+                            
+                        rec_row.append(data)
+                        
+                    result += ','.join([str(x) for x in rec_row]) + '\n'
+                    
+            headers={
+               "Content-Disposition":"attachment;filename={}".format(filename),
+                }
+
+            return Response(
+                    result,
+                    mimetype="text/csv",
+                    headers=headers
+                    )
+        
+        self.result_text = "No records selected"
+        self.success = False
+        
+        flash(self.result_text)
+        return self.list(**kwargs)
+        
+        
         
     def list(self,**kwargs):
         """Return the response text for flask request"""
         # import pdb;pdb.set_trace()
         g.title = "{} Record List".format(g.title)
                 
-        # look in session for the saved search...
-        # ListFilter().clear_list_filter(self.table)
-        filters = ListFilter()
-        filters.get_list_filter(self.table)
-        self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs) # TODO filter and sort per self.list_filter and self.list_sort
+        self.select_recs(**kwargs)
         
         # ensure that the field list is complete
         self.has_search_fields = False #default state
@@ -169,16 +228,26 @@ class TableView:
         else:
             return name.replace('_',' ').title()
             
+
+    def select_recs(self,**kwargs):
+        """Make a selection of recs based on the current filters"""
+        
+        # look in session for the saved search...
+        filters = ListFilter()
+        filters.get_list_filter(self.table)
+        self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
+        
+
     def set_list_fields(self,fields):
-        """Ensure that self.list_fields is a list of dicts and that the dicts have
+        """Ensure that fields is a list of dicts and that the dicts have
         all the required keys
         """
         # import pdb;pdb.set_trace()
         
-        if not self.list_fields:
-            self.list_fields = []
+        if not fields:
+            fields = []
                 
-        list_fields_temp = [x for x in self.list_fields] # make a copy
+        list_fields_temp = [x for x in fields] # make a copy
             
         if not isinstance(fields,list):
             fields = [fields]
@@ -192,11 +261,11 @@ class TableView:
             for x in range(len(list_fields_temp)-1,-1,-1): # turkey shoot loop
                 default_field_dict = {'label':'','class':'','search':True}
                 if not isinstance(list_fields_temp[x],dict) or 'name' not in list_fields_temp[x]:
-                    # bad element got into self.list_fields somehow...
+                    # bad element got into fields somehow...
                     del list_fields_temp[x]
                     continue
                 if list_fields_temp[x].get('name',False) == field.get('name',None):
-                    default_field_dict = {'label':'','class':'','search':True,'type':'TEXT'}
+                    default_field_dict = {'label':'','class':'','search':True,'type':'TEXT','default':''}
                     for k in default_field_dict.keys():
                         if k in field:
                             default_field_dict.update({k:field[k]})
@@ -216,7 +285,7 @@ class TableView:
             if list_fields_temp[x]['search']:
                 self.has_search_fields = True
                 
-        self.list_fields = list_fields_temp
+        fields = list_fields_temp
         
         
 class ListFilter:

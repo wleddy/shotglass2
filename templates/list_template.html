@@ -13,13 +13,12 @@
 <script>
     function order_changed(which){
         var dir = $(which).attr('direction') || 0;
-        // dir == int(dir) || 0;
+
         dir = parseInt(dir) + 1;
         if (dir > 1){
             dir = -1; // Decending
-        } // else {
-//             dir = 0 // no sort
-//         }
+        }
+        
         setOrderClasses(which.id,dir)
         $(which).attr('direction',dir);
         setDBorder('{{data.table.table_name}}',which,"{{ g.listURL }}order/","{{ g.listURL }}");
@@ -34,9 +33,10 @@
 <div id="sg-list-template-contain">
     <div class="w3-row ">
       	<p class="w3-col l2 m3 s12" style="position:relative;top:-2pt;" id="addRecord">&nbsp;&nbsp;<a href="{{ g.editURL }}0/">Add a new record</a></p>
-        {% if data.has_search_fields %}
-        {% include "list_search_widget.html" %}
-        {% endif %}
+        {% if data.has_search_fields %}{% include "list_search_widget.html" %}{% endif %}
+    </div>
+    <div class='w3-row'>
+        {% include "list_export_widget.html"%}
     </div>
     <p class="clear" style="margin-bottom:4pt;">&nbsp;</p>
     <div id="sg-table-list">
