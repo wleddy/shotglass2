@@ -10,7 +10,7 @@ mod = Blueprint('pref',__name__, template_folder='templates/pref', url_prefix='/
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
-    g.deleteURL = url_for('.diplay') + '/delete/'
+    g.deleteURL = url_for('.display') + 'delete/'
     g.title = 'Preferences'
 
 @mod.route('/<path:path>',methods=['GET','POST',])
@@ -19,12 +19,15 @@ def setExits():
 @table_access_required(Pref)
 def display(path=None):
     view = TableView(Pref,g.db)
+    view.list_fields = [
+        {'name':'id','label':'ID','class':'w3-hide-small','search':True},
+        {'name':"name"},
+        {'name':"value"},
+        {'name':"expires",'type':'date','default':'-- Never --'},
+        {'name':"user_name",'class':'w3-hide-small','default':'-- All --'},
+    ]
+        
     return view.dispatch_request()
-    # setExits()
-    # g.title = "{} Record List".format(g.title)
-    # # get all records
-    # recs = Pref(g.db).select()
-    # return render_template('pref_list.html',recs=recs)
     
 
 ## Edit the Pref
@@ -96,28 +99,28 @@ def edit(rec_id=None):
     return render_template('pref_edit.html', rec=rec)
     
 
-# @mod.route('/delete/', methods=['GET','POST'])
-# @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
-@table_access_required(Pref)
-def delete(rec_id=None):
-    setExits()
-    g.title = "Delete {} Record".format(g.title)
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-    
-    rec_id = cleanRecordID(rec_id)
-    if rec_id <=0:
-        flash("That is not a valid record ID")
-        return redirect(g.listURL)
-        
-    rec = Pref(g.db).get(rec_id)
-    if not rec:
-        flash("Record not found")
-    else:
-        Pref(g.db).delete(rec.id)
-        g.db.commit()
-        
-    return redirect(g.listURL)
+# # @mod.route('/delete/', methods=['GET','POST'])
+# # @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
+# @table_access_required(Pref)
+# def delete(rec_id=None):
+#     setExits()
+#     g.title = "Delete {} Record".format(g.title)
+#     if rec_id == None:
+#         rec_id = request.form.get('id',request.args.get('id',-1))
+#
+#     rec_id = cleanRecordID(rec_id)
+#     if rec_id <=0:
+#         flash("That is not a valid record ID")
+#         return redirect(g.listURL)
+#
+#     rec = Pref(g.db).get(rec_id)
+#     if not rec:
+#         flash("Record not found")
+#     else:
+#         Pref(g.db).delete(rec.id)
+#         g.db.commit()
+#
+#     return redirect(g.listURL)
 
     
 def validForm(rec):
