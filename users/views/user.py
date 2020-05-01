@@ -33,7 +33,6 @@ class UserView(TableView):
         g.adminURL = url_for('.admin',id=0)
         g.editURL = url_for('.edit')
         g.registerURL = url_for('.register')
-        g.deleteURL = url_for('.delete')
         g.homeURL = '/'
         g.title = 'User'
         
@@ -66,6 +65,11 @@ class UserView(TableView):
             self.table.delete(rec.id)
             g.db.commit()
             self.result_text = 'User Record Deleted'
+            
+            
+    def select_recs(self,**kwargs):
+        kwargs.update({'include_inactive':True,'user_rank':self.table.max_role_rank(g.user)})
+        return super().select_recs(**kwargs)
     
         
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user', static_folder="static")
@@ -106,7 +110,7 @@ def setExits():
     g.adminURL = url_for('.admin',id=0)
     g.editURL = url_for('.edit')
     g.registerURL = url_for('.register')
-    g.deleteURL = url_for('.delete')
+    g.deleteURL = url_for('.display') + "delete/"
     g.homeURL = '/'
     g.title = 'User'
 
@@ -118,9 +122,9 @@ def home():
         
     return redirect('/')
     
-@mod.route('/delete/<path:path>', methods=['POST', 'GET'])
-@mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
-@mod.route('/delete/', methods=['POST', 'GET'])
+# @mod.route('/delete/<path:path>', methods=['POST', 'GET'])
+# @mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
+# @mod.route('/delete/', methods=['POST', 'GET'])
 # @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
 @mod.route('/<path:path>',methods=['GET','POST',])
 @mod.route('/<path:path>/',methods=['GET','POST',])
@@ -420,7 +424,7 @@ def register():
                 
                 #inform the admin
                 to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
-                deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.delete'), rec.access_token)
+                deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],g.deleteURL, rec.access_token)
                 editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
                 context={'rec':rec,'deleteURL':deleteURL,'editURL':editURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
                 subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
@@ -492,15 +496,15 @@ def activate():
     return edit(rec.id)
         
         
-@mod.route('/delete', methods=['GET'])
-@mod.route('/delete/', methods=['GET'])
-@mod.route('/delete/<int:rec_id>/', methods=['GET'])
-@table_access_required(User)
-def delete(rec_id=None):
-    obj = UserView(User,g.db)
-    obj.delete(rec_id)
-    flash(obj.result_text)
-    return redirect(g.listURL)
+# @mod.route('/delete', methods=['GET'])
+# @mod.route('/delete/', methods=['GET'])
+# @mod.route('/delete/<int:rec_id>/', methods=['GET'])
+# @table_access_required(User)
+# def delete(rec_id=None):
+#     obj = UserView(User,g.db)
+#     obj.delete(rec_id)
+#     flash(obj.result_text)
+#     return redirect(g.listURL)
     # setExits()
 #     delete_by_admin = request.args.get('delete',None)
 #     if delete_by_admin:

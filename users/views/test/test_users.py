@@ -235,11 +235,6 @@ def test_user_register(client):
             assert result.status_code == 200
             assert b'Signup Successful' in result.data
             
-            # test that bad url is rejected
-            result = c.post('/user/register/0/', data=form_data,follow_redirects=True)
-            assert result.status_code == 404
-            assert b'Signup Successful' not in result.data
-            
             #test that duplicate name is rejected
             result = c.post('/user/register/', data=form_data,follow_redirects=True)
             assert result.status_code == 200
