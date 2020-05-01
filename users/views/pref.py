@@ -98,30 +98,6 @@ def edit(rec_id=None):
     # display form
     return render_template('pref_edit.html', rec=rec)
     
-
-# # @mod.route('/delete/', methods=['GET','POST'])
-# # @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
-# @table_access_required(Pref)
-# def delete(rec_id=None):
-#     setExits()
-#     g.title = "Delete {} Record".format(g.title)
-#     if rec_id == None:
-#         rec_id = request.form.get('id',request.args.get('id',-1))
-#
-#     rec_id = cleanRecordID(rec_id)
-#     if rec_id <=0:
-#         flash("That is not a valid record ID")
-#         return redirect(g.listURL)
-#
-#     rec = Pref(g.db).get(rec_id)
-#     if not rec:
-#         flash("Record not found")
-#     else:
-#         Pref(g.db).delete(rec.id)
-#         g.db.commit()
-#
-#     return redirect(g.listURL)
-
     
 def validForm(rec):
     # Validate the form

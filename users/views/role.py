@@ -29,9 +29,7 @@ def setExits():
 @mod.route('/<path:path>/',methods=['GET','POST',])
 @mod.route('/',methods=['GET','POST',])
 @table_access_required(PRIMARY_TABLE)
-def display(path=None):
-    # import pdb;pdb.set_trace()
-    
+def display(path=None):    
     return RoleTableView(PRIMARY_TABLE,g.db).dispatch_request()
     
     
@@ -97,18 +95,6 @@ def edit(rec_id=None):
     # display form
     return render_template('role_edit.html', rec=rec,super_user=super_user,no_delete=not super_user)
     
-
-# @mod.route('/delete/', methods=['GET','POST'])
-# @mod.route('/delete/<int:rec_id>/', methods=['GET','POST'])
-@table_access_required(PRIMARY_TABLE)
-def delete(rec_id=None):
-    obj = TableView(PRIMARY_TABLE,g.db)
-    obj.delete(rec_id if rec_id else request.form.get('id',request.args.get('id',-1)))
-    if not obj.success:
-        flash(obj.result_text)
-        
-    return redirect(g.listURL)
-
     
 def validForm(rec):
     # Validate the form

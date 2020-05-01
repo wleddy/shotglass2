@@ -122,10 +122,6 @@ def home():
         
     return redirect('/')
     
-# @mod.route('/delete/<path:path>', methods=['POST', 'GET'])
-# @mod.route('/delete/<path:path>/', methods=['POST', 'GET'])
-# @mod.route('/delete/', methods=['POST', 'GET'])
-# @mod.route('/edit/<int:rec_id>/', methods=['POST','GET'])
 @mod.route('/<path:path>',methods=['GET','POST',])
 @mod.route('/<path:path>/',methods=['GET','POST',])
 @mod.route('/',methods=['GET','POST',])
@@ -136,13 +132,6 @@ def display(path=""):
     user_list = UserView(User,g.db)
     return user_list.dispatch_request(include_inactive=True,user_rank=user_rank)
             
-    # setExits()
-#     g.title = "{} List".format(g.title)
-#     include_inactive = True
-#     user = User(g.db)
-#     recs = user.select(include_inactive=include_inactive)
-#     user_rank = user.max_role_rank(g.user)
-#     return render_template('user_list.html', recs=recs,user_rank=user_rank)
     
 @mod.route('/edit/<int:id>/', methods=['POST','GET'])
 @table_access_required(User)
@@ -494,42 +483,6 @@ def activate():
     
     flash("New User Activation Successful")
     return edit(rec.id)
-        
-        
-# @mod.route('/delete', methods=['GET'])
-# @mod.route('/delete/', methods=['GET'])
-# @mod.route('/delete/<int:rec_id>/', methods=['GET'])
-# @table_access_required(User)
-# def delete(rec_id=None):
-#     obj = UserView(User,g.db)
-#     obj.delete(rec_id)
-#     flash(obj.result_text)
-#     return redirect(g.listURL)
-    # setExits()
-#     delete_by_admin = request.args.get('delete',None)
-#     if delete_by_admin:
-#         user = User(g.db)
-#         rec=user.select_one(where='access_token = "{}"'.format(delete_by_admin.strip()))
-#         if rec:
-#             rec_id = rec.id
-#
-#     if rec_id == None:
-#         rec_id = request.form.get('id',request.args.get('id',-1))
-#
-#     rec_id = cleanRecordID(rec_id)
-#     if rec_id <=0:
-#         flash("That is not a valid record ID")
-#         return redirect(g.listURL)
-#
-#     rec = User(g.db).get(rec_id,include_inactive=True)
-#     if not rec:
-#         flash("Record not found")
-#     else:
-#         User(g.db).delete(rec.id)
-#         g.db.commit()
-#         flash('User Record Deleted')
-#
-#     return redirect(g.listURL)
 
 
 def validForm(rec):
