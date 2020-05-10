@@ -16,7 +16,7 @@
             {% else %}
             {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | string  |  truncate(35,True) ) %}
             {% endif %}
-            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.css}}">{{ value[0] }}</td>
+            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.class}}">{{ value[0] }}</td>
         {% endfor %}
     </tr>
     {% endfor %}
