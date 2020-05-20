@@ -152,11 +152,17 @@ class TableView:
                             data = local_date_string(data)
                         elif field['type'].upper() == "DATETIME":
                             data = excel_date_and_time_string(data)
-                        elif field['type'].upper() == 'TEXT' and "," in data:
-                            # if any commas, wrap in quotes
-                            data = '"' + str(data) + '"'
                         else:
-                            data = str(data)
+                            data = str(data).strip()
+                            
+                        if "," in data:
+                            # if any commas, wrap in quotes
+                            data = '"' + data + '"'
+                            
+                        #replace returns
+                        data = data.replace('\r\n',' -crnl- ')
+                        data = data.replace('\n',' -nl- ')
+                        data = data.replace('\r',' -rtn- ')
                             
                         rec_row.append(data)
                         
