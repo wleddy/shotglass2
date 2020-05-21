@@ -21,7 +21,8 @@ class TableView:
         self.display_name = self.table.display_name
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
-        self._set_default_list_fields() # set the defaults if needed
+        if not self.list_fields:
+            self.list_fields = self._set_default_list_fields() # set the defaults if needed
         self.has_search_fields = False # set to true if any fields have search == true
         
         # set fields to use for export
@@ -136,7 +137,8 @@ class TableView:
                         ).replace(' ','_').lower()
                         
             if not self.export_fields:
-                self.export_fields = self.list_fields.copy()
+                # include all fields by default
+                self.export_fields = self._set_default_list_fields(include_all=True).copy()
 
             self.set_list_fields(self.export_fields)
             
@@ -206,29 +208,32 @@ class TableView:
                             **kwargs,
                         )
                         
-    def _set_default_list_fields(self):
-        """Set up the default fields for the list view if not provided"""
-        if not self.list_fields:
-            # make up a list of fields to display
-            self.list_fields = []
-            col_num = -1
-            max_cols = 5
-            for col in self.table.get_column_names():
-                if len(self.list_fields) > max_cols:
-                    break
-                
-                if col[-3:].lower() == '_id':
-                    # foreign key
-                    continue
+    def _set_default_list_fields(self,include_all=False):
+        """Set up the default fields for the list view if not provided
+        
+        if include_all, include all fields in list. Primarily for export list.
+        """
+        default_list_fields = []
+        col_num = -1
+        max_cols = 5 if not include_all else 99999
+        
+        for col in self.table.get_column_names():
+            if len(default_list_fields) > max_cols:
+                break
             
-                col_num += 1
-                self.list_fields.append({
-                    'name':'{}'.format(col),
-                    'label':'{}'.format(self.make_label(col)),
-                    # limit the number of visible fields on small screen
-                    'class':'{}'.format('w3-hide-small' if len(self.list_fields) == 0 or len(self.list_fields) > 3  else ''),
-                    'type':self.table.get_column_type(col),
-                    })
+            if col[-3:].lower() == '_id' and not include_all:
+                # foreign key
+                continue
+        
+            col_num += 1
+            
+            default_list_fields.append({
+                'name':'{}'.format(col),
+                # limit the number of visible fields on small screen
+                'class':'{}'.format('w3-hide-small' if len(default_list_fields) == 0 or len(default_list_fields) > 3  else ''),                
+                })
+                
+        return default_list_fields
                     
                     
     def make_label(self,name):
