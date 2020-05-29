@@ -29,11 +29,19 @@ class TableView:
         self.export_fields = kwargs.get('export_fields',None) # define the fields (by name) to display in list
         self.export_template = kwargs.get('export_temlate',None)
         
-        self.edit_fields = None # define the fields (by name) to display in edit form
         
-        self.list_template = kwargs.get('list_template','list_template.html')
-        self.list_table_template = kwargs.get('list_template_table','list_template_table.html')
-        self.edit_template = kwargs.get('edit_template','edit_template.html')
+        # templates to use in the list view by default
+        self.list_template = 'list_template.html'
+        # These are includes in the main list template, so may want to point to a different file
+        self.list_table_template = 'list_template_table.html'
+        self.list_search_widget_template = 'list_search_widget.html'
+        self.list_search_widget_extras_template = 'list_search_widget_extras.html'
+        self.list_header_row_template = 'list_header_row.html'
+        self.list_search_widget_ready_template = 'list_search_widget_ready.js'
+        self.list_order_ready_temlate = 'list_order_ready.js'
+        self.list_export_widget_template = 'list_export_widget.html'
+        
+        self.edit_template = 'edit_template.html'
         
         # set the exits
         g.listURL = url_for('.display')

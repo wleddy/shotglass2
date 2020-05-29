@@ -18,7 +18,9 @@
             placeholder="Type anything" autofocus onkeyup="search_changed(this)" 
             />
         </p>
-
+    </div>
+        {% include data.list_search_widget_extras_template %}
+    <div class="w3-row">
         {% if has_date_search %}
         {% set search_id_prefix = [] %}
         {% set _ = search_id_prefix.append('')%}

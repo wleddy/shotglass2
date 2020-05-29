@@ -6,7 +6,7 @@
 {{ super() }}
 <script src="{{ url_for('static', filename='list_search.js') }}"></script>
 
-{% include 'list_search_widget_ready.js' %}
+{% include data.list_search_widget_ready_template %}
 
 {% include "anytime_head.html"%}
 
@@ -33,10 +33,10 @@
 <div id="sg-list-template-contain">
     <div class="w3-row ">
       	<p class="w3-col l2 m3 s12" style="position:relative;top:-2pt;" id="addRecord">&nbsp;&nbsp;<a href="{{ g.editURL }}0/">Add a new record</a></p>
-        {% if data.has_search_fields %}{% include "list_search_widget.html" %}{% endif %}
+        {% if data.has_search_fields %}{% include data.list_search_widget_template %}{% endif %}
     </div>
     <div class='w3-row'>
-        {% include "list_export_widget.html"%}
+        {% include data.list_export_widget_template %}
     </div>
     <p class="clear" style="margin-bottom:4pt;">&nbsp;</p>
     <div id="sg-table-list">
