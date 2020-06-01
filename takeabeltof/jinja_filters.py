@@ -1,5 +1,5 @@
 from shotglass2.takeabeltof.date_utils import date_to_string, getDatetimeFromString
-from shotglass2.takeabeltof.utils import render_markdown_text
+from shotglass2.takeabeltof.utils import render_markdown_text, formatted_phone_number
 from jinja2 import Markup
 from datetime import datetime
 import re
@@ -92,6 +92,11 @@ def two_decimal_string(value):
         
     return value
     
+    
+def phone(value,sep='-',raw=False):
+    """Return a formatted phone number"""
+    return formatted_phone_number(value,sep,raw)
+        
     
 def weblink(data,safe=True,blank=True):
     """Render a hyperlink for the data provided. Data is assumed to be a web address
@@ -252,3 +257,4 @@ def register_jinja_filters(app):
     app.jinja_env.filters['render_markdown'] = render_markdown
     app.jinja_env.filters['default_if_none'] = default_if_none
     app.jinja_env.filters['plural'] = plural
+    app.jinja_env.filters['phone'] = phone
