@@ -165,6 +165,9 @@ class TableView:
                         else:
                             data = str(data).strip()
                             
+                        # replace double quotes with double-double quotes
+                        data = data.replace('"','""') #double up on double quotes
+                        
                         if "," in data:
                             # if any commas, wrap in quotes
                             data = '"' + data + '"'
@@ -173,7 +176,7 @@ class TableView:
                         data = data.replace('\r\n',' -crnl- ')
                         data = data.replace('\n',' -nl- ')
                         data = data.replace('\r',' -rtn- ')
-                            
+
                         rec_row.append(data)
                         
                     result += ','.join([str(x) for x in rec_row]) + '\n'
