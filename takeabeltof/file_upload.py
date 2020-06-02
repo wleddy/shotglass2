@@ -69,12 +69,15 @@ class FileUpload:
                     self.error_text = "Unable to create path for resources at '{}".format(destination.as_posix())
                     return
                     
+            # append a number to the file name if it already exists
             file_count = 0
-            while (destination / self.filename).exists():
+            final_name = self.filename
+            while (destination / final_name).exists():
                 file_count += 1
-                self.filename = self.filename.split('.')[0] + "".join(str(file_count)) + '.' + self.filename.rsplit('.', 1)[1]
+                final_name = self.filename.split('.')[0] + "".join(str(file_count)) + '.' + self.filename.rsplit('.', 1)[1]
                     
-            self.saved_file_path = Path(self.local_path,self.filename) # the abbreviated path
+            self.filename = final_name
+            self.saved_file_path = Path(self.local_path,final_name) # the abbreviated path
             try:
                 file.save(destination / self.filename )
             except Exception as e:
