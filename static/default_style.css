@@ -80,6 +80,15 @@ span.deleteicon input {
     background: url('/static/images/order_desc_icon.png');
     background-repeat: no-repeat; /*required after image change*/
 }
+
+/* style the record count at the bottom of default list table */
+.list_record_count {
+    margin-top:6pt;
+    padding:6pt 20pt;
+    font-weight:800;
+    border-top:1pt solid #666;
+    border-bottom:1pt solid #666;
+}
     
 /* no underline in navigation menus */
 #nav a {text-decoration:none;}

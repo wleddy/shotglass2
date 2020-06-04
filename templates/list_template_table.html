@@ -25,3 +25,8 @@
 {% endif %}
 
 </table>
+
+{% if data.recs %}
+{% set rec_count = data.recs | length %}
+<p class="list_record_count">{{ rec_count }} {{ "record" | plural(rec_count)}}.</p>
+{% endif %}
