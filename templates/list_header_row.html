@@ -7,10 +7,12 @@ Remember the </table> in the file that includes this
 <table class="datatable w3-table w3-striped w3-hoverable">
 <tr class="w3-primary-color">
 {% for col in data.list_fields %}
-    <th class="{{ col.class }} sg-sortable" id="{{ col.name }}" 
-        name="{{ col.name }}"
-        direction="0"
-        onclick="order_changed(this);">
-        {{ col.label }}</th>
+    {% if col.list %}
+        <th class="{{ col.class }} sg-sortable" id="{{ col.name }}" 
+            name="{{ col.name }}"
+            direction="0"
+            onclick="order_changed(this);">
+            {{ col.label }}</th>
+    {% endif %}
 {% endfor %}
 </tr>

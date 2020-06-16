@@ -8,15 +8,17 @@
     {% for rec in data.recs %}
     <tr>
         {% for col in data.list_fields%}
-            {% set _ = value.pop(0) %}
-            {% if col.type.upper() in ['DATE','DATETIME'] and rec.__getattribute__(col['name']) != None %}
-            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_string) %}
-            {% elif col.type.upper() in ['INT','INTEGER','NUMBER','REAL'] %}
-            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'].True) ) %}
-            {% else %}
-            {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | string  |  truncate(35,True) ) %}
+            {% if col.list %}
+                {% set _ = value.pop(0) %}
+                {% if col.type.upper() in ['DATE','DATETIME'] and rec.__getattribute__(col['name']) != None %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_string) %}
+                {% elif col.type.upper() in ['INT','INTEGER','NUMBER','REAL'] %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'].True) ) %}
+                {% else %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | string  |  truncate(35,True) ) %}
+                {% endif %}
+                <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.class}}">{{ value[0] }}</td>
             {% endif %}
-            <td onclick="window.location='{{g.editURL}}{{rec.id}}/'" class="{{col.class}}">{{ value[0] }}</td>
         {% endfor %}
     </tr>
     {% endfor %}

@@ -266,6 +266,11 @@ class TableView:
     def set_list_fields(self,fields):
         """Ensure that fields is a list of dicts and that the dicts have
         all the required keys
+        
+        6/16/20 - 
+            Add 'list' attribute to determine if a field is to be included in list.
+            Defaults to True. This allows you to include it in the search widget without
+            displaying the field in the list.
         """
         # import pdb;pdb.set_trace()
         
@@ -280,7 +285,7 @@ class TableView:
         for field in fields:
             if isinstance(field,str):
                 # assume to be a field name
-                field = {'name':field,'label':'{}'.format(self.make_label(field)),'class':'','search':True,'type':"TEXT"}
+                field = {'name':field,'label':'{}'.format(self.make_label(field)),'class':'','search':True,'type':"TEXT",'list':True}
             if not isinstance(field,dict):
                 continue # it must be a dict
             for x in range(len(list_fields_temp)-1,-1,-1): # turkey shoot loop
@@ -290,7 +295,7 @@ class TableView:
                     del list_fields_temp[x]
                     continue
                 if list_fields_temp[x].get('name',False) == field.get('name',None):
-                    default_field_dict = {'label':'','class':'','search':True,'type':'TEXT','default':''}
+                    default_field_dict = {'label':'','class':'','search':True,'type':'TEXT','default':'','list':True}
                     for k in default_field_dict.keys():
                         if k in field:
                             default_field_dict.update({k:field[k]})
