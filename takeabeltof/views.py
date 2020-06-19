@@ -428,7 +428,16 @@ class ListFilter:
                     direction = int(order_data[dom_id].get(self.DIRECTION,0)) #direction will be -1,0 or 1
                     if col and direction:
                         direction = 'DESC' if direction < 0 else 'ASC'
-                        order_list.append("""{col} {direction}""".format(col=col,direction=direction))
+                        collate = ''
+                        field_type = "TEXT"
+                        try:
+                            field_type = table.get_column_type(order_data[dom_id]['field_name'])
+                        except KeyError:
+                            # the field name may be defined in the query 
+                            pass
+                        if field_type.lower() == "text":
+                            collate = 'COLLATE NOCASE'
+                        order_list.append("""{col} {collate} {direction}""".format(col=col,collate=collate,direction=direction))
         
         if where_list:
             self.where = ' and '.join(where_list)
