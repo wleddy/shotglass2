@@ -393,7 +393,7 @@ class ListFilter:
     def get_list_filter(self,table=None,**kwargs):
         """Return a dict of items to use to filter the list"""
         # import pdb;pdb.set_trace()
-        self.where = 1
+        self.where = '1'
         self.order_by = 'id'
         if not isinstance(table,SqliteTable):
             return
