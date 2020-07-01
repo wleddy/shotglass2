@@ -163,19 +163,20 @@ class TableView:
                         elif field['type'].upper() == "DATETIME":
                             data = excel_date_and_time_string(data)
                         else:
+                            # just text
                             data = str(data).strip()
                             
-                        # replace double quotes with double-double quotes
-                        data = data.replace('"','""') #double up on double quotes
+                            # replace double quotes with double-double quotes
+                            data = data.replace('"','""') #double up on double quotes
                         
-                        if "," in data:
-                            # if any commas, wrap in quotes
-                            data = '"' + data + '"'
+                            if "," in data:
+                                # if any commas, wrap in quotes
+                                data = '"' + data + '"'
                             
-                        #replace returns
-                        data = data.replace('\r\n',' -crnl- ')
-                        data = data.replace('\n',' -nl- ')
-                        data = data.replace('\r',' -rtn- ')
+                            #replace returns
+                            data = data.replace('\r\n',' -crnl- ')
+                            data = data.replace('\n',' -nl- ')
+                            data = data.replace('\r',' -rtn- ')
 
                         rec_row.append(data)
                         
