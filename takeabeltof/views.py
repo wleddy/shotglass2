@@ -398,6 +398,9 @@ class ListFilter:
         if not isinstance(table,SqliteTable):
             return
             
+        # get the column names for the table
+        table_column_names = table.get_column_names()
+        
         self._create_filter_session(table.table_name) # ensure it exists
         
         where_list = []
@@ -411,6 +414,12 @@ class ListFilter:
                 start = v.get(self.DATE_START)
                 end = v.get(self.DATE_END)
                 if col and (val or start or end):
+                    
+                    # if the column name is a physical column in the primary table
+                    #   prepend the column name with the table name to avoid ambiguous column names
+                    if col in table_column_names and '.' not in col:
+                        col = table.table_name + '.' + col
+                        
                     if kind == 'date':
                         start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
                         end = iso_date_string(end if end else self.END_OF_TIME)
@@ -428,6 +437,13 @@ class ListFilter:
                     col = order_data[dom_id].get(self.FIELD_NAME)
                     direction = int(order_data[dom_id].get(self.DIRECTION,0)) #direction will be -1,0 or 1
                     if col and direction:
+                        
+                        # if the column name is a physical column in the primary table
+                        #   prepend the column name with the table name to avoid ambiguous column names
+                        #   Same as above, but not sure it's really needed in order by...
+                        if col in table_column_names and '.' not in col:
+                            col = table.table_name + '.' + col
+
                         direction = 'DESC' if direction < 0 else 'ASC'
                         collate = ''
                         field_type = "TEXT"
