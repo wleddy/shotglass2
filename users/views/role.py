@@ -14,6 +14,7 @@ class RoleTableView(TableView):
         super().__init__(table,db,**kwargs)
         self.list_fields = [
             {'name':'id','label':'ID','class':'w3-hide-small','search':True,},
+            {'name':'name',},
             {'name':'description'},
             {'name':'rank'},
         ]
