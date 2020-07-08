@@ -75,7 +75,17 @@ from datetime import timedelta
 PERMANENT_SESSION_LIFETIME = timedelta(days=31)
 
 # Uploads ...
-MAX_CONTENT_LENGTH = 1024 * 1024 * 4 # 4MB
+"""
+    Set MAX_CONTENT_LENGTH to None to have no limit, 
+    or set it to some very big limit. There seems
+    to be no way to get access to the form if the 
+    content length is exceeded.
+    Instead, interrogate request.form.content_length to 
+    determine how you want to process the request
+"""
+MAX_CONTENT_LENGTH = None
+# MAX_CONTENT_LENGTH = 1024 * 1024 * 10 # 10MB
+
 UPLOAD_FOLDER = 'resource/static'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
