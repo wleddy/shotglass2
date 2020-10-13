@@ -1,0 +1,47 @@
+{% set selected_roles = session.get(data.USER_ROLES_SELECT_OBJ,[0]) %}
+<div class="w3-row">
+    <p>
+    <span class="w3-hide-small sg-list-search-label">Find by Role:</span>
+    <select multiple class="w3-select-multiple" style="width:auto;" id="{{ data.USER_ROLES_SELECT_OBJ }}" name="{{self.USER_ROLES_SELECT_OBJ}}" 
+     onchange="update_user_list(this)" >
+     <option value="0" {% if 0 in selected_roles %}selected {% endif %}>All</option>
+    {% for field in data.user_roles %}
+        <option value="{{ field.id }}" {% if field.id in selected_roles and 0 not in selected_roles %}selected {% endif %}>{{ field.name }}</option>
+    {% endfor %}
+    </select>
+    </p>
+</div>
+
+{% set selected_status = session.get(self.USER_STATUS_SELECT_OBJ,'-1')%}
+<div class="w3-row">
+    <p>
+    <span class="w3-hide-small sg-list-search-label">User Status:</span>
+    <select class="w3-select-multiple" style="width:auto;" id="{{ data.USER_STATUS_SELECT_OBJ }}" name="{{self.USER_STATUS_SELECT_OBJ}}" 
+     onchange="update_user_status(this)" >
+     <option value="-1" {% if selected_status == "-1" %}selected {% endif %}>Any</option>
+     <option value="1" {% if selected_status == "0" %}selected {% endif %}>Active Only</option>
+     <option value="0" {% if selected_status == "1" %}selected {% endif %}>Inactive Only</option>
+    </select>
+    </p>
+</div>
+
+<script>
+    
+    function update_user_display(){
+        //alert("Ready to update display")
+        doDBsearch("{{g.listURL}}");
+    }
+    
+    function update_user_list(which){
+        // alert($(which).val())
+        $.post("/user/set_list_roles/",{"{{data.USER_ROLES_SELECT_OBJ}}":$(which).val()});
+        // give the server time to update the session
+        setTimeout(update_user_display, 250);
+    }
+    
+    function update_user_status(which){
+        $.post("/user/set_list_status/",{"{{data.USER_STATUS_SELECT_OBJ}}":$(which).val()});
+        
+        setTimeout(update_user_display, 250);
+    }
+</script>

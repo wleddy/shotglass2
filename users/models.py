@@ -208,11 +208,20 @@ class User(SqliteTable):
     def select(self,**kwargs):
         """Limit selection to active user only unless 'include_inactive' is true in kwargs"""
         where = '{} {}'.format(kwargs.get('where','1'),self._active_only_clause(kwargs.get('include_inactive',False)))
+
+        if "user_status_select" in kwargs and kwargs["user_status_select"] != "-1":
+            where = "{} and active = {}".format(kwargs.get('where','1'),kwargs["user_status_select"])
+
             
         order_by = kwargs.get('order_by',self.order_by_col)
         
         sql="""
-        select user.*,0 as max_rank from user where {where} order by {order_by}
+        select 
+            user.*,
+            0 as max_rank,
+            "" as roles
+            
+             from user where {where} order by {order_by}
         """.format(where=where,order_by=order_by)
         
         recs = self.query(sql)
@@ -220,6 +229,23 @@ class User(SqliteTable):
             for rec in recs:
                 rec.max_rank = self.max_role_rank(rec.id)
                 
+                # Create a semi-colon separated text list of user roles
+                role_sql = """
+                select
+                role.*
+                    from user_role 
+                    join role on role.id = user_role.role_id
+                    where user_role.user_id = {}
+                    order by role.name
+                """.format(rec.id)
+                #import pdb;pdb.set_trace()
+                roles = self.query(role_sql)
+                
+                if roles:
+                    role_list = [x.name for x in roles]
+                    role_list = ";".join(role_list)
+                    rec.roles = role_list
+                    
             return recs
             
         return None

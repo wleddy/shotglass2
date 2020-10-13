@@ -5,13 +5,15 @@ from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.users.models import User, Role
+from shotglass2.users.models import User, Role, UserRole
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.views.login import setUserStatus
 from shotglass2.users.views.password import getPasswordHash
 
 from time import time
 
+USER_ROLES_SELECT_OBJ = "user_roles_select" #The ID of the role select html object
+USER_STATUS_SELECT_OBJ = "user_status_select"
 
 from shotglass2.takeabeltof.views import TableView
 class UserView(TableView):
@@ -24,8 +26,27 @@ class UserView(TableView):
             {'name':"last_name"},
             {'name':'email','class':'w3-hide-small'},
             {'name':'active','label':"Status",'class':'w3-hide-small'},
+            {'name':'roles','class':'w3-hide-small','list':False}
         ]
         
+        self.export_fields = [
+            {'name':'id'},
+            {'name':'first_name'},
+            {'name':'last_name'},
+            {'name':'email'},
+            {'name':'phone'},
+            {'name':'address'},
+            {'name':'address2'},
+            {'name':'city'},
+            {'name':'state'},
+            {'name':'zip'},
+            {'name':'username'},
+            {'name':'active'},
+            {'name':'may_send_email'},
+            {'name':'may_send_text'},
+            {'name':'last_access'},
+            {'name':'roles'},
+        ]
         
         # self.list_template = 'user_list.html'
         self.list_table_template = 'user_list_table.html'
@@ -38,6 +59,19 @@ class UserView(TableView):
         
         self.head = """<link rel="stylesheet" href="{}">""".format( url_for('static', filename='user/user_styles.css' ))
        
+        """
+        The User record list template includes some special query data that is added to the session
+        to track the users role selections that need to be defined so they are passed with the python
+        class object
+        
+        """
+        self.USER_ROLES_SELECT_OBJ = USER_ROLES_SELECT_OBJ #The ID of the role select html object
+        self.list_search_widget_extras_template = "user_search_widget_extras.html"
+        # Will need all the roles to list
+        self.user_roles = Role(self.db).select()
+        
+        #track if user wants active or inactive records listed
+        self.USER_STATUS_SELECT_OBJ = USER_STATUS_SELECT_OBJ
         
     def delete(self,rec_id=None,**kwargs):
         
@@ -68,9 +102,34 @@ class UserView(TableView):
             
             
     def select_recs(self,**kwargs):
-        kwargs.update({'include_inactive':True,'user_rank':self.table.max_role_rank(g.user)})
-        return super().select_recs(**kwargs)
-    
+        """Override the default record selection method for lists"""
+        # import pdb;pdb.set_trace()
+        
+        # get user status requested
+        kwargs.update({'user_status_select':session.get(self.USER_STATUS_SELECT_OBJ,"-1"),'user_rank':self.table.max_role_rank(g.user)})
+        super().select_recs(**kwargs)
+        
+        if not self.recs:
+            return
+            
+        """The user list has a potential to limit the selection by user's role(s)
+        
+        After running the normal search, loop through the found records and delete any without the 
+        requested roles
+        
+        """
+
+        user_role_id_list = session.get(self.USER_ROLES_SELECT_OBJ)
+        if not user_role_id_list or 0 in user_role_id_list:
+            return
+            
+        user_role_id_list = ','.join(str(x) for x in user_role_id_list)
+        
+        for x in range(len(self.recs)-1,-1,-1): # turkey shoot loop
+            user_role_rec = UserRole(self.db).select_one(where="user_id = {} and role_id in ({})".format(self.recs[x].id,user_role_id_list))
+            if not user_role_rec:
+                del self.recs[x]
+        
         
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user', static_folder="static")
 
@@ -483,6 +542,33 @@ def activate():
     
     flash("New User Activation Successful")
     return edit(rec.id)
+
+
+@mod.route('/set_list_roles', methods=['POST'])
+@mod.route('/set_list_roles/', methods=['POST'])
+@table_access_required(User)
+def set_list_roles():
+    """Record the selected roles for the user list page"""
+    # import pdb;pdb.set_trace()
+    element_name = USER_ROLES_SELECT_OBJ
+    element_value = [int(request.form.get(element_name,0))]
+    if element_name not in request.form:
+        #multi select object name will have brackets appended to the id name in the form
+        element_value = request.form.getlist(element_name + "[]")
+        
+    session[USER_ROLES_SELECT_OBJ] = [int(x) for x in element_value]
+    return "OK"
+    
+    
+@mod.route('/set_list_status', methods=['POST'])
+@mod.route('/set_list_status/', methods=['POST'])
+@table_access_required(User)
+def set_list_status():
+    """Record the selected roles for the user list page"""
+    # import pdb;pdb.set_trace()
+    session[USER_STATUS_SELECT_OBJ] = request.form.get(USER_STATUS_SELECT_OBJ,"-1")
+        
+    return "OK"
 
 
 def validForm(rec):
