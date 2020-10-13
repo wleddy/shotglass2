@@ -64,6 +64,12 @@ span.deleteicon input {
     box-sizing: border-box;
 }
 
+/* labels for the search fields in list forms */
+.sg-list-search-label{
+    vertical-align:top;
+    font-weight:800;
+}
+
 /* sortable icon for list table columns */
 .sg-sortable, .sg-sortable-asc, .sg-sortable-desc{
     background: url('/static/images/order_default_icon.png');

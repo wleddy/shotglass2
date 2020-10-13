@@ -4,7 +4,7 @@
 {% set has_date_search = [] %}
 <div class="w3-col l8 m9 s12">
     <div class="w3-row">
-        <span class="w3-hide-small">Find in:</span>
+        <span class="w3-hide-small sg-list-search-label">Find in:</span>
         <select class="w3-select" style="width:auto;" id="{{ search_id_prefix }}col_select" name="col_select" 
         kind='text' id_prefix='{{ search_id_prefix }}' onchange="search_changed(this)" >
         {% for field in data.list_fields %}
@@ -29,7 +29,7 @@
                 {% set _ = search_id_prefix.append(field.name) %}
                 {% if field.search and field.search == 'date' %}
                     <p>
-                        <span class="w3-hide-small">Find by</span> {{ field.label }} 
+                        <span class="w3-hide-small sg-list-search-label">{{ field.label }}:</span> 
                         <input id="{{ search_id_prefix[0] }}start_date" name="{{ field.name }}" type="text"
                         class="DatePickerButton w3-border deletable" kind='date' id_prefix='{{ search_id_prefix[0] }}' 
                         placeholder="Start Date" onchange="search_changed(this)" 
