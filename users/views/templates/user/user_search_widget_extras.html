@@ -16,7 +16,7 @@
 <div class="w3-row">
     <p>
     <span class="w3-hide-small sg-list-search-label">User Status:</span>
-    <select class="w3-select-multiple" style="width:auto;" id="{{ data.USER_STATUS_SELECT_OBJ }}" name="{{self.USER_STATUS_SELECT_OBJ}}" 
+    <select class="w3-select" style="width:auto;" id="{{ data.USER_STATUS_SELECT_OBJ }}" name="{{self.USER_STATUS_SELECT_OBJ}}" 
      onchange="update_user_status(this)" >
      <option value="-1" {% if selected_status == "-1" %}selected {% endif %}>Any</option>
      <option value="1" {% if selected_status == "0" %}selected {% endif %}>Active Only</option>
