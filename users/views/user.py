@@ -315,6 +315,7 @@ def edit(rec_handle=None):
                 
                 # update the user roles
                 if 'roles_select' in request.form:
+                    # import pdb;pdb.set_trace()
                     #delete all the users current roles
                     user.clear_roles(rec.id)
                     for role_name in request.form.getlist('roles_select'):
@@ -551,12 +552,21 @@ def set_list_roles():
     """Record the selected roles for the user list page"""
     # import pdb;pdb.set_trace()
     element_name = USER_ROLES_SELECT_OBJ
-    element_value = [int(request.form.get(element_name,0))]
     if element_name not in request.form:
-        #multi select object name will have brackets appended to the id name in the form
-        element_value = request.form.getlist(element_name + "[]")
+        element_name = element_name + "[]" # brackets may be added by jquery or because it's an ajax post?
         
-    session[USER_ROLES_SELECT_OBJ] = [int(x) for x in element_value]
+    selected_values = request.form.getlist(element_name)
+        
+    session[USER_ROLES_SELECT_OBJ] = []
+    
+    # Use the long form loop in case any of the values submitted do not evalutate with int()
+    if selected_values and isinstance(selected_values,list):
+        for x in selected_values:
+            try:
+                session[USER_ROLES_SELECT_OBJ].append(int(x))
+            except:
+                printException("Error in user.py.set_list_roles. bad value for USER_ROLES_SELECT_OBJ. -> '{}'".format(x))
+            
     return "OK"
     
     
