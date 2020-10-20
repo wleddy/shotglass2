@@ -44,8 +44,18 @@ class FileUpload:
             
         self.filename = filename
         
+        blob_file = False
+        # test if the file is actually a binary string
+        if isinstance(file,bytes):
+            blob_file = True
+            
         if not self.filename:
-            self.filename = file.filename
+            if blob_file:
+                self.success = False
+                self.error_text = "No Filename provided"
+                return
+            else:
+                self.filename = file.filename
             
         if not self.filename:
             # no file Name
@@ -79,7 +89,12 @@ class FileUpload:
             self.filename = final_name
             self.saved_file_path = Path(self.local_path,final_name) # the abbreviated path
             try:
-                file.save(destination / self.filename )
+                if blob_file:
+                    # copy the data to disk
+                    with open(destination / final_name,'wb') as f:
+                        f.write(file)
+                else:
+                    file.save(destination / self.filename )
             except Exception as e:
                 self.success = False
                 self.error_text = str(e)
