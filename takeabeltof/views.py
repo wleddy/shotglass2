@@ -255,12 +255,17 @@ class TableView:
             return name.replace('_',' ').title()
             
 
-    def select_recs(self,**kwargs):
-        """Make a selection of recs based on the current filters"""
-        
+    def get_list_filters(self):
+        """return a ListFilter object populated with the query 'where' and 'order_by' sql strings"""
         # look in session for the saved search...
         filters = ListFilter()
         filters.get_list_filter(self.table)
+        return filters
+        
+        
+    def select_recs(self,**kwargs):
+        """Make a selection of recs based on the current filters"""
+        filters = self.get_list_filters()
         self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
         
 
