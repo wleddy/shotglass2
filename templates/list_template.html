@@ -32,7 +32,7 @@
 {% block body %}
 <div id="sg-list-template-contain">
     <div class="w3-row ">
-      	<p class="w3-col l2 m3 s12" style="position:relative;top:-2pt;" id="addRecord">&nbsp;&nbsp;<a href="{{ g.editURL }}0/">Add a new record</a></p>
+      	<p class="w3-col l2 m3 s12" style="position:relative;top:-2pt;" id="addRecord">&nbsp;&nbsp;{% if data.allow_record_addition %}<a href="{{ g.editURL }}0/">Add a new record</a>{% endif %}</p>
         {% if data.has_search_fields %}{% include data.list_search_widget_template %}{% endif %}
     </div>
     <div class='w3-row'>
