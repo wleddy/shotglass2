@@ -73,34 +73,28 @@ class UserView(TableView):
         #track if user wants active or inactive records listed
         self.USER_STATUS_SELECT_OBJ = USER_STATUS_SELECT_OBJ
         
-    def delete(self,rec_id=None,**kwargs):
-        
+    def delete(self,*args,**kwargs):
+        record_id = None
         delete_by_admin = request.args.get('delete',None)
         if delete_by_admin:
             rec=self.table.select_one(where='access_token = "{}"'.format(delete_by_admin.strip()))
             if rec:
-                rec_id = rec.id
+                record_id = rec.id
 
-        if rec_id == None:
-            rec_id = request.form.get('id',request.args.get('id',-1))
-
-        rec_id = cleanRecordID(rec_id)
-        if rec_id < 1:
-            self.success = False
-            self.result_text = "That is not a valid record ID"
-            return
-            
-        rec = self.table.get(rec_id,include_inactive=True)
-        if not rec:
-            self.success = False
-            self.result_text = "Record not found"
-            return
+        if not record_id and len(self.path) > 1:
+            record_id = self.path[1]
+    
+        self.success = self.table.delete(cleanRecordID(record_id))
+        
+        if not self.success:
+            self.result_text = 'Not able to delete that record.'
         else:
-            self.table.delete(rec.id)
-            g.db.commit()
+            self.db.commit()
             self.result_text = 'User Record Deleted'
             
-            
+        flash(self.result_text)
+
+           
     def select_recs(self,**kwargs):
         """Override the default record selection method for lists"""
         # import pdb;pdb.set_trace()
