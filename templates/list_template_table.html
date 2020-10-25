@@ -10,8 +10,12 @@
         {% for col in data.list_fields%}
             {% if col.list %}
                 {% set _ = value.pop(0) %}
-                {% if col.type.upper() in ['DATE','DATETIME'] and rec.__getattribute__(col['name']) != None %}
+                {% if col.type.upper() in ['DATE',] and rec.__getattribute__(col['name']) != None %}
                 {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_string) %}
+                {% elif col.type.upper() in ['DATETIME',] and rec.__getattribute__(col['name']) != None %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_and_time_string) %}
+                {% elif col.type.upper() in ['PHONE',] and rec.__getattribute__(col['name']) != None %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | phone ) %}
                 {% elif col.type.upper() in ['INT','INTEGER','NUMBER','REAL'] %}
                 {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'].True) ) %}
                 {% else %}
