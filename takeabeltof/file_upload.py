@@ -1,6 +1,7 @@
 from pathlib import Path
 from shotglass2.shotglass import get_site_config
 from werkzeug.utils import secure_filename
+from PIL import Image
 
 
 class FileUpload:
@@ -27,7 +28,7 @@ class FileUpload:
         return self.saved_file_path.as_posix()
         
         
-    def save(self,file,filename=None):
+    def save(self,file,filename=None,max_size=None):
         """Save the file to disk
         
             file: <object> The request.files object that refers to the file to save
@@ -91,14 +92,30 @@ class FileUpload:
             try:
                 if blob_file:
                     # copy the data to disk
-                    with open(destination / final_name,'wb') as f:
+                    with open(destination / self.filename,'wb') as f:
                         f.write(file)
                 else:
                     file.save(destination / self.filename )
+                    
+                    
             except Exception as e:
                 self.success = False
                 self.error_text = str(e)
         
+            if max_size:
+                try:
+                    # create and save a thumbnail of the image
+                    im = Image.open(destination / self.filename )
+                    size = (im.height,im.width)
+                    if im.width > max_size or im.height > max_size:
+                        size = (max_size,max_size)
+                        im.thumbnail(size)
+                        im.save(destination / self.filename)
+                        im.close()
+                    
+                except Exception as e:
+                    self.success = False
+                    self.error_text = str(e)
         
     def get_file_path(self,filename):
         """Return a Path object for the file name"""

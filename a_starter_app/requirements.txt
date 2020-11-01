@@ -4,4 +4,4 @@ mistune
 namedlist
 pytest
 pytz
-
+pillow
