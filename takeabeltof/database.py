@@ -2,6 +2,7 @@ import sqlite3
 from flask import flash
 from namedlist import namedlist #Like namedtuples but mutable
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
+from shotglass2.takeabeltof.date_utils import getDatetimeFromString
 # from shotglass2.takeabeltof.mailer import email_admin
 
 
@@ -457,8 +458,13 @@ class SqliteTable:
         #import pdb;pdb.set_trace()
         
         for key,value in rec._asdict().items():
-            if key != 'id' and key in form:   
-                rec._update([(key,form[key])])
+            if key != 'id' and key in form:
+                # Dates need special formatting
+                val = form[key]
+                col_type = self.get_column_type(key).upper()
+                if col_type == 'DATETIME' or col_type == 'DATE':
+                    val = getDatetimeFromString(val)
+                rec._update([(key,val)])
                 
         if save:
             self.save(rec)
