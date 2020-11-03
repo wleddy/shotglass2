@@ -325,6 +325,162 @@ class TableView:
         fields = list_fields_temp
         
         
+class EditView():
+    """Generic handling of edit requests"""
+
+    def __init__(self,table,db,rec_id=None,**kwargs):
+        self.db = db
+        self.table = table(self.db)
+        self.success = True
+        self.result_text = ''
+        self.stay_on_form = False
+        self.form_template = "edit_template.html"
+        self.rec_id = rec_id
+        self._validate_rec_id() # self.rec_id may have a value now
+        self.get() # could be an empty (new) record, existing record or None
+        self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
+        if not self.edit_fields:
+            self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
+        self.set_edit_fields() # ensure that all dictionaries are complete
+
+
+    def get(self):
+        # Select an existing record or make a new one
+        if not self.rec_id:
+            self.rec = self.table.new()
+        else:
+            self.rec = self.table.get(self.rec_id)
+        if not self.rec:
+            self.result_text = "Unable to locate that record"
+            flash(self.result_text)
+            self.success = False
+            
+
+    def update(self,save_after_update=True):
+        # import pdb;pdb.set_trace()
+        if request.form:
+            self.table.update(self.rec,request.form)
+            if self._validate_form():
+                if save_after_update:
+                    self.save()
+            else:
+                self.success = False
+                self.result_text = "Form Validation Failed"
+        else:
+            self.success = False
+            self.result_text = "No input form provided"
+
+
+    def save(self):
+        try:
+            self.table.save(self.rec)
+            self.rec_id = self.rec.id
+    
+        except Exception as e:
+            self.db.rollback()
+            self.result_text = printException('Error attempting to save {} record.'.format(self.table.display_name),"error",e)
+            flash(self.result_text)
+            self.success = False
+            return
+    
+        self.before_commit_hook() # anyting special you want to do
+        
+        self.table.commit()
+
+
+    def render(self):
+        self.set_edit_fields()
+        return render_template(self.form_template, 
+            data = self,
+            )
+            
+            
+    def set_edit_fields(self):
+        """ensure that each dict in self.edit_list is complete
+        """
+        for field in self.edit_fields:
+            if not field['name']:
+                raise ValueError("The 'name' property in edit_fields may not be empty ")
+                break
+                
+            # special case
+            if 'label' not in field:
+                field['label'] = field['name'].replace('_',' ').title()
+            
+            for k, v in self._get_field_list_dict().items():
+                if k not in field:
+                    field[k] = v
+    
+
+    def _set_default_edit_fields(self):
+        """Set up the default fields for the edit view if not provided
+        """
+        default_edit_fields = []
+
+        for col in self.table.get_column_names():
+            req = False
+            if col[-3:].lower() == '_id':
+                # foreign key
+                req = True
+                
+            dict_template = self._get_field_list_dict()
+            
+            dict_template['name'] = '{}'.format(col)
+            dict_template['label'] = '{}'.format(col).replace('_',' ').title()
+            dict_template['type'] = '{}'.format(self.table.get_column_type(col))
+            dict_template['class'] = ''
+            dict_template['req'] = req
+            dict_template['default'] = ''
+            dict_template['placeholder'] = ''
+            
+            default_edit_fields.append(dict_template)
+    
+        return default_edit_fields
+
+
+    def _get_field_list_dict(self):
+        # ensure that all the required elements are in the field list dictionary
+        return {'name':'',
+                'label':'',
+                'type':'text',
+                'class':'', 
+                'req':False,
+                'default':'',
+                'placeholder':'',
+                }
+            
+            
+    def _validate_form(self):
+        valid_form = True
+        
+        for field in self.edit_fields:
+            if field['name'] in request.form and field['req']:
+                val = self.rec.__getattribute__(field['name']).strip()
+                if not val:
+                    self.result_text = "You must enter a value for {}".format(field['name'])
+                    flash(self.result_text)
+                    self.success = False
+                    valid_form = False
+                    
+        return valid_form
+
+
+    def _validate_rec_id(self):
+        if not self.rec_id:
+            self.rec_id = request.form.get('id',request.args.get('id',0))
+
+        self.rec_id = cleanRecordID(self.rec_id)
+
+        if self.rec_id < 0:
+            self.result_text = "That is not a valid ID"
+            self.success = False
+            raise ValueError(self.result_text)
+
+    def before_commit_hook(self):
+        # a place to put some code after the record is saved, but before it's committed
+        pass
+        
+        
 class ListFilter:
     """A class to manage filtering and sort properties in conjunction with the TableView class
     

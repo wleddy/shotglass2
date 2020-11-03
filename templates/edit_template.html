@@ -1,0 +1,40 @@
+{% extends "form_layout.html" %}
+
+{% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
+
+{% set type_list = ["TEXT"] %}
+{% set value_list = [0] %}
+{% block fieldset %}
+<fieldset>
+    {% for field in data.edit_fields %}
+    
+    {% set _ = value_list.pop()%}
+    {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
+    {% set _ = type_list.pop()%}
+    {% set _ = type_list.append('text')%}
+    {% if field['name'] == "id" %}
+        {% set _ = type_list.pop() %}
+        {% set _ = type_list.append('hidden')%}
+    {% endif %}
+    {% if type_list[0].lower() == 'hidden'%}
+    <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
+    {% else %}
+    <p>{{ input_field(value_list[0],field['name'],type=type_list[0],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'])}}</p>
+    {% endif%}
+    {% endfor %}
+</fieldset>
+{% endblock fieldset %}
+
+{% block head %}
+{{ super() }}
+{% include "anytime_head.html"%}
+    <script>
+    {% for field in data.edit_fields %}
+    {% if field['type'].lower() == 'date' %}
+    $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name']) | local_date_string }}");});
+    {% elif field['type'].lower() == 'datetime'%}
+    $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name']) | local_date_and_time_string }}");});
+    {% endif %}
+    {% endfor %}
+</script>
+{% endblock head %}
