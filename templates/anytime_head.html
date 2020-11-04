@@ -7,26 +7,35 @@
         $('#' + input_id).AnyTime_noPicker().AnyTime_picker({format: format}).focus();
     }
     
-    function set_date_picker(field,format,value){
+    function set_date_picker(input_id,format,value){
         // field is a string of field id name
         // format is a string of 'date', 'datetime' or  valid JS date format
         
         var date_format = "%c/%e/%y %l:%i%p"; // "3/4/19 06:00AM" 
         if (format.toLowerCase() == 'datetime' ){date_format = "%c/%e/%y %l:%i%p";}
         else if (format.toLowerCase() == 'date' ){date_format = "%c/%e/%y";}
-        else { date_format = format ;}
+        else { date_format = format;}
         
         // the value of the field must match the date format or the picker defaults to today 
         //.  instead of the value of the field.
+        
+        // from the AnyTime docs...
+        // var converter = new AnyTime.Converter({format:’%Y-%m-%d’})
+        // var datetime = converter.parse(‘1967-07-30’) // July 30, 1967 @ 00:00
+        // alert( converter.format(datetime) ); // outputs: 1967-07-30
+        
+        var converter = new AnyTime.Converter({format: date_format});
+
         if (value != undefined){
-            $("#" + field).val(value)
+            value = converter.parse(value);
+            $("#" + field).val(value);
         }
         
          /* 
              you must remove the pickers before dismissing the form
              else they will not be reattached the next time the form opens
          */
-         $("#" + field).AnyTime_noPicker().AnyTime_picker({ format: date_format } );                
+         $("#" + input_id).AnyTime_noPicker().AnyTime_picker({ format: date_format } );                
         }
     
 </script>
