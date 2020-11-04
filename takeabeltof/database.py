@@ -3,6 +3,7 @@ from flask import flash
 from namedlist import namedlist #Like namedtuples but mutable
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
 from shotglass2.takeabeltof.date_utils import getDatetimeFromString
+from datetime import datetime
 # from shotglass2.takeabeltof.mailer import email_admin
 
 
@@ -463,7 +464,8 @@ class SqliteTable:
                 val = form[key]
                 col_type = self.get_column_type(key).upper()
                 if col_type == 'DATETIME' or col_type == 'DATE':
-                    val = getDatetimeFromString(val)
+                    if not isinstance(val,datetime):
+                        val = getDatetimeFromString(val)
                 rec._update([(key,val)])
                 
         if save:
