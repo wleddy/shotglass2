@@ -455,7 +455,9 @@ class EditView():
         
         for field in self.edit_fields:
             if field['name'] in request.form and field['req']:
-                val = self.rec.__getattribute__(field['name']).strip()
+                val = self.rec.__getattribute__(field['name'])
+                if isinstanceof(val,str):
+                    val = val.strip()
                 if not val:
                     self.result_text = "You must enter a value for {}".format(field['name'])
                     flash(self.result_text)
