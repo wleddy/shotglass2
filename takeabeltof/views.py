@@ -360,7 +360,7 @@ class EditView():
         # import pdb;pdb.set_trace()
         if request.form:
             self.table.update(self.rec,request.form)
-            if self._validate_form():
+            if self.validate_form():
                 if save_after_update:
                     self.save()
             else:
@@ -450,13 +450,13 @@ class EditView():
                 }
             
             
-    def _validate_form(self):
+    def validate_form(self):
         valid_form = True
         
         for field in self.edit_fields:
             if field['name'] in request.form and field['req']:
                 val = self.rec.__getattribute__(field['name'])
-                if isinstanceof(val,str):
+                if isinstance(val,str):
                     val = val.strip()
                 if not val:
                     self.result_text = "You must enter a value for {}".format(field['name'])
