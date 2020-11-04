@@ -15,6 +15,19 @@ Basic usage:
    
 ```
 
+## formatting dates to strings
+
+To use AnyTime.Converter, simply create an instance for a format string,
+and then (repeatedly) invoke the format() and/or parse() methods to
+perform the conversions.  For example:
+
+```
+    var converter = new AnyTime.Converter({format:’%Y-%m-%d’})
+    var datetime = converter.parse(‘1967-07-30’) // July 30, 1967 @ 00:00
+    alert( converter.format(datetime) ); // outputs: 1967-07-30
+
+```
+
 ## Formats
 string specifying the date/time format. The following format specifiers are recognized:
 specifier	meaning
