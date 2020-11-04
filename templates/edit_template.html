@@ -7,20 +7,27 @@
 {% block fieldset %}
 <fieldset>
     {% for field in data.edit_fields %}
-    
-    {% set _ = value_list.pop()%}
-    {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
-    {% set _ = type_list.pop()%}
-    {% set _ = type_list.append('text')%}
-    {% if field['name'] == "id" %}
-        {% set _ = type_list.pop() %}
-        {% set _ = type_list.append('hidden')%}
-    {% endif %}
-    {% if type_list[0].lower() == 'hidden'%}
-    <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
-    {% else %}
-    <p>{{ input_field(value_list[0],field['name'],type=type_list[0],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'])}}</p>
-    {% endif%}
+        {% set _ = value_list.pop()%}
+        {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
+        {% set _ = type_list.pop()%}
+        {% set _ = type_list.append(field['type'].lower())%}
+        {% if field['name'] == "id" %}
+            {% set _ = type_list.pop() %}
+            {% set _ = type_list.append('hidden')%}
+        {% endif %}
+        {% if type_list[0].lower() == 'hidden'%}
+            <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
+        {% elif type_list[0].lower() == 'textarea' %}
+            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+            <p>
+                <textarea style="width:100%;" rows="6" name="{{ field['name'] }}" id="{{ field['name'] }}"
+                    {% if field['req'] %}>required{% endif %}
+                     {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
+                >{{ value_list[0] | default('',True)}}</textarea>
+            </p>
+        {% else %}
+            <p>{{ input_field(value_list[0],field['name'],type=type_list[0],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
+        {% endif%}
     {% endfor %}
 </fieldset>
 {% endblock fieldset %}

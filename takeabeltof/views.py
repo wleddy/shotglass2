@@ -423,6 +423,8 @@ class EditView():
         # Must always have the 'id' field
         has_id = False
         
+        # import pdb;pdb.set_trace()
+        
         for field in self.edit_fields:
             if not field['name']:
                 raise ValueError("The 'name' property in edit_fields may not be empty ")
@@ -456,6 +458,7 @@ class EditView():
                 'req':False,
                 'default':'',
                 'placeholder':None,
+                'extras':None,
                 }
             
             
