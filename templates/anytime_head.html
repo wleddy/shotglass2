@@ -16,6 +16,23 @@
         else if (format.toLowerCase() == 'date' ){date_format = "%c/%e/%y";}
         else { date_format = format;}
         
+        if (typeof value == 'string'){
+            value = value.trim();
+            // test if value is a datetime string with milliseconds, remove that part
+            // ex: 2020-12-02 10:00:00.735890-07:00
+            var b = value.search(/\./);
+            var e = value.search(/-\d\d:\d\d/);
+            if (( b > 0 ) && ( e > 0 ) && (b < e)){
+                value = value.substr(0,b) + value.substr(e)
+            }
+        }
+        
+        // test that value is something we can deal with
+        if ((value == undefined) || ((typeof value == "string") && ((value == '') || (value.toLowerCase() == "none")))){
+            // set the value to today's date
+            value = new Date();
+        }
+        
         // the value of the field must match the date format or the picker defaults to today 
         //.  instead of the value of the field.
         
@@ -25,12 +42,15 @@
         // alert( converter.format(datetime) ); // outputs: 1967-07-30
         
         var converter = new AnyTime.Converter({format: date_format});
-
-        if (value != undefined){
-            value = converter.parse(value);
-            $("#" + field).val(value);
+        var sqlite_converter = new AnyTime.Converter({format: '%Y-%m-%d %H:%i:%s%:'}); // 2020-11-07 14:46:00-08:00
+        if (typeof value == 'string'){
+            value = sqlite_converter.parse(value);
+        }
+        if (typeof value == 'object'){ 
+            value = converter.format(value);
         }
         
+        $("#" + input_id).val(value);
          /* 
              you must remove the pickers before dismissing the form
              else they will not be reattached the next time the form opens

@@ -30,10 +30,8 @@
 {% include "anytime_head.html"%}
     <script>
     {% for field in data.edit_fields %}
-    {% if field['type'].lower() == 'date' %}
-    $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name']) | local_date_string }}");});
-    {% elif field['type'].lower() == 'datetime'%}
-    $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name']) | local_date_and_time_string }}");});
+    {% if field['type'].lower() == 'date' or field['type'].lower() == 'datetime' %}
+    $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name'])}}");});
     {% endif %}
     {% endfor %}
 </script>
