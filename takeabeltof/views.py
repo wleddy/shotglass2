@@ -477,7 +477,11 @@ class EditView():
             
             dict_template['name'] = '{}'.format(col)
             dict_template['label'] = '{}'.format(col).replace('_',' ').title()
-            dict_template['type'] = '{}'.format(self.table.get_column_type(col))
+            dict_template['type'] = 'text'
+            try:
+                dict_template['type'] = '{}'.format(self.table.get_column_type(col))
+            except KeyError:
+                pass
             dict_template['req'] = req
             
             default_edit_fields.append(dict_template)
