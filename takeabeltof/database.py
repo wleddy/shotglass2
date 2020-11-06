@@ -156,19 +156,25 @@ class SqliteTable:
         out = []
         cols = self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
         for col in cols:
-            out.append(col[1])
+            out.append(col['name'])
             
         return out
  
     def get_column_type(self,column_name):
-        """Return the Sqlite column type (as text) for the specified column name"""
+        """Return the Sqlite column type (as text) for the specified column name
+        
+        Always wrap calls to this method in a try block to catch the KeyError
+        and handle the case where the (adhoc) column name is not in the table such
+        as the case when a column is included as the result of a table join.
+        
+        """
         #import pdb;pdb.set_trace()
         out = None
         cols = self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
         
         for col in cols:
             if col[1] == column_name:
-                out = col[2].upper()
+                out = col['type'].upper()
                 break
             
         if out == None:
@@ -456,17 +462,20 @@ class SqliteTable:
         Optionally can save the rec (but not committed) after update
         """
 
-        #import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         
         for key,value in rec._asdict().items():
             if key != 'id' and key in form:
                 # Dates need special formatting
                 val = form[key]
-                col_type = self.get_column_type(key).upper()
-                if col_type == 'DATETIME' or col_type == 'DATE':
-                    if not isinstance(val,datetime):
-                        val = getDatetimeFromString(val)
-                rec._update([(key,val)])
+                try:
+                    col_type = self.get_column_type(key).upper()
+                    if col_type == 'DATETIME' or col_type == 'DATE':
+                        if not isinstance(val,datetime):
+                            val = getDatetimeFromString(val)
+                    rec._update([(key,val)])
+                except KeyError:
+                    pass
                 
         if save:
             self.save(rec)
