@@ -2,7 +2,7 @@
 
 {% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
 
-{% set type_list = ["TEXT"] %}
+{% set type_list = ["text"] %}
 {% set value_list = [0] %}
 {% block fieldset %}
 <fieldset>
@@ -10,12 +10,12 @@
         {% set _ = value_list.pop()%}
         {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
         {% set _ = type_list.pop()%}
-        {% set _ = type_list.append(field['type'].lower())%}
+        {% set _ = type_list.append('text')%}
         {% if field['name'] == "id" %}
             {% set _ = type_list.pop() %}
             {% set _ = type_list.append('hidden')%}
         {% endif %}
-        {% if type_list[0].lower() == 'hidden'%}
+        {% if field['type'].lower() == 'hidden' or type_list[0].lower() == 'hidden'%}
             <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
         {% elif type_list[0].lower() == 'textarea' %}
             <p>{{ label_only(field['label'],req=field['req'],) }}</p>
