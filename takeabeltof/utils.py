@@ -361,3 +361,26 @@ def formatted_phone_number(phone,sep="-",raw=False):
              
     return phone # conversion failed
     
+def validate_phone_number(phone):
+    """do a little work to see if this could possibly be a phone number"""
+    
+    if not isinstance(phone,str):
+        return False
+    phone = phone.strip()
+    if phone[0:2] == "+1":
+        # remove the plus sign if there
+        phone = phone[2:]
+        
+    temp = ''
+    for s in phone:
+        if not s.isnumeric():
+            continue
+        temp += s
+        
+    phone = temp
+    
+    if len(phone) != 10:
+        return False
+        
+    return True
+    
