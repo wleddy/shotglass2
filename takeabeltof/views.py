@@ -344,6 +344,11 @@ class EditView():
         self._set_edit_fields() # ensure that all dictionaries are complete
 
 
+    def after_get_hook(self):
+        """ do anything you want here"""
+        pass
+        
+        
     def before_commit_hook(self):
         # a place to put some code after the record is saved, but before it's committed
         pass
@@ -360,6 +365,8 @@ class EditView():
             flash(self.result_text)
             self.success = False
 
+        self.after_get_hook()
+            
 
     def render(self):
         self._set_edit_fields()
@@ -381,7 +388,13 @@ class EditView():
             return
     
         self.before_commit_hook() # anyting special you want to do
-        
+        if not self.success:
+            self.db.rollback()
+            if not self.result_text:
+                self.result_text = "Unknown error in before_commit_hook"
+            printException(self.result_text,'error')
+            raise RuntimeError
+            
         self.table.commit()
 
 
