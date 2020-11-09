@@ -6,6 +6,8 @@ import app
 import pytest
 import sqlite3
 import shotglass2.takeabeltof.database as dbm
+from datetime import datetime, date
+
 
 filespec = 'instance/test_database.db'
 db = None
@@ -30,7 +32,7 @@ class PracticeTable(SqliteTable):
         super().__init__(db_connection)
         self.table_name = 'test_table'
         self.order_by_col = 'name'
-        self.defaults = {}
+        self.defaults = {'date_field':'now','datetime_field':'now','name':'Hello World!'}
         
     def create_table(self):
         """Define and create the role table"""
@@ -41,7 +43,9 @@ class PracticeTable(SqliteTable):
             'int_field' INTEGER,
             'number_field' NUMBER,
             'real_field' REAL,
-            'float_field' FLOAT
+            'float_field' FLOAT,
+            'date_field' DATE,
+            'datetime_field' DATETIME
              """
         super().create_table(sql)
         
@@ -247,6 +251,13 @@ def test_record_delete():
     result = tester.delete(rec_id)
     assert result == False
     
+def test_new_defaults():    
+    tester = PracticeTable(db)
+    tester.create_table()
+    rec = tester.new()
+    assert isinstance(rec.date_field,(date))
+    assert isinstance(rec.datetime_field,(datetime))
+    assert rec.name == 'Hello World!'
     
 
 ############################ The final 'test' ########################

@@ -2,7 +2,7 @@ import sqlite3
 from flask import flash
 from namedlist import namedlist #Like namedtuples but mutable
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
-from shotglass2.takeabeltof.date_utils import getDatetimeFromString
+from shotglass2.takeabeltof.date_utils import getDatetimeFromString, local_datetime_now
 from datetime import datetime
 # from shotglass2.takeabeltof.mailer import email_admin
 
@@ -343,11 +343,22 @@ class SqliteTable:
         return row_id
         
     def set_defaults(self,row_data):
-        """When creating a new record, set the defaults for this table"""
+        """When creating a new record, set the defaults for this table.
+        
+        If the column is type datetime or date and the default value is 'now', insert
+        the current date or datetime
+        
+        """
         if row_data.id == None and len(self.defaults) > 0:
             row_dict = row_data._asdict()
             for key, value in self.defaults.items():
                 if key in row_dict and row_dict[key] == None:
+                    if value == 'now':
+                        col_type = self.get_column_type(key)
+                        if col_type.upper() == 'DATE':
+                            value = local_datetime_now().date()
+                        if col_type.upper() == 'DATETIME':
+                            value = local_datetime_now()
                     row_data._update({key:value})
         
     def _select_sql(self,**kwargs):
