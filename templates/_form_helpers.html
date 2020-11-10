@@ -30,8 +30,16 @@
 {% endmacro %}
 
 {% macro _radio_input_element(value,name,type,id,class,extras) %}
-<input type="{{type}}"  class="{{class}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %} value="{{value}}" {{extras | safe }}>
+<input type="{{type}}"  class="{{class}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %} value="{{value}}" {{ _get_checked(value) }} {{extras | safe }}>
 {% endmacro %}
+
+
+{% macro _get_checked(value) %}
+    {% if value | string | lower in "1~yes~true~ok"%}
+    checked
+    {% endif %}
+{% endmacro%}
+
 
 {% macro _radio_label_element(name,label,req) %}
 {% if label != None %}
@@ -39,14 +47,15 @@
 {% endif %}
 {% endmacro %}
 
+
 {% macro radio_field(value,name,label="",type="radio",id=None,class="",req=False, placeholder="",default="",extras="",right=False) %}
 {% set baseclass = 'w3-radio'%}
 {% if type == "checkbox"%}{% set baseclass = 'w3-check'%}{%endif%}
 {% set class = baseclass + " " + class %}
 {% if right %}
-    <label><span style="white-space: nowrap;">{{ _radio_label_element(name,label,req)}}{{ _radio_input_element(value,name,type,id,class,extras) }}</span></label>
+    <label><span style="white-space: nowrap;">{{ _radio_label_element(name,label,req)}}{{ _radio_input_element(value,name,type,id,class,extras+' style="width:inherit;"') }}</span></label>
 {% else %}
-    <label><span style="white-space: nowrap;">{{ _radio_input_element(value,name,type,id,class,extras) }}{{ _radio_label_element(name,label,req)}}</span></label>
+    <label><span style="white-space: nowrap;">{{ _radio_input_element(value,name,type,id,class,extras+' style="width:inherit;"') }}{{ _radio_label_element(name,label,req)}}</span></label>
 {% endif%}
 {%endmacro%}
 
