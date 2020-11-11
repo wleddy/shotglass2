@@ -474,22 +474,22 @@ class SqliteTable:
         """
 
         # import pdb;pdb.set_trace()
-        
-        for key,value in rec._asdict().items():
-            if key != 'id' and key in form:
-                # Dates need special formatting
-                val = form[key]
-                try:
-                    col_type = self.get_column_type(key).upper()
-                    if col_type == 'DATETIME' or col_type == 'DATE':
-                        if not isinstance(val,datetime):
-                            val = getDatetimeFromString(val)
-                    rec._update([(key,val)])
-                except KeyError:
-                    pass
+        if rec and form:
+            for key,value in rec._asdict().items():
+                if key != 'id' and key in form:
+                    # Dates need special formatting
+                    val = form[key]
+                    try:
+                        col_type = self.get_column_type(key).upper()
+                        if col_type == 'DATETIME' or col_type == 'DATE':
+                            if not isinstance(val,datetime):
+                                val = getDatetimeFromString(val)
+                        rec._update([(key,val)])
+                    except KeyError:
+                        pass
                 
-        if save:
-            self.save(rec)
+            if save:
+                self.save(rec)
             
             
         
