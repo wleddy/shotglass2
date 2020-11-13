@@ -16,8 +16,10 @@
                 {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | local_date_and_time_string) %}
                 {% elif col.type.upper() in ['PHONE',] and rec.__getattribute__(col['name']) != None %}
                 {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | phone ) %}
-                {% elif col.type.upper() in ['INT','INTEGER','NUMBER','REAL'] %}
-                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'].True) ) %}
+                {% elif col.type.upper() in ['NUMBER','REAL'] %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True) | money ) %}
+                {% elif col.type.upper() in ['INT','INTEGER',] %}
+                {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True) ) %}
                 {% else %}
                 {% set _ = value.append(rec.__getattribute__(col['name']) | default(col['default'],True)  | string  |  truncate(35,True) ) %}
                 {% endif %}
