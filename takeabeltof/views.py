@@ -19,6 +19,7 @@ class TableView:
         self.db = db # Database connection
         self.table = self.source(self.db)
         self.display_name = self.table.display_name
+        self.sql = None # may be used for a custom select
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -265,9 +266,15 @@ class TableView:
         
         
     def select_recs(self,**kwargs):
-        """Make a selection of recs based on the current filters"""
-        filters = self.get_list_filters()
-        self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
+        """Make a selection of recs based on the current filters
+        
+        """
+        if self.sql:
+            # self.sql is assumed to be a fully formed sql statement
+            self.recs = self.table.query(self.sql)
+        else:
+            filters = self.get_list_filters()
+            self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
         
 
     def set_list_fields(self,fields):
