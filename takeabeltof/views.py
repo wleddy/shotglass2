@@ -26,11 +26,12 @@ class TableView:
             self.list_fields = self._set_default_list_fields() # set the defaults if needed
         self.has_search_fields = False # set to true if any fields have search == true
         
-        # set fields to use for export
+        # set options for export
         self.export_fields = kwargs.get('export_fields',None) # define the fields (by name) to display in list
         self.export_template = kwargs.get('export_temlate',None)
         self.export_title = kwargs.get('export_title',None)
-        
+        self.export_file_name = kwargs.get('export_file_name',None)
+            
         # templates to use in the list view by default
         self.list_template = 'list_template.html'
         # These are includes in the main list template, so may want to point to a different file
@@ -141,10 +142,13 @@ class TableView:
         
         self.select_recs(**kwargs)
         if self.recs:
-            filename = "{table_name}_report_{datetime}.csv".format(
-                        table_name = self.table.display_name,
-                        datetime = date_to_string(local_datetime_now(),'iso_datetime'),
-                        ).replace(' ','_').lower()
+            if self.export_file_name:
+                filename = self.export_file_name
+            else:
+                filename = "{table_name}_report_{datetime}.csv".format(
+                            table_name = self.table.display_name,
+                            datetime = date_to_string(local_datetime_now(),'iso_datetime'),
+                            ).replace(' ','_').lower()
                         
             if not self.export_fields:
                 # include all fields by default
