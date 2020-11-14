@@ -41,6 +41,8 @@ REPORT_404_ERRORS = DEBUG
 # Security Settings
 REQUIRE_SSL = (not DEBUG)
 
+LOG_FILE_NAME = "instance/log.log"
+
 # Timezone setting
 # This is the Time zone where you think you are,
 # in case the server is in a different time zone.
@@ -138,7 +140,6 @@ TEMPLATE_DIRS = [
 # app.template_folder (usually 'templates') then...
 # 'shotglass2/templates' then...
 # each blueprint in the order defined
-
     
 # A list of dictionaries of settings for sites that share this config and virtualenv
 SHARED_HOST_SETTINGS = [

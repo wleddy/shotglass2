@@ -275,7 +275,14 @@ def user_setup():
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
         
 
-def start_logging(app,filename="instance/log.log",maxBytes=100000,backupCount=5):
+def start_logging(app,filename=None,maxBytes=100000,backupCount=5):
+    site_config = get_site_config()
+    log_name = "instance/log.log"
+    if 'LOG_FILE_NAME'  in site_config:
+        log_name = site_config['LOG_FILE_NAME']
+        
+    filename = filename if filename else log_name
+    
     # initialize the log handler
     logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
 
