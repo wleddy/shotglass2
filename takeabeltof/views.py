@@ -29,7 +29,7 @@ class TableView:
         # set fields to use for export
         self.export_fields = kwargs.get('export_fields',None) # define the fields (by name) to display in list
         self.export_template = kwargs.get('export_temlate',None)
-        
+        self.export_title = kwargs.get('export_title',None)
         
         # templates to use in the list view by default
         self.list_template = 'list_template.html'
@@ -152,10 +152,17 @@ class TableView:
 
             self.set_list_fields(self.export_fields)
             
+            
             if self.export_template:
                 result = render_template(self.export_template, data=self)
             else:
-                result = ','.join([x['label'] for x in self.export_fields]) + '\n'
+                # add a descriptive title row
+                if self.export_title:
+                    result = self.export_title.strip() + '\n'
+                else:
+                    result = "Export of table {} as of {}\n".format(self.table.table_name,excel_date_and_time_string(local_date_string()))
+                        
+                result += ','.join([x['label'] for x in self.export_fields]) + '\n'
                 for rec in self.recs:
                     rec_row = []
                     for field in self.export_fields:
@@ -266,9 +273,7 @@ class TableView:
         
         
     def select_recs(self,**kwargs):
-        """Make a selection of recs based on the current filters
-        
-        """
+        """Make a selection of recs based on the current filters"""
         if self.sql:
             # self.sql is assumed to be a fully formed sql statement
             self.recs = self.table.query(self.sql)
