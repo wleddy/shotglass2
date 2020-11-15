@@ -274,25 +274,73 @@ def user_setup():
     g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
         
-
-def start_logging(app,filename=None,maxBytes=100000,backupCount=5):
-    site_config = get_site_config()
-    log_name = "instance/log.log"
-    if 'LOG_FILE_NAME'  in site_config:
-        log_name = site_config['LOG_FILE_NAME']
         
-    filename = filename if filename else log_name
+class ShotLog():
+    """Handle creation and access to log"""
     
-    # initialize the log handler
-    logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
+    def __init__(self):
+        site_config = get_site_config()
+        self.log_file_path = "instance/log.log"
+        if 'LOG_FILE_NAME'  in site_config:
+            self.log_file_path = site_config['LOG_FILE_NAME']
+            
 
-    # set the log handler level
-    logHandler.setLevel(logging.INFO)
+    def start(self,app,filename=None,maxBytes=10000,backupCount=5):
+        filename = filename if filename else self.log_file_path
+    
+        # initialize the log handler
+        logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
 
-    # set the app logger level
-    app.logger.setLevel(logging.INFO)
+        # set the log handler level
+        logHandler.setLevel(logging.INFO)
 
-    app.logger.addHandler(logHandler)    
+        # set the app logger level
+        app.logger.setLevel(logging.INFO)
+
+        app.logger.addHandler(logHandler)
+        
+        
+    def get_text(self):
+        # return the contents of the log in reverse order mostly for display
+
+        # def reverse_readline(filename, ):
+        """A generator that returns the lines of a file in reverse order"""
+        with open(self.log_file_path) as fh:
+            buf_size=8192
+            segment = None
+            offset = 0
+            fh.seek(0, os.SEEK_END)
+            file_size = remaining_size = fh.tell()
+            while remaining_size > 0:
+                offset = min(file_size, offset + buf_size)
+                fh.seek(file_size - offset)
+                buffer = fh.read(min(remaining_size, buf_size))
+                remaining_size -= buf_size
+                lines = buffer.split('\n')
+                # The first line of the buffer is probably not a complete line so
+                # we'll save it and append it to the last line of the next buffer
+                # we read
+                if segment is not None:
+                    # If the previous chunk starts right from the beginning of line
+                    # do not concat the segment to the last line of new chunk.
+                    # Instead, yield the segment first 
+                    if buffer[-1] != '\n':
+                        lines[-1] += segment
+                    else:
+                        yield segment
+                segment = lines[0]
+                for index in range(len(lines) - 1, 0, -1):
+                    if lines[index]:
+                        yield lines[index]
+            # Don't yield None if the file was empty
+            if segment is not None:
+                yield segment
+ 
+    
+def start_logging(app,filename=None,maxBytes=100000,backupCount=5):
+    # to handle legacy code
+    log = ShotLog()
+    log.start(app,filename=None,maxBytes=100000,backupCount=5)
     
     
 def do_backups(source_file_path,**kwargs):
