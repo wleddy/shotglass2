@@ -4,6 +4,7 @@ import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
 from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
+from shotglass2.tools.views import tools
 from shotglass2.users.admin import Admin
 from shotglass2.users.models import User
 
@@ -133,6 +134,16 @@ def _before():
     #         top_level=True,
     #         minimum_rank_required=500,
     #     )
+    
+    # This one will set up the view log item
+    g.admin.register(User,
+            url_for('tools.view_log'),
+            display_name='View Log',
+            top_level = True,
+            minimum_rank_required=500,
+        )
+    app.register_blueprint(tools.mod)
+    
     
     shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
 
