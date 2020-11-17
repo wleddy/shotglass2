@@ -207,15 +207,16 @@ class TextResponse():
                         
     def _get_request_properties(self,flask_request):
         # update with info from the request.form
+        def clean_number(num):
+            # phone numbers usually start with "+1" but i don't usually want that
+            num = num[2:] if num[0:2] == '+1' else num
+            return num
+            
         if flask_request and flask_request.form:
             # populate some properties
             self.body = flask_request.form.get('Body','')
-            self.to_number = flask_request.form.get('To','')
-            self.from_number = flask_request.form.get('From','')
-            # phone number usually start with "+1" but i don't usually want that
-            l = [self.to_number,self.from_number]
-            for x in range(len(l)):
-                l[x] = l[x][2:] if l[x][0:2] == '+1' else l[x]
+            self.to_number = clean_number(flask_request.form.get('To',''))
+            self.from_number = clean_number(flask_request.form.get('From',''))
         else:
             self.success=False
             self.result_text = "No Request Data found"
@@ -223,4 +224,3 @@ class TextResponse():
                 level='info',
                 )
                 
-        
