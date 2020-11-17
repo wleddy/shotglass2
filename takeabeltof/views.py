@@ -282,9 +282,7 @@ class TableView:
             # self.sql is assumed to be a fully formed sql statement
             self.recs = self.table.query(self.sql)
         else:
-            # import pdb;pdb.set_trace()
             filters = self.get_list_filters()
-            print(filters.where)
             self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
         
 
