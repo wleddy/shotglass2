@@ -22,6 +22,8 @@ from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
+from twilio.twiml.messaging_response import MessagingResponse
+
 
 class TextMessage():
     def __init__(self,to_number="",message=""):
@@ -142,3 +144,21 @@ class TextMessage():
             printException(self.result_text,'error',err=e)
         
                 
+class TextResponse():
+    """Create a response object for Twilio web hook request"""
+    
+    def __init__(self):
+        self.response = MessageingResponse()
+        self.message = None 
+        self.success = True
+        self.result_text = ''
+    
+    
+    def create_message(self,message_to_send='',**kwargs):
+        if message_to_send and isinstance(message_to_send,str):
+            msg = self.response.message(message_to_send.strip())
+            self.message = self.response
+        else:
+            self.message = None
+            self.success = False
+            self.result_text = "The message must not be empty"
