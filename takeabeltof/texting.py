@@ -148,7 +148,7 @@ class TextResponse():
     """Create a response object for Twilio web hook request"""
     
     def __init__(self):
-        self.response = MessageingResponse()
+        self.response = MessagingResponse()
         self.message = None 
         self.success = True
         self.result_text = ''
