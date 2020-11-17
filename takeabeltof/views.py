@@ -164,7 +164,7 @@ class TableView:
                 if self.export_title:
                     result = self.export_title.strip() + '\n'
                 else:
-                    result = "Export of table {} as of {}\n".format(self.table.table_name,excel_date_and_time_string(local_date_string()))
+                    result = "Export of table {} as of {}\n".format(self.table.table_name,excel_date_and_time_string(local_datetime_now()))
                         
                 result += ','.join([x['label'] for x in self.export_fields]) + '\n'
                 for rec in self.recs:
@@ -282,7 +282,9 @@ class TableView:
             # self.sql is assumed to be a fully formed sql statement
             self.recs = self.table.query(self.sql)
         else:
+            # import pdb;pdb.set_trace()
             filters = self.get_list_filters()
+            print(filters.where)
             self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
         
 
