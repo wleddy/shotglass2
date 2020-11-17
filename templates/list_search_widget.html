@@ -19,7 +19,6 @@
             />
         </p>
     </div>
-        {% include data.list_search_widget_extras_template %}
     <div class="w3-row">
         {% if has_date_search %}
         {% set search_id_prefix = [] %}
@@ -45,6 +44,7 @@
             {% endfor %}
         {% endif %}{# has date search #}
     </div>
+    {% include data.list_search_widget_extras_template %}
 </div>
 
 <script>
