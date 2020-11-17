@@ -18,6 +18,7 @@
       email_admin('Texting Error Occurred',text.result_text)
   
 """
+from flask import Response
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException
 from twilio.rest import Client
@@ -147,18 +148,78 @@ class TextMessage():
 class TextResponse():
     """Create a response object for Twilio web hook request"""
     
-    def __init__(self):
+    def __init__(self,flask_request):
         self.response = MessagingResponse()
-        self.message = None 
         self.success = True
         self.result_text = ''
-    
-    
-    def create_message(self,message_to_send='',**kwargs):
-        if message_to_send and isinstance(message_to_send,str):
-            msg = self.response.message(message_to_send.strip())
-            self.message = self.response
+        self.mimetype = 'text/xml'
+        self.body = ''
+        self.from_number = ''
+        self.to_number = ''
+        self._get_request_properties(flask_request)
+        self.msg = None
+        
+        
+    def attach_media(self,url):
+        #attach media to message
+        if url and isinstance(url,str):
+            if url[0:4].lower() == "http":
+                # assume to be an unabiguous url
+                pass
+            else:
+                #assumed to be site relative
+                site_config = get_site_config()
+                url = url if url[0] != '/' else url[1:]
+                url = "{protocol}://{host}/{url}".format(
+                    protocol=site_config['HOST_PROTOCOL'],
+                    host=site_config['HOST_NAME'],
+                    url=url,
+                    )
+                    
+            if not self.msg:
+                # need a messge object
+                self.create_message('')
+            self.msg.media(url)
+            
         else:
-            self.message = None
             self.success = False
-            self.result_text = "The message must not be empty"
+            self.result_text = "No URL provided"
+    
+    
+    def create_message(self,message_to_send=''):
+        if message_to_send and isinstance(message_to_send,str):
+            self.msg = self.response.message(message_to_send.strip())
+        else:
+            # we have to respond to the user with something...
+            self.msg = self.response.message("Message Received")
+            self.success = False
+            self.result_text = "The message seems to be empty"
+            printException(self.result_text,
+                level='error',
+                )
+            
+            
+    def render_response(self):
+        return Response(str(self.response),
+                        mimetype=self.mimetype,
+                        )
+                        
+                        
+    def _get_request_properties(self,flask_request):
+        # update with info from the request.form
+        if flask_request and flask_request.form:
+            # populate some properties
+            self.body = flask_request.form.get('Body','')
+            self.to_number = flask_request.form.get('To','')
+            self.from_number = flask_request.form.get('From','')
+            # phone number usually start with "+1" but i don't usually want that
+            for num in [self.to_number,self.from_number]:
+                num = num if num[0:2] != '+1' else num[2:]
+        else:
+            self.success=False
+            self.result_text = "No Request Data found"
+            printException(self.result_text,
+                level='info',
+                )
+        
+        
