@@ -78,7 +78,10 @@ def edit(rec_id=None):
             #import pdb;pdb.set_trace()
             role.update(rec,request.form)
             # locked is a checkbox
-            rec.locked = request.form.get('locked',0)
+            if 'locked' in request.form:
+                rec.locked = 1
+            else:
+                rec.locked = 0
             
             try:
                 role.save(rec)

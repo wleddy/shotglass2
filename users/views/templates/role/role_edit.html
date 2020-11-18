@@ -18,7 +18,7 @@
          <p>{{ label_only("This Role is locked for system use. Requires Super user access.")}}</p>
          {% endif %}
     {% else %}
-        <p>{{ checkbox_field(1,"locked", label="Lock for system use.", extras=is_locked)}}</p>
+        <p>{{ checkbox_field('locked',"locked", label="Lock for system use.", extras=is_locked)}}</p>
         {% set extras = '' %}
     {% endif %}
     <p>{{ input_field(rec.name,"name",req=True, extras=extras)}}</p>
