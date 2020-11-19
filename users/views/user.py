@@ -180,6 +180,8 @@ def home():
 @mod.route('/',methods=['GET','POST',])
 @table_access_required(User)
 def display(path=""):
+    setExits()
+    g.title = "{} Record List".format(g.title)
     user = User(g.db)
     user_rank = user.max_role_rank(g.user)
     user_list = UserView(User,g.db)

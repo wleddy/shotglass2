@@ -18,6 +18,8 @@ def setExits():
 @mod.route('/',methods=['GET','POST',])
 @table_access_required(Pref)
 def display(path=None):
+    setExits()
+    g.title = "{} Record List".format(g.title)
     view = TableView(Pref,g.db)
     view.list_fields = [
         {'name':'id','label':'ID','class':'w3-hide-small','search':True},

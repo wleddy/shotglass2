@@ -30,7 +30,9 @@ def setExits():
 @mod.route('/<path:path>/',methods=['GET','POST',])
 @mod.route('/',methods=['GET','POST',])
 @table_access_required(PRIMARY_TABLE)
-def display(path=None):    
+def display(path=None):   
+    setExits()
+    g.title = "{} Record List".format(g.title)
     return RoleTableView(PRIMARY_TABLE,g.db).dispatch_request()
     
     
