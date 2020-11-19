@@ -4,7 +4,7 @@ from flask.views import View
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
-from shotglass2.takeabeltof.utils import printException, cleanRecordID
+from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
 from datetime import date
@@ -46,10 +46,7 @@ class TableView:
         
         self.edit_template = 'edit_template.html'
         
-        # set the exits
-        g.listURL = url_for('.display')
-        g.editURL = url_for('.display') + 'edit/'
-        g.deleteURL = url_for('.display') + 'delete/'
+        # set the page title root
         g.title = self.display_name
         
         # Include any text you want inserted into the page <head> section
@@ -140,7 +137,9 @@ class TableView:
         
         # import pdb;pdb.set_trace()
         
-        self.select_recs(**kwargs)
+        # provide for case where recs are set extenally
+        if not self.recs:
+            self.select_recs(**kwargs)
         if self.recs:
             if self.export_file_name:
                 filename = self.export_file_name
@@ -195,15 +194,7 @@ class TableView:
                         
                     result += ','.join([str(x) for x in rec_row]) + '\n'
                     
-            headers={
-               "Content-Disposition":"attachment;filename={}".format(filename),
-                }
-
-            return Response(
-                    result,
-                    mimetype="text/csv",
-                    headers=headers
-                    )
+            return DataStreamer(result,filename,'text/csv').send()
         
         self.result_text = "No records selected"
         self.success = False
