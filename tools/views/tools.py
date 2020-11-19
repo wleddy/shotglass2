@@ -1,5 +1,6 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, Response
+from shotglass2.shotglass import Admin
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.users.models import User
 from shotglass2.shotglass import ShotLog
