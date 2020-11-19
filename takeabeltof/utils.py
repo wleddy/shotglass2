@@ -2,7 +2,7 @@
     Some utility functions
 """
 
-from flask import g, render_template_string, flash, send_from_directory, abort, url_for
+from flask import g, render_template_string, flash, send_from_directory, abort, url_for, Response
 from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
@@ -383,4 +383,33 @@ def validate_phone_number(phone):
         return False
         
     return True
+    
+    
+class DataStreamer():
+    """Download data to visitor
+    
+    Data is some kind of string value
+    """
+    
+    def __init__(self,data,filename,mimetype='text/plain'):
+        self.data = data
+        self.filename = filename
+        self.mimetype = mimetype
+        self.headers = ''
+        
+    def set_headers(self):
+        self.headers={
+           "Content-Disposition":"attachment;filename={}".format(self.filename),
+            }
+        
+    def send(self):
+        self.set_headers() #in case something changed
+        return Response(
+                str(self.data),
+                mimetype=self.mimetype,
+                headers=self.headers
+                )
+        
+    
+    
     
