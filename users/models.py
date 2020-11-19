@@ -218,6 +218,7 @@ class User(SqliteTable):
         sql="""
         select 
             user.*,
+            user.first_name || ' ' || user.last_name as full_name,
             0 as max_rank,
             "" as roles
             

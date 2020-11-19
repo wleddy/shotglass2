@@ -5,11 +5,10 @@
 {% if data.recs %}
     {% for rec in data.recs %}
     <tr>
-		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.id }}</td>
-		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.first_name }}</td>
-		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.last_name}}</td>
+		<td class="w3-hide-small {% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.id }}</td>
+		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.full_name}}</td>
 		<td class="w3-hide-small {% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{{ rec.email|default("",true) }}</td>
-		<td class="{% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{% if rec.active == 1 %}Active{% else %}<em>Inactive</em>{% endif %}</td>
+		<td class="w3-hide-small {% if user_rank < rec.max_rank %}no_access"{% else %}" onclick="window.location='{{ g.editURL }}{{rec.id}}/'"{% endif %} >{% if rec.active == 1 %}Active{% else %}<em>Inactive</em>{% endif %}</td>
     </tr>
     {% endfor %}
 {% else %}

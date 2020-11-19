@@ -22,11 +22,10 @@ class UserView(TableView):
         
         self.list_fields = [
             {'name':'id','label':'ID','class':'w3-hide-small','search':True},
-            {'name':"first_name"},
-            {'name':"last_name"},
+            {'name':"full_name"},
             {'name':'email','class':'w3-hide-small'},
             {'name':'active','label':"Status",'class':'w3-hide-small'},
-            {'name':'roles','class':'w3-hide-small','list':False}
+            {'name':'roles','list':False}
         ]
         
         self.export_fields = [
