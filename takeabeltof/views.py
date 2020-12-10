@@ -20,6 +20,7 @@ class TableView:
         self.table = self.source(self.db)
         self.display_name = self.table.display_name
         self.sql = None # may be used for a custom select
+        self.recs = None
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
