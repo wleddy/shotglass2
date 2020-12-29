@@ -34,7 +34,7 @@ class SqliteBackup():
     * **frequency**: Do not make a backup more often than this many minutes.
     Default is 60 minutes.
     * **backup_dir**: The directory where backups will be stored. Defaults to
-    instance/db_backups.
+    directory 'db_backups' in the same directory as the datafile.
     * **force**: Make a backup regardless of whether the datafile has changed or 
     the frequency period has elapsed.
     
@@ -52,10 +52,18 @@ class SqliteBackup():
     """ 
  
     def __init__(self,database_path,**kwargs):
-
         self.database_path = database_path
         self.frequency = kwargs.pop('frequency',60) # max number of minutes between backups
-        self.backup_dir = kwargs.pop('backup_dir','instance/db_backups')
+        
+        # self.backup_dir = kwargs.pop('backup_dir','instance/db_backups')
+        backup_dir_name = 'db_backups'
+        self.backup_dir = kwargs.pop('backup_dir',None)
+        if not self.backup_dir:
+            try:
+                self.backup_dir = os.path.normpath(os.path.join(os.path.split(self.database_path)[0],backup_dir_name))
+            except IndexError('unable to split database_path'):
+                self.backup_dir =  os.path.join('instance',backup_dir_name)
+        
         self.force = kwargs.pop('force',False) # backup regardless of when last one happened
         
         self._results = {0:"Backup Successful",
