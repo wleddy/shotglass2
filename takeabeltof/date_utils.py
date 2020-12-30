@@ -111,7 +111,7 @@ def getDatetimeFromString(dateString):
     else:
         return None
 
-    dateString = dateString[:19]
+    dateString = dateString.strip()[:19]
     timeDelimiter = " "
     if "T" in dateString:
         timeDelimiter = "T"
