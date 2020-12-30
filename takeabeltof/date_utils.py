@@ -106,8 +106,9 @@ def getDatetimeFromString(dateString):
         if type(dateString) is date:
             # date object must be converted to datetime to be time zone aware
             dateString = datetime(dateString.year,dateString.month,dateString.day,0,0,0)
-            
-        return timezone(get_time_zone_setting()).localize(dateString)
+        if not dateString.tzinfo:
+            dateString = timezone(get_time_zone_setting()).localize(dateString)
+        return dateString
     else:
         return None
 
