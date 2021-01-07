@@ -170,7 +170,7 @@ def contact(**kwargs):
             kwargs=kwargs,
             )
             
-    handle_request_error(mes,request,500)
+    handle_request_error(mes,request)
     flash(mes)
     return render_template('500.html'), 500
     
