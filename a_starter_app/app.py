@@ -1,5 +1,4 @@
 from flask import Flask, g, session, request, redirect, flash, abort, url_for, session
-from flask_mail import Mail
 import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
@@ -36,8 +35,6 @@ def inject_site_config():
 
 register_jinja_filters(app)
 
-
-mail = Mail(app)
 
 def init_db(db=None):
     # to support old code

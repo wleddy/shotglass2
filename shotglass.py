@@ -1,5 +1,4 @@
 from flask import render_template, g, url_for, request, flash
-from flask_mail import Mail
 import logging
 from logging.handlers import RotatingFileHandler
 from shotglass2.takeabeltof.sqlite_backup import SqliteBackup
@@ -85,10 +84,6 @@ def get_site_config(this_app=None):
                 
             for key, value in server.items():
                 site_config[key.upper()] = value
-
-            # refresh mail since settings changed
-            from app import mail
-            mail = Mail(this_app)
 
         except:
             # Will use the default settings

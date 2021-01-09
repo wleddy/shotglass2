@@ -8,15 +8,15 @@ import pytest
 from app import app
 app.config['TESTING'] = True
 
-try:
-    from flask_mail import Mail
-    with app.app_context():
-        # need to recreate mail obj to get new TESTING value
-        from app import mail
-        del mail
-        mail = Mail(app)
-except:
-    pass
+# try:
+#     from flask_mail import Mail
+#     with app.app_context():
+#         # need to recreate mail obj to get new TESTING value
+#         from app import mail
+#         del mail
+#         mail = Mail(app)
+# except:
+#     pass
 
 import shotglass2.takeabeltof.mailer as mail
 
@@ -109,5 +109,12 @@ def test_alert_admin():
         
         #Calling with no params should not cause an error
         success, mes = mail.alert_admin()
+        assert success == True
+        assert "sent successfully" in mes
+
+# tests sending mail with google oAuth credentials
+def test_send_googl_message():
+    with app.app_context():
+        success, mes = mail.send_message([("Bill Leddy",'williesworkshop.net@gmail.com')],body="This is a test",subject="Simple Test")
         assert success == True
         assert "sent successfully" in mes

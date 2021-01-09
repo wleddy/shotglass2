@@ -1,7 +1,26 @@
+"""
+    My adaptation of flask_mail v 0.9.1
+    
+    I want to add the ability to use oAuth to connect to gmail SMTP
+    servers since they no longer allow login with username and password.
+
+
+    Original docstring:
+    
+    flaskext.mail
+    ~~~~~~~~~~~~~
+
+    Flask extension for sending email.
+
+    :copyright: (c) 2010 by Dan Jacob.
+    :license: BSD, see LICENSE for more details.
+"""
+
 from flask import render_template_string, render_template
 from shotglass2.shotglass import get_site_config
-from flask_mail import Message
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
+from shotglass2.takeabeltof.mail import Mail, Message
+
 
 class Mailer:
     """Send an email with the parameters as:
@@ -48,7 +67,7 @@ class Mailer:
             
         self.add_address(address_list)
         
-        site_config = get_site_config() #update the settings. this also recreates the mail var in app with new settings
+        site_config = get_site_config() 
         self.admin_name = site_config['MAIL_DEFAULT_SENDER']
         self.admin_addr = site_config['MAIL_DEFAULT_ADDR']
         self.kwargs = kwargs # templates may need values here...
@@ -63,9 +82,10 @@ class Mailer:
         self._cc = kwargs.get('cc',[])
         self._bcc = kwargs.get('bcc',[])
         self._attachments = []
+        self.subject = kwargs.get('subject','').strip()
+        # appends all attachments regardless of keyword used
         self.add_attachment(kwargs.get('attachments',None))
         self.add_attachment(kwargs.get('attachment',None))
-        self.subject = kwargs.get('subject','').strip()
         
         self.success = False
         self.result_text = 'initialized'
@@ -181,97 +201,97 @@ class Mailer:
 
 
     def send(self):
-        from app import mail
-        with mail.record_messages() as outbox:
-            sent_cnt = 0
-            err_cnt = 0
-            err_list = []
-            result = True
-            # import pdb;pdb.set_trace()
-            if not self._to:
-                self._to = [(self.admin_name,self.admin_addr),]
+        outgoing = Mail()
 
-            for who in self._to:
-                name = ""
-                address = ""
-                body_err_head = ""
-                if isinstance(who,tuple):
-                    if len(who) == 1:
-                        # extend who
-                        who = who[0] + (who[0],)
-                    name = who[0]
-                    address = who[1]
-                else:
-                    address = who #assume its a str
-                    name = who
+        sent_cnt = 0
+        err_cnt = 0
+        err_list = []
+        result = True
+        # import pdb;pdb.set_trace()
+        if not self._to:
+            self._to = [(self.admin_name,self.admin_addr),]
 
-                if not looksLikeEmailAddress(address) and looksLikeEmailAddress(name):
-                    # swap values
-                    temp = address
-                    address = name
-                    name = temp
-                if not looksLikeEmailAddress(address):
-                    # still not a good address...
-                    address = self.admin_addr
-                    name = self.admin_name
-                    if not self.body:
-                        self.body = ""
-
-                    body_err_head = "**Bad Address**: {}\r\r".format(who,)
-                    
-                if not self.subject:
-                    self.subject = 'A message from {}'.format(self.from_sender).strip()
-                self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
-                self.subject = render_template_string(self.subject.strip(), **self.kwargs)
-                #Start a message
-                msg = Message( self.subject,
-                              sender=(self.from_sender, self.from_address),
-                              recipients=[(name, address)],
-                              cc=self._cc,
-                              bcc=self._bcc,
-                              )
-
-                #Get the text body verson
-                if self.body:
-                    if self.body_is_html:
-                        msg.html = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
-                    else:
-                        msg.body = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
-                if self.html_template:
-                    msg.html = render_template(self.html_template, **self.kwargs)
-                if self.text_template:
-                    msg.body = render_template(self.text_template, **self.kwargs)
-                if not msg.body and not msg.html:
-                    self._set_result(False,'Message contained no body content.')
-                    return
-
-                msg.reply_to = self.reply_to
-
-                if self._attachments:
-                    for attachment in self._attachments:
-                        if attachment and len(attachment) > 2:
-                            msg.attach(attachment[0],attachment[1],attachment[2])
-
-                try:
-                    mail.send(msg)
-                    sent_cnt += 1
-                except Exception as e:
-                    mes = "Error Sending email"
-                    printException(mes,"error",e)
-                    err_cnt += 1
-                    err_list.append("Error sending message to {} err: {}".format(who,str(e)))
-
-            # End Loop
-            if sent_cnt == 0:
-                mes = "No messages were sent."
-                result = False
+        for recipient in self._to:
+            name = ""
+            address = ""
+            body_err_head = ""
+            if isinstance(recipient,tuple):
+                if len(recipient) == 1:
+                    # extend recipient
+                    recipient = recipient[0] + (recipient[0],)
+                name = recipient[0]
+                address = recipient[1]
             else:
-                mes = "{} messages sent successfully.".format(sent_cnt)
-            if err_cnt > 0:
-                result = False
-                mes = mes + " {} messages had errors.\r\r{}".format(err_cnt,err_list)
+                address = recipient #assume its a str
+                name = recipient
 
-            self._set_result(result, mes)
+            if not looksLikeEmailAddress(address) and looksLikeEmailAddress(name):
+                # swap values
+                temp = address
+                address = name
+                name = temp
+            if not looksLikeEmailAddress(address):
+                # still not a good address...
+                address = self.admin_addr
+                name = self.admin_name
+                if not self.body:
+                    self.body = ""
+
+                body_err_head = "**Bad Address**: {}\r\r".format(recipient,)
+                
+            if not self.subject:
+                self.subject = 'A message from {}'.format(self.from_sender).strip()
+            self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
+            self.subject = render_template_string(self.subject.strip(), **self.kwargs)
+            #Start a message
+            msg = Message( self.subject,
+                          sender=(self.from_sender, self.from_address),
+                          recipients=[(name, address)],
+                          cc=self._cc,
+                          bcc=self._bcc,
+                          )
+
+            #Get the text body verson
+            if self.body:
+                if self.body_is_html:
+                    msg.html = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
+                else:
+                    msg.body = render_template_string("{}{}".format(body_err_head,self.body,), **self.kwargs)
+            if self.html_template:
+                msg.html = render_template(self.html_template, **self.kwargs)
+            if self.text_template:
+                msg.body = render_template(self.text_template, **self.kwargs)
+            if not msg.body and not msg.html:
+                self._set_result(False,'Message contained no body content.')
+                return
+
+            msg.reply_to = self.reply_to
+
+            if self._attachments:
+                for attachment in self._attachments:
+                    if attachment and len(attachment) > 2:
+                        msg.attach(attachment[0],attachment[1],attachment[2])
+
+            try:
+                outgoing.send(msg)
+                sent_cnt += 1
+            except Exception as e:
+                mes = "Error Sending email"
+                printException(mes,"error",e)
+                err_cnt += 1
+                err_list.append("Error sending message to {} err: {}".format(recipient,str(e)))
+
+        # End Loop
+        if sent_cnt == 0:
+            mes = "No messages were sent."
+            result = False
+        else:
+            mes = "{} messages sent successfully.".format(sent_cnt)
+        if err_cnt > 0:
+            result = False
+            mes = mes + " {} messages had errors.\r\r{}".format(err_cnt,err_list)
+
+        self._set_result(result, mes)
             
             
 def send_message(to_address_list=None,**kwargs):
