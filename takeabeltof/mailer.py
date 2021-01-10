@@ -19,7 +19,7 @@
 from flask import render_template_string, render_template
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
-from shotglass2.takeabeltof.mail import Mail, Message
+from shotglass2.takeabeltof.mail.mail import Mail, Message
 
 
 class Mailer:

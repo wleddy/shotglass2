@@ -1,23 +1,29 @@
-"""
-    My adaptation of flask_mail v 0.9.1
+""" My adaptation of flask_mail v 0.9.1
+
+I want to add the ability to use oAuth to connect to gmail SMTP
+servers since they no longer allow login with username and password.
+
+Original docstring:
+
+flaskext.mail
+~~~~~~~~~~~~~
+
+Flask extension for sending email.
+
+:copyright: (c) 2010 by Dan Jacob.
+:license: BSD, see LICENSE for more details.
+Args: None
+
+Returns:  None
+
+Raises: 
+    MailSettingsError
+    BadHeaderError
     
-    I want to add the ability to use oAuth to connect to gmail SMTP
-    servers since they no longer allow login with username and password.
-
-
-    Original docstring:
-    
-    flaskext.mail
-    ~~~~~~~~~~~~~
-
-    Flask extension for sending email.
-
-    :copyright: (c) 2010 by Dan Jacob.
-    :license: BSD, see LICENSE for more details.
 """
 
 import re
-import blinker
+# import blinker
 import smtplib
 import sys
 import time
@@ -30,17 +36,18 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formatdate, formataddr, make_msgid, parseaddr
-from contextlib import contextmanager
 
-from flask import current_app
+# from flask import current_app
 
-from flask import render_template_string, render_template
 from shotglass2.shotglass import get_site_config
-from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
+# from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
+from shotglass2.takeabeltof.mail import oauth
 
 class BadHeaderError(Exception):
     pass
 
+class MailSettingsError(Exception):
+    pass
 
 class Connection:
     """Handles connection to host."""
@@ -63,17 +70,21 @@ class Connection:
             self.host.quit()
 
     def configure_host(self):
-        if self.mail.use_ssl:
-            host = smtplib.SMTP_SSL(self.mail.server, self.mail.port)
+        if self.mail.oauth_providers:
+            host = oauth.get_host_connection(self.mail)
         else:
-            host = smtplib.SMTP(self.mail.server, self.mail.port)
+            # login with username and email
+            if self.mail.use_ssl:
+                host = smtplib.SMTP_SSL(self.mail.server, self.mail.port)
+            else:
+                host = smtplib.SMTP(self.mail.server, self.mail.port)
+                
+            if self.mail.use_tls:
+                host.starttls()
+            if self.mail.username and self.mail.password:
+                host.login(self.mail.username, self.mail.password)
 
         host.set_debuglevel(int(self.mail.debug))
-
-        if self.mail.use_tls:
-            host.starttls()
-        if self.mail.username and self.mail.password:
-            host.login(self.mail.username, self.mail.password)
 
         return host
 
@@ -102,7 +113,7 @@ class Connection:
                                message.mail_options,
                                message.rcpt_options)
 
-        email_dispatched.send(message, app=current_app._get_current_object())
+        # email_dispatched.send(message, app=current_app._get_current_object())
 
         self.num_emails += 1
 
@@ -229,27 +240,46 @@ class Mail:
                  ascii_attachments=False):
                  
         site_config = get_site_config()
-                 
-        self.server = server if server else site_config.get('MAIL_SERVER', '127.0.0.1')
+        
+        self.oauth_providers = site_config.get("OAUTH_PROVIDERS",None)        
+ 
         self.username = username if username else site_config.get('MAIL_USERNAME')
         self.password = password if password else site_config.get('MAIL_PASSWORD')
         self.port = port if port else site_config.get('MAIL_PORT', None)
         self.use_tls = use_tls if use_tls else site_config.get('MAIL_USE_TLS', False)
         self.use_ssl = use_ssl if use_ssl else site_config.get('MAIL_USE_SSL', False)
-        if not self.port:
-            if self.use_tls:
-                self.port = 587
-            elif self.use_ssl:
-                self.port = 465
-            else:
-                self.port = 25
         self.default_sender = default_sender if default_sender else site_config.get('MAIL_DEFAULT_SENDER')
         self.debug = debug if debug else int(site_config.get('MAIL_DEBUG', site_config.get('DEBUG',0)))
         self.max_emails = max_emails if max_emails else site_config.get('MAIL_MAX_EMAILS')
         self.suppress = suppress if suppress else site_config.get('MAIL_SUPPRESS_SEND',  site_config.get('TESTING',False))
         self.ascii_attachments = ascii_attachments if ascii_attachments else site_config.get('MAIL_ASCII_ATTACHMENTS', False)
         
-        
+        self.server = server if server else site_config.get('MAIL_SERVER', '127.0.0.1')
+        if self.oauth_providers:
+            if 'google' in self.oauth_providers:
+                oauth_mail_settings = self.oauth_providers['google']
+                self.server = oauth_mail_settings['MAIL_SERVER']
+                self.username = oauth_mail_settings['MAIL_USERNAME']
+                self.token_request_url = oauth_mail_settings['TOKEN_REQUEST_URL']
+                self.client_id = oauth_mail_settings['CLIENT_ID']
+                self.client_secret = oauth_mail_settings['CLIENT_SECRET']
+                self.refresh_token = oauth_mail_settings['REFRESH_TOKEN']
+                self.use_ssl = oauth_mail_settings.get('MAIL_USE_SSL',False)
+                self.use_tls = oauth_mail_settings.get('MAIL_USE_TLS',True)
+                self.port = None # set properly below
+            else:
+                raise MailSettingsError("Known oAuth provider not found")
+
+        if not self.port:
+            if self.use_tls and self.use_ssl:
+                raise MailSettingsError('USE_TLS and USE_SSL may not both be True')
+            if self.use_tls:
+                self.port = 587
+            elif self.use_ssl:
+                self.port = 465
+            else:
+                self.port = 25
+
     def send(self, message):
         """Sends a single message instance. If TESTING is True the message will
         not actually be sent.
@@ -261,12 +291,14 @@ class Mail:
             connection.send(message)
             
 
-signals = blinker.Namespace()
+# signals = blinker.Namespace()
 
-email_dispatched = signals.signal("email-dispatched", doc="""
-Signal sent when an email is dispatched. This signal will also be sent
-in testing mode, even though the email will not actually be sent.
-""")
+# email_dispatched = signals.signal("email-dispatched", doc="""
+# Signal sent when an email is dispatched. This signal will also be sent
+# in testing mode, even though the email will not actually be sent.
+# """)
+
+
 class Attachment(object):
     """Encapsulates file attachment information.
 
