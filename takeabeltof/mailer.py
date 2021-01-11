@@ -81,6 +81,18 @@ class Mailer:
         self.reply_to = kwargs.get('reply_to',self.from_address)
         self._cc = kwargs.get('cc',[])
         self._bcc = kwargs.get('bcc',[])
+        
+        # import pdb;pdb.set_trace()
+        try:
+            if site_config['BCC_ADMINS_ON_ALL_EMAIL']:
+                admins = site_config['ADMIN_EMAILS']
+                if self._bcc is None:
+                    self._bcc = []
+                if not isinstance(admins,list):
+                    admins = [admins]
+                self._bcc.extend(admins)
+        except KeyError:
+            pass
         self._attachments = []
         self.subject = kwargs.get('subject','').strip()
         # appends all attachments regardless of keyword used

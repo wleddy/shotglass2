@@ -23,7 +23,6 @@ Raises:
 """
 
 import re
-# import blinker
 import smtplib
 import sys
 import time
@@ -51,7 +50,7 @@ class MailSettingsError(Exception):
 
 class Connection:
     """Handles connection to host."""
-
+    
     def __init__(self, mail):
         self.mail = mail
 
@@ -70,7 +69,8 @@ class Connection:
             self.host.quit()
 
     def configure_host(self):
-        if self.mail.oauth_providers:
+        # import pdb;pdb.set_trace()
+        if self.mail.use_oauth:
             host = oauth.get_host_connection(self.mail)
         else:
             # login with username and email
@@ -95,7 +95,7 @@ class Connection:
         :param envelope_from: Email address to be used in MAIL FROM command.
         """
         assert message.send_to, "No recipients have been added"
-
+        
         assert message.sender, (
                 "The message does not specify a sender and a default sender "
                 "has not been configured")
@@ -235,40 +235,34 @@ def _has_newline(line):
     return False
 
 class Mail:
-    def __init__(self, server=None, username=None, password=None, port=None, use_tls=None, use_ssl=None,
-                 default_sender=None, debug=None, max_emails=None, suppress=None,
+    def __init__(self, server=None, username=None, password=None, port=None, use_tls=None, use_ssl=None, use_oauth=None,
+                 default_sender_name=None, default_sender_addr=None, debug=None, max_emails=None, suppress=None,
                  ascii_attachments=False):
                  
         site_config = get_site_config()
         
-        self.oauth_providers = site_config.get("OAUTH_PROVIDERS",None)        
- 
+        self.server = server if server else site_config.get('MAIL_SERVER', '127.0.0.1')
         self.username = username if username else site_config.get('MAIL_USERNAME')
         self.password = password if password else site_config.get('MAIL_PASSWORD')
         self.port = port if port else site_config.get('MAIL_PORT', None)
         self.use_tls = use_tls if use_tls else site_config.get('MAIL_USE_TLS', False)
         self.use_ssl = use_ssl if use_ssl else site_config.get('MAIL_USE_SSL', False)
-        self.default_sender = default_sender if default_sender else site_config.get('MAIL_DEFAULT_SENDER')
+        self.use_oauth = use_oauth if use_oauth else site_config.get('MAIL_USE_OAUTH', False)
+        self.default_sender_name = default_sender_name if default_sender_name else site_config.get('MAIL_DEFAULT_SENDER')
+        self.default_sender_addr = default_sender_addr if default_sender_addr else site_config.get('MAIL_DEFAULT_ADDR')
         self.debug = debug if debug else int(site_config.get('MAIL_DEBUG', site_config.get('DEBUG',0)))
         self.max_emails = max_emails if max_emails else site_config.get('MAIL_MAX_EMAILS')
         self.suppress = suppress if suppress else site_config.get('MAIL_SUPPRESS_SEND',  site_config.get('TESTING',False))
         self.ascii_attachments = ascii_attachments if ascii_attachments else site_config.get('MAIL_ASCII_ATTACHMENTS', False)
         
-        self.server = server if server else site_config.get('MAIL_SERVER', '127.0.0.1')
-        if self.oauth_providers:
-            if 'google' in self.oauth_providers:
-                oauth_mail_settings = self.oauth_providers['google']
-                self.server = oauth_mail_settings['MAIL_SERVER']
-                self.username = oauth_mail_settings['MAIL_USERNAME']
-                self.token_request_url = oauth_mail_settings['TOKEN_REQUEST_URL']
-                self.client_id = oauth_mail_settings['CLIENT_ID']
-                self.client_secret = oauth_mail_settings['CLIENT_SECRET']
-                self.refresh_token = oauth_mail_settings['REFRESH_TOKEN']
-                self.use_ssl = oauth_mail_settings.get('MAIL_USE_SSL',False)
-                self.use_tls = oauth_mail_settings.get('MAIL_USE_TLS',True)
-                self.port = None # set properly below
-            else:
-                raise MailSettingsError("Known oAuth provider not found")
+        if self.use_oauth:
+            self.token_request_url = site_config['TOKEN_REQUEST_URL']
+            self.client_id = site_config['CLIENT_ID']
+            self.client_secret = site_config['CLIENT_SECRET']
+            self.refresh_token = site_config['REFRESH_TOKEN']
+            self.use_ssl = False
+            self.use_tls = True
+            self.port = None # set properly below
 
         if not self.port:
             if self.use_tls and self.use_ssl:
@@ -286,18 +280,10 @@ class Mail:
 
         :param message: a Message instance.
         """
-
+        # import pdb;pdb.set_trace()
         with Connection(self) as connection:
             connection.send(message)
             
-
-# signals = blinker.Namespace()
-
-# email_dispatched = signals.signal("email-dispatched", doc="""
-# Signal sent when an email is dispatched. This signal will also be sent
-# in testing mode, even though the email will not actually be sent.
-# """)
-
 
 class Attachment(object):
     """Encapsulates file attachment information.
@@ -353,7 +339,7 @@ class Message:
                  mail_options=None,
                  rcpt_options=None):
 
-        sender = sender #or current_app.extensions['mail'].default_sender
+        # import pdb; pdb.set_trace()
 
         if isinstance(sender, tuple):
             sender = "%s <%s>" % sender
@@ -387,7 +373,7 @@ class Message:
 
     def _message(self):
         """Creates the email"""
-        ascii_attachments = False #current_app.extensions['mail'].ascii_attachments
+        ascii_attachments = False
         encoding = self.charset or 'utf-8'
 
         attachments = self.attachments or []
@@ -416,10 +402,12 @@ class Message:
         msg['Date'] = formatdate(self.date, localtime=True)
         # see RFC 5322 section 3.6.4.
         msg['Message-ID'] = self.msgId
+        
+        # import pdb; pdb.set_trace()
 
         if self.cc:
             msg['Cc'] = ', '.join(list(set(sanitize_addresses(self.cc, encoding))))
-
+            
         if self.reply_to:
             msg['Reply-To'] = sanitize_address(self.reply_to, encoding)
 
