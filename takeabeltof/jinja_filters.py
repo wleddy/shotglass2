@@ -161,47 +161,47 @@ def plural(value,count=2,plural_form=None):
     
     if plural_form is provided, return that if count != 1
     """
+
     irregulars = {
-        'woman':'women',
-        'man':'men',
-        'person':'people',
-        'tooth':'teeth',
-        'louse':'lice',
-        'cactus':'cacti',
-        'goose':'geese',
-        'mouse':'mice',
-        'appendix':'appendices',
-        'ox':'oxen',
-        'child':'children',
-        'fish':'fishes',
-        'ellipsis':'ellipses',
-        'codex':'codies',
-        'larva':'larvae',
-        'alumna':'alumnae',
-        'erratum':'errata',
-        'ox':'oxen',
-        'oasis':'oases',
-        'swine':'swine',
-        'trout':'trout',
-        'genus':'genera',
-        'diagnosis':'diagnoses',
-        'analysis':'analyses',
-        'foot':'feet',
-        'child':'children',
-        'sheep':'sheep',
-        'leaf':'leaves',
-        'aircraft':'aircraft',
-        'apex':'apices',
-        'bison':'bison',
-        'crisis':'crises',
-        'curriculum':'curricula',
-        'datum':'data',
-        'focus':'foci',
-        'series':'series',
-        'vita':'vitae',
-        'tuna':'tuna',
-        'quiz':'quizzes',
-        'index':'indices',
+        'aircraft': 'aircraft',
+        'alumna': 'alumnae',
+        'analysis': 'analyses',
+        'apex': 'apices',
+        'appendix': 'appendices',
+        'bison': 'bison',
+        'cactus': 'cacti',
+        'child': 'children',
+        'codex': 'codies',
+        'crisis': 'crises',
+        'curriculum': 'curricula',
+        'datum': 'data',
+        'die': 'dice',
+        'diagnosis': 'diagnoses',
+        'ellipsis': 'ellipses',
+        'erratum': 'errata',
+        'fish': 'fishes',
+        'focus': 'foci',
+        'foot': 'feet',
+        'genus': 'genera',
+        'goose': 'geese',
+        'index': 'indices',
+        'larva': 'larvae',
+        'leaf': 'leaves',
+        'louse': 'lice',
+        'man': 'men',
+        'mouse': 'mice',
+        'oasis': 'oases',
+        'ox': 'oxen',
+        'person': 'people',
+        'quiz': 'quizzes',
+        'series': 'series',
+        'sheep': 'sheep',
+        'swine': 'swine',
+        'tooth': 'teeth',
+        'trout': 'trout',
+        'tuna': 'tuna',
+        'vita': 'vitae',
+        'woman': 'women',
     }
     
     if not isinstance(value,str):
@@ -211,13 +211,6 @@ def plural(value,count=2,plural_form=None):
     if plural_form and count != 1:
         return plural_form
     
-    is_caps = False
-    if value.upper() == value:
-        is_caps = True
-    is_title = False
-    if value.title() == value:
-        is_title = True
-        
     plural =  irregulars.get(value.lower())
     if plural:
         pass
@@ -226,12 +219,15 @@ def plural(value,count=2,plural_form=None):
     elif value[-1].lower() == 'f':
         # 'wolf' => 'wolves'
         plural =  value[:-1] + 'ves'
+    elif value[-1].lower() == 's':
+        plural =  value + 'es'
     else:
         plural = value + 's'
         
-    if is_caps:
+    # set the capitalization to match if we can
+    if value.isupper():
         plural = plural.upper()
-    elif is_title:
+    elif value.istitle():
         plural = plural.title()
         
     return plural
