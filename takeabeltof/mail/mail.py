@@ -1,7 +1,49 @@
 """ My adaptation of flask_mail v 0.9.1
 
 I want to add the ability to use oAuth to connect to gmail SMTP
-servers since they no longer allow login with username and password.
+servers since they no longer allow login with username and password
+from un-registered / approved apps like my web apps.
+
+This module depends on a bunch of settings variables mostly the same as
+Flask-Mail with a few additions. Here is a sample setings configuration:
+
+```python
+    ## Email Sending...
+    MAIL_USE_SSL = True # Use one or the other, not both
+    MAIL_USE_TLS = not MAIL_USE_SSL
+    MAIL_USE_OAUTH = True # when True use oAuth instead of account and password
+
+    MAIL_SUBJECT_PREFIX = 'something'
+
+    # Set up to use username and password
+    if not MAIL_USE_OAUTH:
+        MAIL_SERVER = 'smtp.hosting.com'
+        MAIL_USERNAME = "someone@example.com"
+        MAIL_PASSWORD = "myPassword"
+    
+        MAIL_DEFAULT_SENDER = "Your Name"
+        MAIL_DEFAULT_ADDR = MAIL_USERNAME
+    else:
+        # use this setup for oAuth
+        MAIL_SERVER = 'smtp.gmail.com'
+        MAIL_USERNAME = "someone@gmail.com"
+        TOKEN_REQUEST_URL = "https://accounts.google.com"
+        MAIL_USE_TLS = True
+        MAIL_USE_SSL = False
+        CLIENT_ID = '<Your Client ID>'
+        CLIENT_SECRET = '< your secret >'
+        REFRESH_TOKEN = '< your refresh token >'
+    
+        MAIL_DEFAULT_SENDER = "Your Name"
+        MAIL_DEFAULT_ADDR = MAIL_USERNAME
+
+    if MAIL_USE_SSL:
+        MAIL_PORT = 465 #465 is the SSL port
+    else:
+        MAIL_PORT= 587 #587 is the TLS port
+```
+
+See `google_oAuth` directory for instuctions on getting your client ID and refresh tokens from Google.
 
 Original docstring:
 
@@ -36,10 +78,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formatdate, formataddr, make_msgid, parseaddr
 
-# from flask import current_app
-
 from shotglass2.shotglass import get_site_config
-# from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
 from shotglass2.takeabeltof.mail import oauth
 
 class BadHeaderError(Exception):
@@ -106,15 +145,18 @@ class Connection:
         if message.date is None:
             message.date = time.time()
 
-        if self.host:
-            self.host.sendmail(sanitize_address(envelope_from or message.sender),
-                               list(sanitize_addresses(message.send_to)),
-                               message.as_bytes() if PY3 else message.as_string(),
-                               message.mail_options,
-                               message.rcpt_options)
-
-        # email_dispatched.send(message, app=current_app._get_current_object())
-
+        if self.host: # host is None when testing
+            message.failed_recipients = self.host.sendmail(sanitize_address(envelope_from or message.sender),
+                                list(sanitize_addresses(message.send_to)),
+                                message.as_bytes() if PY3 else message.as_string(),
+                                message.mail_options,
+                                message.rcpt_options)
+                                
+            # failed_recipients contains a dict of recipients that were refused
+            if message.failed_recipients:
+                pass
+                
+              
         self.num_emails += 1
 
         if self.num_emails == self.mail.max_emails:
@@ -122,16 +164,6 @@ class Connection:
             if self.host:
                 self.host.quit()
                 self.host = self.configure_host()
-
-    def send_message(self, *args, **kwargs):
-        """Shortcut for send(msg).
-
-        Takes same arguments as Message constructor.
-
-        :versionadded: 0.3.5
-        """
-
-        self.send(Message(*args, **kwargs))
 
 
 PY3 = sys.version_info[0] == 3
@@ -359,7 +391,10 @@ class Message:
         self.mail_options = mail_options or []
         self.rcpt_options = rcpt_options or []
         self.attachments = attachments or []
-
+        self.failed_recipients = None   # filled by Connection.send if any recipients were refused.
+                                        # Note that if all recipients are refused this is still None and the 
+                                        #smtplib.SMTPRecipientsRefused is raised intead
+                                        
     @property
     def send_to(self):
         return set(self.recipients) | set(self.bcc or ()) | set(self.cc or ())
