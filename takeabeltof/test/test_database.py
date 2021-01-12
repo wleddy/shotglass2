@@ -12,13 +12,8 @@ from datetime import datetime, date
 filespec = 'instance/test_database.db'
 db = None
 
-from flask_mail import Mail
 with app.app.app_context():
     app.app.config['TESTING'] = True
-    # need to recreate mail obj to get new TESTING value
-    from app import mail
-    del mail
-    mail = Mail(app.app)
 
     db = app.get_db(filespec)
     app.init_db(db)
