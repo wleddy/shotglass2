@@ -123,8 +123,12 @@ def contact(**kwargs):
                 try:
                     from shotglass2.users.views.pref import get_contact_email
                     contact_to = get_contact_email()
+                    # contact_to may be a tuple, a list or None
                     if contact_to:
-                        to.append(contact_to)
+                        if not isinstance(contact_to,list):
+                            contact_to = [contact_to]
+                        to.extend(contact_to)
+                            
                 except Exception as e:
                     printException("Need to update home.contact to find contacts in prefs.","error",e)
                     

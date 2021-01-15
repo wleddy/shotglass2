@@ -129,7 +129,9 @@ def validForm(rec):
     
     
 def get_contact_email():
-    """Return a tuple of the contact name and email address or None"""
+    """Return a tuple of the contact name and email address 
+    or a list of tuples 
+    or None"""
     from shotglass2.shotglass import get_site_config
     
     site_config = get_site_config()
@@ -146,7 +148,16 @@ def get_contact_email():
                         site_config.get("MAIL_DEFAULT_ADDR","info@{}".format(site_config.get("HOST_NAME","example.com")))))
     if rec:
         to_addr = rec.value
-                    
-    to = (to_name,to_addr,)
+        # split the addresses into a list if there are commas
+        temp_addr_list = to_addr.split(',')
+        if len(temp_addr_list) > 1:
+            to = []
+            for index, val in enumerate(temp_addr_list):
+                if index == 0:
+                    to.append((to_name,val,))
+                else:
+                    to.append((None,val,)) 
+        else:
+            to = (to_name,to_addr,)
         
     return to
