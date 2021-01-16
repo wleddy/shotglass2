@@ -577,8 +577,11 @@ class GmailAPIMessage(Message):
         """
         
         service = self.get_credentials()
-        # set_trace()
+        
+        # The next line will add all cc and bcc addresses to the email
+        # At the moment they all seem to end up in the To headers so bcc doesnt really work as expected
         # self.recipients = self.send_to
+        
         if mail.suppress:
             #just testing
             return self # you could inspect the message in a test
