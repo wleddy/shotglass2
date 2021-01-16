@@ -19,7 +19,7 @@
 from flask import render_template_string, render_template
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
-from shotglass2.takeabeltof.mail.mail import Mail, Message
+from shotglass2.takeabeltof.mail.mail import Mail, Message, GmailAPIMessage
 
 
 class Mailer:
@@ -67,15 +67,15 @@ class Mailer:
             
         self.add_address(address_list)
         
-        site_config = get_site_config() 
-        self.admin_name = site_config['MAIL_DEFAULT_SENDER']
-        self.admin_addr = site_config['MAIL_DEFAULT_ADDR']
+        self.site_config = get_site_config() 
+        self.admin_name = self.site_config['MAIL_DEFAULT_SENDER']
+        self.admin_addr = self.site_config['MAIL_DEFAULT_ADDR']
         self.kwargs = kwargs # templates may need values here...
         self.body = kwargs.get('body',None)
         self.body_is_html = kwargs.get('body_is_html',None)
         self.text_template = kwargs.get('text_template',None)
         self.html_template = kwargs.get('html_template',None)
-        self.subject_prefix = kwargs.get('subject_prefix',site_config.get("MAIL_SUBJECT_PREFIX",''))
+        self.subject_prefix = kwargs.get('subject_prefix',self.site_config.get("MAIL_SUBJECT_PREFIX",''))
         self.from_address = kwargs.get('from_address',self.admin_addr)
         self.from_sender = kwargs.get('from_sender',self.admin_name)
         self.reply_to = kwargs.get('reply_to',self.from_address)
@@ -84,8 +84,8 @@ class Mailer:
         
         # import pdb;pdb.set_trace()
         try:
-            if site_config['BCC_ADMINS_ON_ALL_EMAIL']:
-                admins = site_config['ADMIN_EMAILS']
+            if self.site_config['BCC_ADMINS_ON_ALL_EMAIL']:
+                admins = self.site_config['ADMIN_EMAILS']
                 if self._bcc is None:
                     self._bcc = []
                 if not isinstance(admins,list):
@@ -256,12 +256,21 @@ class Mailer:
             self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
             self.subject = render_template_string(self.subject.strip(), **self.kwargs)
             #Start a message
-            msg = Message( self.subject,
-                          sender=(self.from_sender, self.from_address),
-                          recipients=[(name, address)],
-                          cc=self._cc,
-                          bcc=self._bcc,
-                          )
+            if self.site_config.get('USE_GMAIL_API',False):
+                msg = GmailAPIMessage(
+                        self.subject,
+                        sender=(self.from_sender, self.from_address),
+                        recipients=[(name, address)],
+                        cc=self._cc,
+                        bcc=self._bcc,
+                        )
+            else:
+                msg = Message( self.subject,
+                        sender=(self.from_sender, self.from_address),
+                        recipients=[(name, address)],
+                        cc=self._cc,
+                        bcc=self._bcc,
+                        )
 
             #Get the text body verson
             if self.body:

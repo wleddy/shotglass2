@@ -64,6 +64,10 @@ Raises:
     
 """
 
+# for encoding/decoding messages in base64
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+import pickle
+from pdb import set_trace
 import re
 import smtplib
 import sys
@@ -77,6 +81,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
 from email.utils import formatdate, formataddr, make_msgid, parseaddr
+
+# Gmail API utils
+from googleapiclient.discovery import build
+# from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mail import oauth
@@ -313,8 +322,12 @@ class Mail:
         :param message: a Message instance.
         """
         # import pdb;pdb.set_trace()
-        with Connection(self) as connection:
-            connection.send(message)
+        if isinstance(message,GmailAPIMessage):
+            # GmailAPIMessage messages handle their own RESTful connection
+            message.send(self)
+        else:
+            with Connection(self) as connection:
+                connection.send(message)
             
 
 class Attachment(object):
@@ -544,3 +557,72 @@ class Message:
         """
         self.attachments.append(
             Attachment(filename, content_type, data, disposition, headers))
+            
+            
+class GmailAPIMessage(Message):
+    """A subclass of Message for messages to be sent using the gmail API
+    
+    Args: Same as Message
+    
+    Returns: None
+    
+    """
+    
+    def send(self, mail):
+        """Send the message dirctly to google using the API
+        
+        Args:
+            mail: an instance of Mail initialized for this message
+            
+        """
+        
+        service = self.get_credentials()
+        # set_trace()
+        # self.recipients = self.send_to
+        if mail.suppress:
+            #just testing
+            return self # you could inspect the message in a test
+            
+        return service.users().messages().send(
+          userId="me",
+          body={'raw': urlsafe_b64encode(self.as_bytes()).decode()}
+        ).execute()
+        
+        
+    def get_credentials(self):
+        """
+        
+        Load the API credentials and return the service discovery object instance
+        
+        Args: None
+        
+        Returns: googleapiclient.discovery instance
+            
+        Raises:
+            MailSettingsError
+        """
+        
+        TOKEN_FILE_PATH = get_site_config().get('MAIL_TOKEN_PATH','')
+        creds = None
+        # the file token.pickle stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first time
+        # set_trace()
+        try:
+            with open(TOKEN_FILE_PATH, "rb") as token:
+                creds = pickle.load(token)
+        except FileNotFoundError:
+            raise MailSettingsError("Gmail API token file not found.")
+        # if there are no (valid) credentials availablle stop here.
+        if not creds:
+            raise MailSettingsError("Gmail API credentials are missing.")
+            
+        if creds.expired: # and creds.refresh_token:
+            creds.refresh(Request())
+            # save the credentials for the next run
+            with open(TOKEN_FILE_PATH, "wb") as token:
+                pickle.dump(creds, token)
+        try:
+            return build('gmail', 'v1', credentials=creds)
+        except Exception as e:
+            raise MailSettingsError("Gmail API could not build a connection. Err: {}".format(str(e)))
+    
