@@ -256,7 +256,7 @@ class Mailer:
             self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
             self.subject = render_template_string(self.subject.strip(), **self.kwargs)
             #Start a message
-            if self.site_config.get('USE_GMAIL_API',False):
+            if self.site_config.get('MAIL_USE_GMAIL_API',False):
                 msg = GmailAPIMessage(
                         self.subject,
                         sender=(self.from_sender, self.from_address),
