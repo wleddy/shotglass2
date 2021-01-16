@@ -12,18 +12,19 @@ Flask-Mail with a few additions. Here is a sample setings configuration:
     MAIL_USE_SSL = True # Use one or the other, not both
     MAIL_USE_TLS = not MAIL_USE_SSL
     MAIL_USE_OAUTH = True # when True use oAuth instead of account and password
-
+    MAIL_USE_GMAIL_API = False
+    
     MAIL_SUBJECT_PREFIX = 'something'
 
     # Set up to use username and password
-    if not MAIL_USE_OAUTH:
+    if not MAIL_USE_OAUTH and not MAIL_USE_GMAIL_API:
         MAIL_SERVER = 'smtp.hosting.com'
         MAIL_USERNAME = "someone@example.com"
         MAIL_PASSWORD = "myPassword"
     
         MAIL_DEFAULT_SENDER = "Your Name"
         MAIL_DEFAULT_ADDR = MAIL_USERNAME
-    else:
+    elif MAIL_USE_OAUTH:
         # use this setup for oAuth
         MAIL_SERVER = 'smtp.gmail.com'
         MAIL_USERNAME = "someone@gmail.com"
@@ -36,6 +37,12 @@ Flask-Mail with a few additions. Here is a sample setings configuration:
     
         MAIL_DEFAULT_SENDER = "Your Name"
         MAIL_DEFAULT_ADDR = MAIL_USERNAME
+    else:
+        # use the gmail api
+        # the pickle file at MAIL_TOKEN_PATH must already exist with user credentials
+        MAIL_DEFAULT_SENDER = "Sender Name"
+        MAIL_DEFAULT_ADDR = '<some address>@gmail.com'
+        MAIL_TOKEN_PATH = 'instance/gmail_api_token.pickle' # where the credentials are stored
 
     if MAIL_USE_SSL:
         MAIL_PORT = 465 #465 is the SSL port
