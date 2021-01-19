@@ -17,6 +17,7 @@
 """
 
 from flask import render_template_string, render_template
+from shotglass2.users.views.pref import get_contact_email
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.utils import printException, looksLikeEmailAddress
 from shotglass2.takeabeltof.mail.mail import Mail, Message, GmailAPIMessage
@@ -76,8 +77,18 @@ class Mailer:
         self.text_template = kwargs.get('text_template',None)
         self.html_template = kwargs.get('html_template',None)
         self.subject_prefix = kwargs.get('subject_prefix',self.site_config.get("MAIL_SUBJECT_PREFIX",''))
-        self.from_address = kwargs.get('from_address',self.admin_addr)
-        self.from_sender = kwargs.get('from_sender',self.admin_name)
+        contact_address = get_contact_email()
+        sender_name = self.admin_name
+        sender_addr = self.admin_addr
+        if contact_address:
+            if isinstance(contact_address,list):
+                # if there are multiple addresses in the contact list, just use the first for the sender
+                contact_address = contact_address[0] # returns a tuple
+            sender_name = contact_address[0]
+            sender_addr = contact_address[1]
+            
+        self.from_address = kwargs.get('from_address',sender_addr)
+        self.from_sender = kwargs.get('from_sender',sender_name)
         self.reply_to = kwargs.get('reply_to',self.from_address)
         self._cc = kwargs.get('cc',[])
         self._bcc = kwargs.get('bcc',[])
@@ -251,26 +262,28 @@ class Mailer:
 
                 body_err_head = "**Bad Address**: {}\r\r".format(recipient,)
                 
+            # import pdb;pdb.set_trace()
             if not self.subject:
                 self.subject = 'A message from {}'.format(self.from_sender).strip()
             self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
+            # the subject line may contain jinja template code
             self.subject = render_template_string(self.subject.strip(), **self.kwargs)
+            
+            message_dict= dict(
+                subject=self.subject,
+                sender=(self.from_sender, self.from_address),
+                recipients=[(name, address)],
+                cc=self._cc,
+                bcc=self._bcc,
+                reply_to=self.reply_to,
+            )
+            
+            
             #Start a message
             if self.site_config.get('MAIL_USE_GMAIL_API',False):
-                msg = GmailAPIMessage(
-                        self.subject,
-                        sender=(self.from_sender, self.from_address),
-                        recipients=[(name, address)],
-                        cc=self._cc,
-                        bcc=self._bcc,
-                        )
+                msg = GmailAPIMessage(**message_dict)
             else:
-                msg = Message( self.subject,
-                        sender=(self.from_sender, self.from_address),
-                        recipients=[(name, address)],
-                        cc=self._cc,
-                        bcc=self._bcc,
-                        )
+                msg = Message(**message_dict)
 
             #Get the text body verson
             if self.body:
@@ -285,8 +298,6 @@ class Mailer:
             if not msg.body and not msg.html:
                 self._set_result(False,'Message contained no body content.')
                 return
-
-            msg.reply_to = self.reply_to
 
             if self._attachments:
                 for attachment in self._attachments:
