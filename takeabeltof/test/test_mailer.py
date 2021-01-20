@@ -1,27 +1,29 @@
 import sys
 #print(sys.path)
 sys.path.append('') ##get import to look in the working dir.
-
+import os
 import pytest
 #with pytest.raises(Exception):
 
-from app import app
-app.config['TESTING'] = True
+from flask import g
+import app
 
-# try:
-#     from flask_mail import Mail
-#     with app.app_context():
-#         # need to recreate mail obj to get new TESTING value
-#         from app import mail
-#         del mail
-#         mail = Mail(app)
-# except:
-#     pass
+filespec = 'test_database.db'
+db = None
 
+with app.app.app_context():
+    app.app.config['TESTING'] = True
+
+    db = app.get_db(filespec)
+    app.init_db(db)
+    
+    
 import shotglass2.takeabeltof.mailer as mail
 
 def test_send_message():
-    with app.app_context():
+    with app.app.app_context():
+        from app import get_db
+        g.db = get_db(filespec)
         success, mes = mail.send_message([("Bill Leddy",'bill@example.com')],body="This is a test",subject="Simple Test")
         assert success == True
         assert "sent successfully" in mes
@@ -46,7 +48,9 @@ def test_send_message():
         assert mes == "Message contained no body content."
         
 def test_construct_mail_class():
-    with app.app_context():
+    with app.app.app_context():
+        from app import get_db
+        g.db = get_db(filespec)
         mailer = mail.Mailer()
         assert isinstance(mailer,mail.Mailer)
         
@@ -85,7 +89,9 @@ def test_construct_mail_class():
         assert 'sent successfully' in mailer.result_text
                 
 def test_attachments():
-    with app.app_context():
+    with app.app.app_context():
+        from app import get_db
+        g.db = get_db(filespec)
         mailer = mail.Mailer("bill@example.net",attachment=('Myfile.txt','text/plain','Hello World'))
         assert isinstance(mailer._attachments,list)
         assert len(mailer._attachments) == 1
@@ -102,7 +108,9 @@ def test_attachments():
         
                     
 def test_alert_admin():
-    with app.app_context():
+    with app.app.app_context():
+        from app import get_db
+        g.db = get_db(filespec)
         success, mes = mail.alert_admin("Error Subject","There was really no error, just testing")
         assert success == True
         assert "sent successfully" in mes
@@ -114,7 +122,22 @@ def test_alert_admin():
 
 # tests sending mail with google oAuth credentials
 def test_send_googl_message():
-    with app.app_context():
+    with app.app.app_context():
+        from app import get_db
+        g.db = get_db(filespec)
         success, mes = mail.send_message([("Bill Leddy",'williesworkshop.net@gmail.com')],body="This is a test",subject="Simple Test")
         assert success == True
         assert "sent successfully" in mes
+        
+        
+############################ The final 'test' ########################
+######################################################################
+
+def test_finished():
+    try:
+        db.close()
+        os.remove(filespec)
+        assert True
+    except:
+        assert "failed to delete test db" == ""
+
