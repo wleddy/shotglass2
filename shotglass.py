@@ -1,4 +1,4 @@
-from flask import render_template, g, url_for, request, flash
+from flask import Flask, render_template, g, url_for, request, flash
 import logging
 from logging.handlers import RotatingFileHandler
 from shotglass2.takeabeltof.sqlite_backup import SqliteBackup
@@ -10,6 +10,34 @@ import os
 import threading
 import time
   
+  
+def create_app(name,instance_path=None,config_filename=None,**kwargs):
+    """Initialize and return an instance of the flask app
+    
+    Args:
+        name; string, the name of the app. Usually __name__
+        instance_path: string, a path to the instance directory
+        config_filename: string, name of the config file
+        kwargs: optional keyword settings
+        
+    """
+    
+    # setting static_folder to None allows me to handle loading myself
+    
+    instance_path = instance_path or 'instance'
+    config_filename = config_filename or 'settings.py'
+    
+    static_folder=kwargs.get('static_folder','static')
+    template_folder=kwargs.get('template_folder','templates')
+    
+    app = Flask(name,static_folder=static_folder,template_folder=template_folder)
+    
+    app.instance_relative_config=True
+    app.instance_path = os.path.normpath(os.path.join(app.root_path,instance_path))
+    app.config.from_pyfile(os.path.join(app.instance_path,config_filename))
+    
+    return app
+    
 
 def get_app_config(this_app=None):
     """Depricated"""
@@ -99,8 +127,8 @@ def initalize_user_tables(db):
         
     from shotglass2.users.models import init_db as users_init_db 
     users_init_db(db)
-    
-        
+
+
 def make_db_path(filespec):
     """
     Test the filespec path and if not found, create the path
@@ -273,12 +301,9 @@ def user_setup():
 class ShotLog():
     """Handle creation and access to log"""
     
-    def __init__(self):
+    def __init__(self,log_file_path=None):
         site_config = get_site_config()
-        self.log_file_path = "instance/log.log"
-        if 'LOG_FILE_NAME'  in site_config:
-            self.log_file_path = site_config['LOG_FILE_NAME']
-            
+        self.log_file_path = log_file_path or site_config.get('INSTANCE_PATH','instance/') + site_config.get('LOG_FILE_NAME',"log.log")
 
     def start(self,app,filename=None,maxBytes=10000,backupCount=5):
         filename = filename if filename else self.log_file_path
