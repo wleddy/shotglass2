@@ -172,6 +172,10 @@ class Connection:
             if message.failed_recipients:
                 pass
                 
+        else:
+            # examine message during testing
+            return message
+                
               
         self.num_emails += 1
 
@@ -323,12 +327,15 @@ class Mail:
                 self.port = 25
 
     def send(self, message):
-        """Sends a single message instance. If TESTING is True the message will
-        not actually be sent.
+        """Sends a single message instance. If self.suppress
+        the message will not actually be sent.
 
         :param message: a Message instance.
         """
         # import pdb;pdb.set_trace()
+        if self.suppress:
+            return message
+            
         if isinstance(message,GmailAPIMessage):
             # GmailAPIMessage messages handle their own RESTful connection
             message.send(self)
@@ -389,7 +396,9 @@ class Message:
                  charset=None,
                  extra_headers=None,
                  mail_options=None,
-                 rcpt_options=None):
+                 rcpt_options=None,
+                 **kwargs,
+                 ):
 
         # import pdb; pdb.set_trace()
 
@@ -569,11 +578,17 @@ class Message:
 class GmailAPIMessage(Message):
     """A subclass of Message for messages to be sent using the gmail API
     
-    Args: Same as Message
+    Args: Same as Message plus
+        token_file_path: string, path to token pickle file
     
     Returns: None
     
     """
+    
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.token_file_path = kwargs.get('token_file_path',get_site_config().get('MAIL_TOKEN_PATH',''))
+    
     
     def send(self, mail):
         """Send the message dirctly to google using the API
@@ -612,13 +627,15 @@ class GmailAPIMessage(Message):
             MailSettingsError
         """
         
-        TOKEN_FILE_PATH = get_site_config().get('MAIL_TOKEN_PATH','')
+        site_config = get_site_config()
+        
+        # TOKEN_FILE_PATH = site_config.get('MAIL_TOKEN_PATH','')
         creds = None
         # the file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first time
         # set_trace()
         try:
-            with open(TOKEN_FILE_PATH, "rb") as token:
+            with open(self.token_file_path, "rb") as token:
                 creds = pickle.load(token)
         except FileNotFoundError:
             raise MailSettingsError("Gmail API token file not found.")
@@ -626,10 +643,13 @@ class GmailAPIMessage(Message):
         if not creds:
             raise MailSettingsError("Gmail API credentials are missing.")
             
+        if site_config.get('TESTING',False):
+            return creds
+            
         if creds.expired: # and creds.refresh_token:
             creds.refresh(Request())
             # save the credentials for the next run
-            with open(TOKEN_FILE_PATH, "wb") as token:
+            with open(self.token_file_path, "wb") as token:
                 pickle.dump(creds, token)
         try:
             return build('gmail', 'v1', credentials=creds)

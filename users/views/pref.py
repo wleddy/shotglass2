@@ -140,12 +140,17 @@ def get_contact_email():
     to_name = None
     to_addr = None
     
+    
     rec = Pref(g.db).get("Contact Name",user_name=site_config.get("HOST_NAME"),default=site_config.get("CONTACT_NAME",site_config.get("MAIL_DEFAULT_SENDER","Site Contact")))
     if rec:
         to_name = rec.value
-    rec = Pref(g.db).get("Contact Email Address",user_name=site_config.get("HOST_NAME"),
-            default=site_config.get("CONTACT_EMAIL_ADDR",
-                        site_config.get("MAIL_DEFAULT_ADDR","info@{}".format(site_config.get("HOST_NAME","example.com")))))
+        
+    if site_config['TESTING']:
+        rec = Pref(g.db).select_one(where="name='Contact Email Address' and user_name='test'")
+    else:
+        rec = Pref(g.db).get("Contact Email Address",user_name=site_config.get("HOST_NAME"),
+                default=site_config.get("CONTACT_EMAIL_ADDR",
+                            site_config.get("MAIL_DEFAULT_ADDR","info@{}".format(site_config.get("HOST_NAME","example.com")))))
     if rec:
         to_addr = rec.value
         # split the addresses into a list if there are commas

@@ -7,6 +7,8 @@ import os
 import pytest
 import tempfile
 
+from flask import g
+
 import app
 from shotglass2.users.views.password import getPasswordHash
 
@@ -118,6 +120,38 @@ def test_prefs():
     #Test that it's really gone
     rec = Pref(db).get(pref_name)
     assert rec == None
+    
+def test_get_contact_email():
+    from shotglass2.users.models import Pref
+    from shotglass2.users.views import pref
+    with app.app.app_context():
+        app.app.config['TESTING'] = True
+        # import pdb;pdb.set_trace()
+        g.db = db
+        val = 'willie@example.com'
+        user = 'test'
+        rec = Pref(g.db).get('Contact Email Address',user_name=user,default=val)
+        rec.value = val
+        rec.user_name = user
+        Pref(g.db).save(rec)
+        db.commit()
+        contact = pref.get_contact_email()
+        assert isinstance(contact,tuple)
+        assert contact[1] == val
+        
+        # test that list is returned for multiple addresses
+        val = 'willie@example.com,mcgilly@example.com'
+        rec = Pref(g.db).get('Contact Email Address',user_name=user)
+        rec.value = val
+        Pref(g.db).save(rec)
+        db.commit()
+        contact = pref.get_contact_email()
+        assert isinstance(contact,list)
+        assert contact[0][1] == val.split(',')[0]
+        assert contact[1][1] == val.split(',')[1]
+        
+        
+    
     
 ############################ The final 'test' ########################
 ######################################################################
