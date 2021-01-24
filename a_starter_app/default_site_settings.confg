@@ -1,5 +1,7 @@
 ## Site Settings
 
+import os
+
 ## Changes to this settings file only take effect after restarting the server ###
 
 ## ALL CONFIG NAMES MUST BE UPPERCASE!  ##
@@ -14,18 +16,49 @@ DEBUG = True
 ############################################
 SECRET_KEY = "somereallylongstringtouseasakey"
 
+# You can change database to another name if you like.
+INSTANCE_PATH = 'instance/'
+DATABASE_NAME= "database.sqlite"
+DATABASE_PATH= os.path.join(INSTANCE_PAT, DATABASE_NAME)
+LOG_FILE_NAME = 'log.log'
+
 ## Email Sending...
-MAIL_SERVER = 'localhost'
-MAIL_PORT = 465
-MAIL_USE_SSL = True
-MAIL_USERNAME = ""
-MAIL_PASSWORD = ""
+MAIL_USE_SSL = False # Use one or the other, not both
+MAIL_USE_TLS = not MAIL_USE_SSL
+MAIL_USE_OAUTH = False # when True use oAuth instead of account and password
+MAIL_USE_GMAIL_API = True
 
-MAIL_SUBJECT_PREFIX = ''
+MAIL_SUBJECT_PREFIX = 'something'
+MAIL_DEFAULT_SENDER = "Sender Name"
+MAIL_DEFAULT_ADDR = 'sender@example.com'
 
-MAIL_DEFAULT_SENDER = "Some Name"
-MAIL_DEFAULT_ADDR = "admin@example.com"
+if MAIL_USE_OAUTH:
+    # use this setup for oAuth
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_USERNAME = "someone@gmail.com"
+    TOKEN_REQUEST_URL = "https://accounts.google.com"
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    CLIENT_ID = '<Your Client ID>'
+    CLIENT_SECRET = '< your secret >'
+    REFRESH_TOKEN = '< your refresh token >'
+elif MAIL_USE_GMAIL_API:
+    # use the gmail api
+    # the pickle file at MAIL_TOKEN_PATH must already exist with user credentials
+    # MAIL_DEFAULT_ADDR = should be the gmail address used to create the token
+    MAIL_TOKEN_PATH = 'instance/gmail_api_token.pickle' # where the credentials are stored
+else:
+    # Set up to use username and password
+    MAIL_SERVER = 'smtp.hosting.com'
+    MAIL_USERNAME = "someone@example.com"
+    MAIL_PASSWORD = "myPassword"
 
+if MAIL_USE_SSL:
+    MAIL_PORT = 465 #465 is the SSL port
+else:
+    MAIL_PORT= 587 #587 is the TLS port
+
+# These end up in the prefs, so you can change them there
 CONTACT_NAME = MAIL_DEFAULT_SENDER
 CONTACT_EMAIL_ADDR = MAIL_DEFAULT_ADDR
 
@@ -53,10 +86,6 @@ TIME_ZONE = 'US/Pacific'
 #TIME_ZONE = 'US/Mountain'
 #TIME_ZONE = 'US/Central'
 #TIME_ZONE = 'US/Eastern'
-
-# You can change database to another name if you like.
-DATABASE_NAME= "database.sqlite"
-DATABASE_PATH= 'instance/' + DATABASE_NAME
 
 #############################################
 ### These settings are probably Ok...

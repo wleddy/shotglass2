@@ -1,4 +1,4 @@
-from flask import Flask, g, session, request, redirect, flash, abort, url_for, session
+from flask import g, session, request, redirect, flash, abort, url_for, session
 import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
@@ -8,11 +8,18 @@ from shotglass2.users.admin import Admin
 from shotglass2.users.models import User
 
 # Create app
-# setting static_folder to None allows me to handle loading myself
-app = Flask(__name__, instance_relative_config=True,
-        static_folder=None)
-app.config.from_pyfile('site_settings.py', silent=True)
-
+import logging 
+try:
+    app = shotglass.create_app(
+            __name__,
+            instance_path='instance',
+            config_filename='site_settings.py',
+            static_folder=None,
+            )
+except:
+    logging.exception('')
+    
+    
 @app.before_first_request
 def start_app():
     shotglass.start_logging(app)
