@@ -1,7 +1,7 @@
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import cleanRecordID
         
-class Starter(SqliteTable):
+class StarterTable(SqliteTable):
     """Handle some basic interactions with the role table"""
     def __init__(self,db_connection):
         super().__init__(db_connection)

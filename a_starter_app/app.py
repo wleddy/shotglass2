@@ -148,7 +148,6 @@ def _before():
             top_level = True,
             minimum_rank_required=500,
         )
-    app.register_blueprint(tools.mod)
     
     
     shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
@@ -180,6 +179,8 @@ shotglass.register_users(app)
 
 # setup www.routes...
 shotglass.register_www(app)
+
+app.register_blueprint(tools.mod)
 
 # # add more modules...
 # from starter_module.views import starter

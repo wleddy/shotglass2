@@ -19,7 +19,7 @@ SECRET_KEY = "somereallylongstringtouseasakey"
 # You can change database to another name if you like.
 INSTANCE_PATH = 'instance/'
 DATABASE_NAME= "database.sqlite"
-DATABASE_PATH= os.path.join(INSTANCE_PAT, DATABASE_NAME)
+DATABASE_PATH= os.path.join(INSTANCE_PATH, DATABASE_NAME)
 LOG_FILE_NAME = 'log.log'
 
 ## Email Sending...
@@ -73,8 +73,6 @@ REPORT_404_ERRORS = DEBUG
 
 # Security Settings
 REQUIRE_SSL = (not DEBUG)
-
-LOG_FILE_NAME = "instance/log.log"
 
 # Timezone setting
 # This is the Time zone where you think you are,
