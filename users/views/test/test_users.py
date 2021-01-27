@@ -156,7 +156,7 @@ def test_user_update():
     
     #test the update() method of _Table
     rec = user.get('doris')
-    d = {'id':233,'address':'1234 Some Street',}
+    d = {'id':233,'address':'1234 Some Street','active':'1',}
     user.update(rec,d,True) #save to db
     rec = user.get('doris')
     assert rec.address == '1234 Some Street'
