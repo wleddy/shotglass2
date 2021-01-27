@@ -69,8 +69,16 @@ class PracticeTable(SqliteTable):
         super().create_table(sql,self._column_list)
         
         
+def form():
+    return {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
 
-
+def make_table():
+    sql = f"drop table if exists {PracticeTable(db).table_name}"
+    db.execute(sql)
+    tester = PracticeTable(db)
+    tester.create_table()
+    return tester
+    
 def delete_test_db():
         os.remove(filespec)
 
@@ -88,8 +96,7 @@ def test_numeric_field_save():
     from app import app
     with app.app_context():
         # need the app_context because some of these raise errors
-        tester = PracticeTable(db)
-        tester.create_table()
+        tester = make_table()
         rec = tester.new()
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
         tester.update(rec,form,True)
@@ -120,8 +127,7 @@ def test_numeric_field_save():
             
             
     def test_add_extra_column():
-        tester = PracticeTable(db)
-        tester.create_table()
+        tester = make_table()
         rec = tester.new()
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
         tester.update(rec,form,True)
@@ -150,8 +156,7 @@ def test_get():
     with app.app_context():
         # need the app_context because some of these raise errors
         form = {'name':"test name",'int_field':"0",}
-        tester = PracticeTable(db)
-        tester.create_table()
+        tester = make_table()
         rec = tester.new()
         tester.update(rec,form,True)
         
@@ -172,8 +177,7 @@ class SecondHand:
         return self.table.delete(id,commit=True)
     
 def test_secondhand_get():    
-    tester = PracticeTable(db)
-    tester.create_table()
+    tester = make_table()
     rec = tester.new()
     form = {'name':"test name",'int_field':"0",}
     tester.update(rec,form,True)
@@ -189,8 +193,7 @@ def test_secondhand_get():
     
     
 def test_record_save():
-    tester = PracticeTable(db)
-    tester.create_table()
+    tester = make_table()
     form = {'name':"save test",}
     where = 'name = "{}"'.format(form['name'])
     rec = tester.new()
@@ -208,9 +211,27 @@ def test_record_save():
     assert rec != None
     
     
+def test_record_instance_save():
+    tester = make_table()
+    form = {'name':"save test",}
+    where = 'name = "{}"'.format(form['name'])
+    rec = tester.new()
+    rec.update(form)
+    rec.save()
+    db.rollback() # this should undo the save
+    rec = tester.select_one(where=where)
+    assert rec == None
+    
+    rec = tester.new()
+    rec.update(form)
+    rec.save(commit=True)
+    db.rollback() # this should have no effect
+    rec = tester.select_one(where=where)
+    assert rec != None
+    
+    
 def test_record_delete():
-    tester = PracticeTable(db)
-    tester.create_table()
+    tester = make_table()
     form = {'name':"delete test",}
     where = 'name = "delete test"'
     rec = tester.new()
@@ -247,13 +268,36 @@ def test_record_delete():
     assert result == False
     
 def test_new_defaults():    
-    tester = PracticeTable(db)
-    tester.create_table()
+    tester = make_table()
     rec = tester.new()
     assert isinstance(rec.date_field,(date))
     assert isinstance(rec.datetime_field,(datetime))
     assert rec.name == 'Hello World!'
     
+def test_query():    
+    tester = make_table()
+    rec = tester.new()
+    assert isinstance(rec.date_field,(date))
+    assert isinstance(rec.datetime_field,(datetime))
+    assert rec.name == 'Hello World!'
+    rec.save()
+    assert rec.id is not None
+    recs = tester.query(f"select * from {tester.table_name} where name = '{rec.name}'")
+    assert recs is not None
+    assert len(recs) == 1
+    assert recs[0].name == 'Hello World!'
+    
+    
+def test_query_one():    
+    tester = make_table()
+    rec = tester.new()
+    assert rec.name == 'Hello World!'
+    rec.save()
+    assert rec.id is not None
+    rec = tester.query_one(f"select * from {tester.table_name} where name = '{rec.name}'")
+    assert rec is not None
+    assert not isinstance(rec,list)
+    assert rec.name == 'Hello World!'
 
 ############################ The final 'test' ########################
 ######################################################################

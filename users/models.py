@@ -146,7 +146,7 @@ class User(SqliteTable):
                 (select role_id from user_role where user_id = ?) order by {}
                 """.format(order_by)
                 
-        return  Role(self.db).rows_to_namedlist(self.db.execute(sql,(cleanRecordID(userID),)).fetchall())
+        return  Role(self.db).rows_to_data_row(self.db.execute(sql,(cleanRecordID(userID),)).fetchall())
         
     def max_role_rank(self,userID):
         """Return the higest role rank for the user specified"""

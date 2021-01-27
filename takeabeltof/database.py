@@ -1,6 +1,7 @@
 import sqlite3
+import dataclasses
+import warnings
 from flask import flash
-from namedlist import namedlist #Like namedtuples but mutable
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
 from shotglass2.takeabeltof.date_utils import getDatetimeFromString, local_datetime_now
 from datetime import datetime
@@ -182,10 +183,80 @@ class SqliteTable:
             
         return out
        
-    @property
-    def _data_tuple(self):
-        """return a namedtuple for use with this table"""        
-        return namedlist('DataRow',"{}".format(",".join(self.get_column_names())),default=None,use_slots=self.use_slots)
+
+    def _get_data_row(self,column_names=[],rec=None):
+        """return a class instance that extends a dataclasses class for this table
+        
+        Args:
+            column_names: list, a list column names or all columns for this table
+            
+        """
+        # import pdb;pdb.set_trace()
+        column_names = column_names or self.get_column_names()
+        
+        row_template = []
+        for c in column_names:
+            try:
+                c_type = self.get_column_type(c).upper()
+            except KeyError:
+                c_type = 'TEXT'
+                
+            if c_type in self.float_types:
+                c_type = float
+            elif c_type in self.integer_types:
+                c_type = int
+            else:
+                c_type = str
+                
+            default = None
+            if rec:
+                default = rec[c]
+                
+            row_template.append((c,c_type,dataclasses.field(default=default),))
+            
+        # import pdb;pdb.set_trace()
+        Row = dataclasses.make_dataclass('Row',row_template)
+        
+        class DataRow(Row):
+            """Adds some of the functionality of SqliteTable to Row"""
+            def __init__(self,this_table):
+                self.this_table = this_table
+                
+            def __len__(self):
+                return len(self._fields)
+            
+
+            def _asdict(self):
+                return dataclasses.asdict(self)
+                
+            @property
+            def _fields(self):
+                "Return a list of field names"
+                return [x for x in self._asdict().keys()]
+                
+            def commit(self):
+                self.this_table.commit()
+                
+            def items(self):
+                for key in self.__dataclass_fields__:
+                    yield (key,self.__getattribute__(key),)
+                    
+            def get(self,key,default=None):
+                try:
+                    return self.__getattribute__(key)
+                except KeyError:
+                    return default
+                
+            def save(self,commit=False):
+                # import pdb;pdb.set_trace()
+                
+                return self.this_table.save(self,commit=commit)
+                
+            def update(self,data):
+                return self.this_table.update(self,data)
+                
+        dc = DataRow(self)
+        return dc
         
     def delete(self,id,**kwargs):
         """Delete a single row with this id.
@@ -212,32 +283,37 @@ class SqliteTable:
         return out
         
     def query(self,sql):
-        """Perform a query that may return results from muliple tables
+        """Perform a query that may return results from multiple tables
         The table instance you call this with is unimportant.
         You can call it on an instance of SqliteTable directly.
         Always make sure that you don't have conflicting field names in output.
         
         Returns None or a list
         """
-        #import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         out = None
         
         data = self.db.execute(sql).fetchall()
         if data != None and len(data) > 0:
-            nl = namedlist('DataRow',"{}".format(",".join(data[0].keys())),default=None)
-            out = [nl(*rec) for rec in data]
+            out = self.rows_to_data_row(data)
         return out
     
     def rows_to_namedlist(self,row_list):
-        """return a list of namedlists based on the list of Row objects provided"""
+        warnings.warn(DeprecationWarning("SqliteTable.rows_to_namedlist is deprecated, Use rows_to_data_row instead."))
+        
+        return self.rows_to_data_row(row_list)
+        
+    def rows_to_data_row(self,row_list):
+        """return a list of DataRow objects based on the list of Row objects provided"""
+        # import pdb;pdb.set_trace()
         out = None
         if row_list and len(row_list)>0 and row_list[0] != None:
-            out = [self._data_tuple(*rec) for rec in row_list]
+            out = [self._get_data_row(rec.keys(),rec) for rec in row_list]
         return out
         
     def new(self,set_defaults=True):
-        """return an 'empty' namedlist for the table. Normally set the default values for the table"""
-        rec = self._data_tuple()
+        """return an 'empty' DataRow object for the table. Normally set the default values for the table"""
+        rec = self._get_data_row()
         if set_defaults:
             self.set_defaults(rec)
         return rec
@@ -268,21 +344,23 @@ class SqliteTable:
             params = ()
             fields = () # the fields from this table that are included in the row_data
             cols = self.get_column_names()
-            #import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             for x in range(1,len(cols)):
                 if cols[x] in row_data._fields:
-                    params += (row_data[row_data._fields.index(cols[x])],)
+                    params += (row_data.get(cols[x]),)
                     fields += (cols[x],)
             return params, fields
             
         strip_strings = kwargs.get('strip_strings',True) # Strip by default
         if strip_strings == True:
-            for x in range(1,len(row_data)):
-                if type(row_data[x]) is str:
-                    row_data[x] = row_data[x].strip()
+            for key, value in row_data.items():
+                if isinstance(value,str):
+                    setattr(row_data, key, value.strip())
                     
         insert_new = False
         #generate the data param tuple
+        
+        # import pdb;pdb.set_trace()
         
         if (row_data.id == None):
             insert_new = True
@@ -319,7 +397,7 @@ class SqliteTable:
         temp_row = cursor.execute('select * from {} where id = {}'.format(self.table_name,row_id)).fetchone()
         
         if temp_row == None:
-            raise TypeError
+            raise sqlite3.OperationalError(f"Failed to save record in table {self.table_name}.")
             #pass # Should really do something with this bit of infomation
         else:
             # upddate row_data with any values that may have changed
@@ -336,8 +414,8 @@ class SqliteTable:
                     elif type(temp_value) == float and col_type in self.integer_types:
                         temp_value = int(temp_value)
                     
-                    row_data[x] = temp_value
-            
+                    setattr(row_data, row_data._fields[x], temp_value)
+                    
         row_data.id = row_id
                     
         return row_id
@@ -359,8 +437,8 @@ class SqliteTable:
                             value = local_datetime_now().date()
                         if col_type.upper() == 'DATETIME':
                             value = local_datetime_now()
-                    row_data._update({key:value})
-        
+                    setattr(row_data, key, value)
+
     def _select_sql(self,**kwargs):
         """Return the sql text that will be used by select or select_one
         optional kwargs are:
@@ -374,16 +452,16 @@ class SqliteTable:
         
     def select(self,**kwargs):
         """
-            perform a basic SELECT query returning a list namedlists for all columns
+            perform a basic SELECT query returning a list DataRow objects for all columns
         """
         recs = self.db.execute(self._select_sql(**kwargs)).fetchall()
         if recs:
-            return self.rows_to_namedlist(recs)
+            return self.rows_to_data_row(recs)
         return None
         
     def select_one(self,**kwargs):
         """a version of select method that returns a single named list object or None"""
-        rows = self.rows_to_namedlist(
+        rows = self.rows_to_data_row(
             [self.db.execute(
                 self._select_sql(**kwargs)
                 ).fetchone()]
@@ -392,14 +470,14 @@ class SqliteTable:
                 
     def select_raw(self,sql,params=''):
         """Returns a list of named list objects based on the sql text with optional string substitutions"""
-        return self.rows_to_namedlist(self.db.execute(sql,params).fetchall())
+        return self.rows_to_data_row(self.db.execute(sql,params).fetchall())
         
     def select_one_raw(self,sql,params=''):
-        """Return a single namedlist for sql select statement"""
+        """Return a single DataRow object for sql select statement"""
         return self._single_row(self.select_raw(sql,params))
             
     def get(self,id,**kwargs):
-        """Return a single namedlist for the record specified by `id` or None"""
+        """Return a single DataRow object for the record specified by `id` or None"""
         return self._single_row(self.select(where='{}.id = {}'.format(self.table_name,cleanRecordID(id),)))
         
     def _single_row(self,rows):
@@ -463,7 +541,9 @@ class SqliteTable:
     def update(self,rec,form,save=False):
         """Update the rec, with the matching elements in form
         
-        rec is a record namedlist of an existing or new reocrd.
+        Args:
+            rec: dictionary like object, represents an existing or new reocrd or
+            a dict of values to be applied to the current current record.
         
         form is a dictionary like object with the new data. Usually request.form
         
@@ -475,21 +555,24 @@ class SqliteTable:
 
         # import pdb;pdb.set_trace()
         if rec and form:
-            for key,value in rec._asdict().items():
+            data_dict = dataclasses.asdict(rec)
+                
+            for key,value in data_dict.items():
                 if key != 'id' and key in form:
-                    # Dates need special formatting
                     val = form[key]
-                    try:
+                    try: # if key is an adhoc column name that was defined in a query, no update required
+                        # Dates need special formatting
                         col_type = self.get_column_type(key).upper()
                         if col_type == 'DATETIME' or col_type == 'DATE':
                             if not isinstance(val,datetime):
                                 val = getDatetimeFromString(val)
-                        rec._update([(key,val)])
+                                
+                        setattr(rec, key, val)
+                        
                     except KeyError:
                         pass
                 
             if save:
                 self.save(rec)
-            
             
         

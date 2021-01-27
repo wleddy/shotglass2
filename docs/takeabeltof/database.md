@@ -59,9 +59,9 @@ Override this function to actually define your table.
 Return an 'empty' namedlist for the table. Normally set the default values for the table
 
 ---
-> #### rows_to_namedlist(*self,row_list*): => list[namedlist]
+> #### rows_to_data_row(*self,row_list*): => list[namedlist]
 
-Return a list of namedlists based on the list of Sqlite Row objects provided. This function is useful to return a namedlist
+Return a list of DataRow objects based on the list of Sqlite Row objects provided. This function is useful to return a namedlist
 when executing arbitrary sql code.
 
 ---
