@@ -1,3 +1,7 @@
+"""Essentially a copy of test_database.py but specifically calling methods in
+the new DataRow class
+"""
+
 import sys
 sys.path.append('') ##get import to look in the working dir
 import os
@@ -9,7 +13,7 @@ import shotglass2.takeabeltof.database as dbm
 from datetime import datetime, date
 
 
-filespec = 'instance/test_dataclasses.db'
+filespec = 'instance/test_database.db'
 db = None
 
 with app.app.app_context():
@@ -68,9 +72,22 @@ class PracticeTable(SqliteTable):
              """
         super().create_table(sql,self._column_list)
         
-        
-def form():
-    return {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
+NOW = datetime.now()
+TODAY = date.today()
+
+def form_data():
+    return {
+        'id':None,
+        'name':"test name",
+        'int_field':"0",
+        'real_field':"this is not a number",
+        'float_field':"100",
+        'number_field':"30",
+        'description':'This is a test',
+        'datetime_field':NOW,
+        'date_field':TODAY,
+        'added_to_db':None,
+        }
 
 def make_table():
     sql = f"drop table if exists {PracticeTable(db).table_name}"
@@ -99,21 +116,21 @@ def test_numeric_field_save():
         tester = make_table()
         rec = tester.new()
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
-        tester.update(rec,form,True)
+        rec.update(form,True)
         assert rec.name == "test name"
         assert rec.int_field == 0
         assert rec.real_field == "this is not a number"
         assert rec.float_field == 100.0
         assert rec.number_field == 30.0
         form = {'name':"test name",'int_field':100.345,'real_field':30.2,'float_field':100.34,'number_field':700.2}
-        tester.update(rec,form,True)
+        rec.update(form,True)
         assert rec.name == "test name"
         assert rec.int_field == 100
         assert rec.real_field == 30.2
         assert rec.float_field == 100.34
         assert rec.number_field == 700.2
         form = {'name':"test name",'int_field':None,'real_field':None,'float_field':None,'number_field':None}
-        tester.update(rec,form,True)
+        rec.update(form,True)
         assert rec.name == "test name"
         assert rec.int_field == None
         assert rec.real_field == None
@@ -130,7 +147,7 @@ def test_numeric_field_save():
         tester = make_table()
         rec = tester.new()
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
-        tester.update(rec,form,True)
+        rec.update(form,True)
         assert rec.name == "test name"
         assert rec.int_field == 0
         assert rec.real_field == "this is not a number"
@@ -158,15 +175,15 @@ def test_get():
         form = {'name':"test name",'int_field':"0",}
         tester = make_table()
         rec = tester.new()
-        tester.update(rec,form,True)
-        
+        rec.update(form,True)
+        assert rec.id is not None
         rec2 = tester.get(rec.id)
-        assert rec2
+        assert rec2 is not None
         assert rec2.name == 'test name'
         
-        #Get with kwargs
-        rec2 = tester.get(rec.id,commit=True)
-        assert rec2
+        #Get with kwargs. kwargs not used here, but user does and maybe others
+        rec2 = tester.get(rec.id,special=True)
+        assert rec2 is not None
         assert rec2.name == 'test name'
 
 class SecondHand:
@@ -180,7 +197,7 @@ def test_secondhand_get():
     tester = make_table()
     rec = tester.new()
     form = {'name':"test name",'int_field':"0",}
-    tester.update(rec,form,True)
+    rec.update(form,True)
     
     rec = tester.get(1)
     assert rec
@@ -189,29 +206,10 @@ def test_secondhand_get():
     assert success == True
     db.rollback()
     rec = tester.get(1)
-    assert not rec
+    assert rec is None
     
     
 def test_record_save():
-    tester = make_table()
-    form = {'name':"save test",}
-    where = 'name = "{}"'.format(form['name'])
-    rec = tester.new()
-    tester.update(rec,form)
-    tester.save(rec)
-    db.rollback() # this should undo the save
-    rec = tester.select_one(where=where)
-    assert rec == None
-    
-    rec = tester.new()
-    tester.update(rec,form)
-    tester.save(rec,commit=True)
-    db.rollback() # this should have no effect
-    rec = tester.select_one(where=where)
-    assert rec != None
-    
-    
-def test_record_instance_save():
     tester = make_table()
     form = {'name':"save test",}
     where = 'name = "{}"'.format(form['name'])
@@ -235,11 +233,11 @@ def test_record_delete():
     form = {'name':"delete test",}
     where = 'name = "delete test"'
     rec = tester.new()
-    tester.update(rec,form)
-    tester.save(rec,commit=True)
+    rec.update(form)
+    rec.save(commit=True)
     db.rollback() # this should have no effect
     rec = tester.select_one(where=where)
-    assert rec != None
+    assert rec is not None
     assert rec.name == form['name']
     result = tester.delete(rec.id)
     assert result == True
@@ -302,10 +300,42 @@ def test_query_one():
 def test_iter():
     tester = make_table()
     rec = tester.new()
-    rec.update(form())
+    rec.update(form_data())
     rec.save()
     for item in rec:
         assert item in rec
+        
+def test_rec_get():
+    tester = make_table()
+    rec = tester.new()
+    rec.update(form_data())
+    rec.save(commit=True)
+    name = rec.get('name')
+    assert name == form_data()['name']
+    
+def test_more_stuff():
+    tester = make_table()
+    rec = tester.new()
+    form = form_data()
+    rec.update(form)
+    #number of fiedls
+    rec_dict = rec.asdict()
+    assert len(rec) == len(rec_dict)
+    assert isinstance(rec_dict,dict)
+    # check namedlist compatiblity
+    rec_dict = rec._asdict()
+    assert isinstance(rec_dict,dict)
+    for item in rec:
+        assert item in form
+        
+    # test namedlist compatibilty
+    for item in rec._fields:
+        assert item in form
+
+    for key,value in rec.items():
+        assert key in form
+        assert rec.get(key) == value
+    
 
 ############################ The final 'test' ########################
 ######################################################################

@@ -221,39 +221,49 @@ class SqliteTable:
             """Adds some of the functionality of SqliteTable to Row"""
             def __init__(self,this_table):
                 self.this_table = this_table
-                
+
             def __len__(self):
-                return len(self._fields)
-            
+                return len(dataclasses.fields(self))
+
+            def __iter__(self):
+                for item in self.asdict():
+                    yield item
 
             def _asdict(self):
-                return dataclasses.asdict(self)
+                "for compatability with old namedlist methods"
+                return self.asdict()
                 
+            def asdict(self):
+                return dataclasses.asdict(self)
+
             @property
             def _fields(self):
-                "Return a list of field names"
-                return [x for x in self._asdict().keys()]
+                """Return a list of field names
                 
+                This is form compatability with the old namedlist methods
+                """
+                return [x for x in self._asdict().keys()]
+
             def commit(self):
                 self.this_table.commit()
-                
+
             def items(self):
                 for key in self.__dataclass_fields__:
                     yield (key,self.__getattribute__(key),)
-                    
+
             def get(self,key,default=None):
                 try:
                     return self.__getattribute__(key)
                 except KeyError:
                     return default
-                
+                    
             def save(self,commit=False):
                 # import pdb;pdb.set_trace()
-                
                 return self.this_table.save(self,commit=commit)
-                
-            def update(self,data):
-                return self.this_table.update(self,data)
+
+            def update(self,data,save=False):
+                # import pdb;pdb.set_trace()
+                return self.this_table.update(self,data,save)
                 
         dc = DataRow(self)
         return dc
@@ -318,54 +328,54 @@ class SqliteTable:
             self.set_defaults(rec)
         return rec
         
-    def save(self,row_data,**kwargs):
-        """Save the data in row_data to the db.
-        row_data is a named list
+    def save(self,rec,**kwargs):
+        """Save the data in rec to the db.
+        rec is a named list
         
-        If row_data.id == None, insert, else update an existing record
+        If rec.id == None, insert, else update an existing record
         
         trim_strings=False in kwargs will write to db as received. else strip strings first
         commit=True in kwargs will commit the changes else changes are un-committed
         
-        The data is re read from the db after save and row_data is updated in place so the calling methods has 
+        The data is re read from the db after save and rec is updated in place so the calling methods has 
         an update version of the data.
         
         return the id value of the effected row
         
         """
         
-        def get_params(row_data):
-            """Get the values for the fields in this table that are included in row_data.
+        def get_params(rec):
+            """Get the values for the fields in this table that are included in rec.
             
-            Ignore elements of row_data where row_data contains values that are not part of this table
+            Ignore elements of rec where rec contains values that are not part of this table
             such as when a join was used in the query.
             
             """
             params = ()
-            fields = () # the fields from this table that are included in the row_data
+            fields = () # the fields from this table that are included in the rec
             cols = self.get_column_names()
             # import pdb;pdb.set_trace()
             for x in range(1,len(cols)):
-                if cols[x] in row_data._fields:
-                    params += (row_data.get(cols[x]),)
+                if cols[x] in rec._fields:
+                    params += (rec.get(cols[x]),)
                     fields += (cols[x],)
             return params, fields
             
         strip_strings = kwargs.get('strip_strings',True) # Strip by default
         if strip_strings == True:
-            for key, value in row_data.items():
+            for key, value in rec.items():
                 if isinstance(value,str):
-                    setattr(row_data, key, value.strip())
+                    setattr(rec, key, value.strip())
                     
         insert_new = False
         #generate the data param tuple
         
         # import pdb;pdb.set_trace()
         
-        if (row_data.id == None):
+        if (rec.id == None):
             insert_new = True
-            self.set_defaults(row_data)
-            params, fields = get_params(row_data)
+            self.set_defaults(rec)
+            params, fields = get_params(rec)
             
             sql = 'insert into {} ({}) values ({})'.format(
                 self.table_name,
@@ -373,13 +383,13 @@ class SqliteTable:
                 ','.join(["?" for x in range(len(fields))])
             )
         else:
-            params, fields = get_params(row_data)
+            params, fields = get_params(rec)
             #import pdb;pdb.set_trace()
             sql = 'update {} set {} where id = ?'.format(
                 self.table_name,
                 ",".join(["{} = ?".format(fields[x]) for x in range(len(fields))])
             )
-            params +=(row_data.id,) # id to use in update where clause
+            params +=(rec.id,) # id to use in update where clause
                     
         # need to use a raw cursor so we can retrieve the last row inserted
         cursor = self.db.cursor()
@@ -391,7 +401,7 @@ class SqliteTable:
         if insert_new:
             row_id = cursor.lastrowid
         else:
-            row_id = row_data.id
+            row_id = rec.id
             
         # Don't use the self.get() method here because there may be constraints as in User
         temp_row = cursor.execute('select * from {} where id = {}'.format(self.table_name,row_id)).fetchone()
@@ -400,44 +410,44 @@ class SqliteTable:
             raise sqlite3.OperationalError(f"Failed to save record in table {self.table_name}.")
             #pass # Should really do something with this bit of infomation
         else:
-            # upddate row_data with any values that may have changed
-            for x in range(1,len(row_data)):
-                if row_data._fields[x] in temp_row.keys():
-                    temp_value = temp_row[row_data._fields[x]]
-                    col_type = self.get_column_type(row_data._fields[x]).upper()
+            # upddate rec with any values that may have changed
+            for x in range(1,len(rec)):
+                if rec._fields[x] in temp_row.keys():
+                    temp_value = temp_row[rec._fields[x]]
+                    col_type = self.get_column_type(rec._fields[x]).upper()
                     # try to ensure that the data is the correct type
                     if type(temp_value) is str and col_type in self.numeric_types:
                         #Try to convert this string to a number
-                        temp_value = self._text_to_numeric(row_data._fields[x],temp_value,col_type)
+                        temp_value = self._text_to_numeric(rec._fields[x],temp_value,col_type)
                     elif type(temp_value) == int and col_type in self.float_types:
                         temp_value = temp_value + 0.0
                     elif type(temp_value) == float and col_type in self.integer_types:
                         temp_value = int(temp_value)
                     
-                    setattr(row_data, row_data._fields[x], temp_value)
+                    setattr(rec, rec._fields[x], temp_value)
                     
-        row_data.id = row_id
+        rec.id = row_id
                     
         return row_id
         
-    def set_defaults(self,row_data):
+    def set_defaults(self,rec):
         """When creating a new record, set the defaults for this table.
         
         If the column is type datetime or date and the default value is 'now', insert
         the current date or datetime
         
         """
-        if row_data.id == None and len(self.defaults) > 0:
-            row_dict = row_data._asdict()
+        if rec.id == None and len(self.defaults) > 0:
+            # row_dict = rec._asdict()
             for key, value in self.defaults.items():
-                if key in row_dict and row_dict[key] == None:
+                if key in rec and rec.get(key) == None:
                     if value == 'now':
                         col_type = self.get_column_type(key)
                         if col_type.upper() == 'DATE':
                             value = local_datetime_now().date()
                         if col_type.upper() == 'DATETIME':
                             value = local_datetime_now()
-                    setattr(row_data, key, value)
+                    setattr(rec, key, value)
 
     def _select_sql(self,**kwargs):
         """Return the sql text that will be used by select or select_one
@@ -555,9 +565,10 @@ class SqliteTable:
 
         # import pdb;pdb.set_trace()
         if rec and form:
-            data_dict = dataclasses.asdict(rec)
+            data_dict = rec._asdict()
                 
-            for key,value in data_dict.items():
+            # for key,value in data_dict.items():
+            for key,value in rec.items():
                 if key != 'id' and key in form:
                     val = form[key]
                     try: # if key is an adhoc column name that was defined in a query, no update required
@@ -575,4 +586,3 @@ class SqliteTable:
             if save:
                 self.save(rec)
             
-        
