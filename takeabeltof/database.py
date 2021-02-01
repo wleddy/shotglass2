@@ -23,6 +23,9 @@ class Database:
         self.connection.close()
             
             
+    def __repr__(self):
+        return f"Database: '{self.filename}'"
+        
     def connect(self):
         """Return a connection to the database"""
         self.connection = sqlite3.connect(self.filename)
@@ -67,6 +70,9 @@ class SqliteTable:
         self.numeric_types = []
         self.numeric_types.extend(self.float_types)
         self.numeric_types.extend(self.integer_types)
+        
+    def __repr__(self):
+        return f"SqliteTable: {self.table_name}:{self.get_column_names()}"
         
     def alert_admin(self,message):
         """Send an email to the admin address if an error is encountered or
