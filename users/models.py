@@ -256,7 +256,7 @@ class User(SqliteTable):
         if 'active' in form and type(form['active']) is str:
             super().update(rec,form,False)
             rec.active = int(rec.active)
-            form = rec
+            form = rec.asdict()
         # update normally and save is requested
         super().update(rec,form,save)
             
