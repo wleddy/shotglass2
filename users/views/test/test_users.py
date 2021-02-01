@@ -229,6 +229,7 @@ def test_user_register(client):
             'state': '',
             'zip': '',
             'phone': '',
+            'active':1,
             }
 
             result = c.post('/user/register/', data=form_data,follow_redirects=True)
