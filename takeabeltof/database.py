@@ -584,6 +584,9 @@ class DataRow:
 
     def __len__(self):
         return len(self._keys)
+        
+    def __repr__(self):
+        return f"DataRow: {self.source_table.table_name}:{self.asdict()}"
 
     def __setattr__(self,prop,value):
         # can't modify the source_table list outside of __init__
@@ -633,7 +636,4 @@ class DataRow:
         # import pdb;pdb.set_trace()
         return self.source_table.update(self,data,save)
 
-class DataKeyList(list):
-    """A special list object that is im"""
-    pass
     
