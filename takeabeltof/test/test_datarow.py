@@ -115,6 +115,8 @@ def test_numeric_field_save():
         # need the app_context because some of these raise errors
         tester = make_table()
         rec = tester.new()
+        assert isinstance(rec,dbm.DataRow)
+        
         form = {'name':"test name",'int_field':"0",'real_field':"this is not a number",'float_field':"100",'number_field':"30"}
         rec.update(form,True)
         assert rec.name == "test name"
@@ -336,7 +338,28 @@ def test_more_stuff():
         assert key in form
         assert rec.get(key) == value
     
+    for item in rec:
+        assert item in form
 
+    for item in rec.keys():
+        assert item in form
+        
+def test_type_errors():
+    table =  dbm.DataRow(dbm.SqliteTable(db),['id','name','age',],{'age':50,})
+    # import pdb;pdb.set_trace()
+    with pytest.raises(ValueError):
+        table.source_table = 'testme'
+
+def test_value_errors():
+    with pytest.raises(TypeError):
+        table =  dbm.DataRow(None,['id','name','age',],{'age':50,})
+        
+    with pytest.raises(TypeError):
+        table =  dbm.DataRow(dbm.SqliteTable(db),"Ok",{'age':50,})
+        
+    with pytest.raises(TypeError):
+        table =  dbm.DataRow(dbm.SqliteTable(db),['id','name','age',],['testme'])
+        
 ############################ The final 'test' ########################
 ######################################################################
 

@@ -1,5 +1,4 @@
 import sqlite3
-import dataclasses
 import warnings
 from flask import flash
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
@@ -9,7 +8,12 @@ from datetime import datetime
 
 
 class Database:
-    """Handle the basic database functions, `filename` is the path to the sqlite3 database file."""
+    """Handle the basic database functions
+    
+    Args:
+        filename: string, Path to the sqlite3 database file.
+        
+    """
     def __init__(self,filename):
         self.filename = filename
         self.connection = None
@@ -38,7 +42,13 @@ class Database:
             
 
 class SqliteTable:
-    """Handle some basic interactions with a table"""
+    """Represents a SQLite3 table
+    
+    Args:
+        db_connection: Database.connect() object, the connection to the database
+        
+    """
+    
     def __init__(self,db_connection):
         self.table_name = None
         self.db = db_connection
@@ -184,89 +194,20 @@ class SqliteTable:
         return out
        
 
-    def _get_data_row(self,column_names=[],rec=None):
-        """return a class instance that extends a dataclasses class for this table
+    def _get_data_row(self,column_names=[],row_data=None):
+        """return an instance DataRow for this table
+        
+        DataRow will have attributes for the items in column_names
         
         Args:
             column_names: list, a list column names or all columns for this table
-            
+            row_data: dict | sqlite3.Row() | None, Data to be applied to matching column names, if any
         """
         # import pdb;pdb.set_trace()
         column_names = column_names or self.get_column_names()
+                
+        return DataRow(self,column_names,row_data)
         
-        row_template = []
-        for c in column_names:
-            try:
-                c_type = self.get_column_type(c).upper()
-            except KeyError:
-                c_type = 'TEXT'
-                
-            if c_type in self.float_types:
-                c_type = float
-            elif c_type in self.integer_types:
-                c_type = int
-            else:
-                c_type = str
-                
-            default = None
-            if rec:
-                default = rec[c]
-                
-            row_template.append((c,c_type,dataclasses.field(default=default),))
-            
-        # import pdb;pdb.set_trace()
-        Row = dataclasses.make_dataclass('Row',row_template)
-        
-        class DataRow(Row):
-            """Adds some of the functionality of SqliteTable to Row"""
-            def __init__(self,this_table):
-                self.this_table = this_table
-
-            def __len__(self):
-                return len(dataclasses.fields(self))
-
-            def __iter__(self):
-                for item in self.asdict():
-                    yield item
-
-            def _asdict(self):
-                "for compatability with old namedlist methods"
-                return self.asdict()
-                
-            def asdict(self):
-                return dataclasses.asdict(self)
-
-            @property
-            def _fields(self):
-                """Return a list of field names
-                
-                This is form compatability with the old namedlist methods
-                """
-                return [x for x in self._asdict().keys()]
-
-            def commit(self):
-                self.this_table.commit()
-
-            def items(self):
-                for key in self.__dataclass_fields__:
-                    yield (key,self.__getattribute__(key),)
-
-            def get(self,key,default=None):
-                try:
-                    return self.__getattribute__(key)
-                except KeyError:
-                    return default
-                    
-            def save(self,commit=False):
-                # import pdb;pdb.set_trace()
-                return self.this_table.save(self,commit=commit)
-
-            def update(self,data,save=False):
-                # import pdb;pdb.set_trace()
-                return self.this_table.update(self,data,save)
-                
-        dc = DataRow(self)
-        return dc
         
     def delete(self,id,**kwargs):
         """Delete a single row with this id.
@@ -586,3 +527,113 @@ class SqliteTable:
             if save:
                 self.save(rec)
             
+            
+class DataRow:
+    """Represents a single row of data in the source table
+
+    Args:
+        source_table: SqliteTable instance, The table being accessed
+        col_list: list, Names of columns in table
+        col_data_dict: dict or sqlite3.Row, a dict of column names and their values. 
+            Column value defaults to None if not present in dict.
+
+    Returns: Nothing
+
+    Raises:
+        ValueError if attempting to set source_table after __init__
+        TypeError if source_table is not instance of SqliteTable
+        TypeError if col_data_dict is not a dict or instance of sqlite3.Row
+        TypeError if col_list is not a list
+
+    """
+
+    def __init__(self,source_table,col_list,col_data_dict={}):
+        if not isinstance(source_table,SqliteTable):
+            raise TypeError("Source Table must be instance of SqliteTable")
+
+        super().__setattr__('source_table',source_table)
+
+        col_data_dict = col_data_dict or {}
+            
+        if isinstance(col_data_dict,sqlite3.Row):
+            # Convert the Row to a dict
+            temp_dict = dict()
+            for key in col_data_dict.keys():
+                temp_dict.update({key:col_data_dict[key],})
+                
+            col_data_dict = temp_dict
+            
+        if not isinstance(col_data_dict,dict):
+            raise TypeError("DataRow column data must be a dict.")
+
+        if not isinstance(col_list,list):
+            raise TypeError("col_list must be a list")
+
+        self._keys = []
+        for key in col_list:
+            self._keys.append(key)
+            setattr(self,key,col_data_dict.get(str(key)))
+
+
+    def __contains__(self,val):
+        return val in self._keys
+
+    def __iter__(self):
+        for item in self._keys:
+            yield item
+
+    def __len__(self):
+        return len(self._keys)
+
+    def __setattr__(self,prop,value):
+        # can't modify the source_table list outside of __init__
+        if prop is 'source_table':
+            raise ValueError('DataRow source_table property may not be set.')
+
+        super().__setattr__(prop,value)
+
+
+    def _asdict(self):
+        "for compatability with old namedlist methods"
+        return self.asdict()
+
+    @property
+    def _fields(self):
+        """Return a list of field names
+
+        This is form compatability with the old namedlist methods
+        """
+        return self._keys
+
+    def asdict(self):
+        out = dict()
+        for key, value in self.items():
+            out.update({key:value,})
+        return out
+
+    def commit(self):
+        self.source_table.commit()
+
+    def keys(self):
+        for key in self._keys:
+            yield key
+
+    def get(self,key,default=None):
+            return getattr(self,key,default)
+
+    def items(self):
+        for key in self._keys:
+            yield (key,self.__getattribute__(key),)
+
+    def save(self,commit=False):
+        # import pdb;pdb.set_trace()
+        return self.source_table.save(self,commit=commit)
+
+    def update(self,data,save=False):
+        # import pdb;pdb.set_trace()
+        return self.source_table.update(self,data,save)
+
+class DataKeyList(list):
+    """A special list object that is im"""
+    pass
+    
