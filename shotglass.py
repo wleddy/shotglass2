@@ -127,8 +127,19 @@ def initalize_user_tables(db):
         
     from shotglass2.users.models import init_db as users_init_db 
     users_init_db(db)
-
-
+    
+    
+def is_ajax_request():
+    """Return True if this request was submitted as XMLHttpRequest else False"""
+    try:
+        return request.headers.get('X-Requested-With') ==  'XMLHttpRequest'
+    except AttributeError:
+        #there is no request?
+        pass
+        
+    return False
+    
+    
 def make_db_path(filespec):
     """
     Test the filespec path and if not found, create the path
