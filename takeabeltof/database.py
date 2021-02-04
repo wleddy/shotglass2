@@ -512,9 +512,6 @@ class SqliteTable:
 
         # import pdb;pdb.set_trace()
         if rec and form:
-            data_dict = rec._asdict()
-                
-            # for key,value in data_dict.items():
             for key,value in rec.items():
                 if key != 'id' and key in form:
                     val = form[key]
