@@ -57,7 +57,7 @@ def test_make_db_path():
     
 def test_home(client):
     result = client.get('/')   
-    assert result.status_code == 200
+    assert result.status_code == 200 or result.status_code == 302
     #assert b'Hello World' in result.data 
     
 def test_404(client):
