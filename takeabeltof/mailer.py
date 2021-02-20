@@ -233,6 +233,10 @@ class Mailer:
         # import pdb;pdb.set_trace()
         if not self._to:
             self._to = [(self.admin_name,self.admin_addr),]
+            
+        if not self.subject:
+            self.subject = 'A message from {}'.format(self.from_sender).strip()
+        self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
 
         for recipient in self._to:
             name = ""
@@ -262,10 +266,6 @@ class Mailer:
 
                 body_err_head = "**Bad Address**: {}\r\r".format(recipient,)
                 
-            # import pdb;pdb.set_trace()
-            if not self.subject:
-                self.subject = 'A message from {}'.format(self.from_sender).strip()
-            self.subject = '{} {}'.format(self.subject_prefix,self.subject).strip()
             # the subject line may contain jinja template code
             self.subject = render_template_string(self.subject.strip(), **self.kwargs)
             
