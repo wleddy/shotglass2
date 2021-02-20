@@ -1,7 +1,7 @@
 from flask import request, session, g, url_for, \
      render_template, render_template_string, redirect, flash, Response
 from flask.views import View
-from shotglass2.shotglass import get_site_config
+from shotglass2.shotglass import get_site_config, is_ajax_request
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer
@@ -61,7 +61,7 @@ class TableView:
         
         self.handlers = ['/','edit','delete','filter','order','export']
         
-        self._ajax_request = request.headers.get('X-Requested-With') ==  'XMLHttpRequest'
+        self._ajax_request = is_ajax_request()
         
         
         # set for success
