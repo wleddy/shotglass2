@@ -24,20 +24,20 @@
         <div class="w3-container">
             {{ left_column_spacer() }}
             <form action="{{ g.contactURL }}" method=post class="entry {{ form_column_class() }}">
-                <fieldset>
+                <fieldset class="w3-col">
                     {% if kwargs %}
                     {% set kwargs_data = kwargs | tojson %}
                     <input name="kwargs" type="hidden" value='{{ kwargs_data }}'>
                     {% endif %}
-                    <p>{{ input_field(context['name'],"name",req=True)}}</p>
-                    <p>{{ input_field(context['email'],"email",label="Email Address",req=True)}}</p>
-                    <p>{{ label_only("Question, Comment, Condemnation:",req=True)}}
+                    <p class="w3-row">{{ input_field(context['name'],"name",req=True)}}</p>
+                    <p class="w3-row">{{ input_field(context['email'],"email",label="Email Address",req=True)}}</p>
+                    <p class="w3-row">{{ label_only("Question, Comment, Condemnation:",req=True)}}
                         <textarea name="comment" rows="8" required style="width:100%;">{{ context['comment'] }}</textarea> 
                      </p>
-
-                     {% include 'contact_quiz.html' %}
-
-                <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="w3-btn w3-primary-color w3-round-large" type="submit" value="Send">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/">Cancel</a></p>
+                     <div class="w3-row">
+                         {% include 'contact_quiz.html' %}
+                     </div>
+                <p class="w3-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="w3-btn w3-primary-color w3-round-large" type="submit" value="Send">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/">Cancel</a></p>
                 </fieldset>
             </form>
         </div>
