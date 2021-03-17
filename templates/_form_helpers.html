@@ -14,7 +14,6 @@
 {% macro input_field(value,name,label="",type="text",id=None,class="",req=False,placeholder="",default="",extras="") %}
 {% if type!="hidden" and label != None %}
     {{ make_label(label,name,req) }}
-</label>
 {% endif %}
 {% set baseclass = "w3-input" %}
     {% if type=="radio" %}{% set baseclass = "w3-radio" %}{% elif type=="checkbox"%}{% set baseclass = "w3-check" %}{% endif %}
