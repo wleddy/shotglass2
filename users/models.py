@@ -1,5 +1,6 @@
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import cleanRecordID
+from shotglass2.takeabeltof.date_utils import local_datetime_now
 from shotglass2.users.views.password import getPasswordHash
         
 class Role(SqliteTable):
@@ -296,6 +297,37 @@ class User(SqliteTable):
             """
         super().create_table(sql)
         
+    @property
+    def _column_list(self):
+        """A list of dicts used to add fields to an existing table.
+    
+        The primary purpose is to allow for a simple way to add columns to a
+        table that already exists. You need to manually create a list of dicts
+        as below in the table class, copy this method as a template and override 
+        the create table method with something like:
+            `self.create_table(sql,self._column_list)`
+        
+        Note: Because of the limitations of Sqlite3, columns created via ALTER TABLE
+        may not contain UNIQUE constraints. There also may not be a NOT NULL constraint
+        unless the definition includes a DEFAULT value
+    
+        The added column definitions look like this:
+            `column_list = [
+            {'name':'name','definition':'TEXT',},
+            {'name':'value','definition':'TEXT',},
+            {'name':'expires','definition':'DATETIME',},
+            {'name':'user_name','definition':'TEXT',},
+            {'name':'a_number_field','definition':'NUMBER',},
+            ]
+        
+            return column_list`
+        """
+        column_list = [
+            {'name':'created','definition':'DATETIME',},
+            ]
+
+        return column_list
+        
     def init_table(self):
         """add some initial data"""
 
@@ -334,6 +366,17 @@ class User(SqliteTable):
                 if role.name in admin_roles:
                     return True
         return False
+        
+        
+    def save(self,rec,**kwargs):
+        #populate the created field if null
+        if rec.created == None:
+            if rec.last_access is not None:
+                rec.created = rec.last_access
+            else:
+                rec.created = local_datetime_now()
+        
+        return super().save(rec,**kwargs)
         
         
 class Pref(SqliteTable):
