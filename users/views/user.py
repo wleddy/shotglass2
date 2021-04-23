@@ -25,7 +25,8 @@ class UserView(TableView):
             {'name':"full_name"},
             {'name':'email','class':'w3-hide-small'},
             {'name':'active','label':"Status",'class':'w3-hide-small'},
-            {'name':'roles','list':False}
+            {'name':'roles','list':False},
+            {'name':'created','list':False,'search':'date',}
         ]
         
         self.export_fields = [
@@ -43,6 +44,7 @@ class UserView(TableView):
             {'name':'active'},
             {'name':'may_send_email'},
             {'name':'may_send_text'},
+            {'name':'created'},
             {'name':'last_access'},
             {'name':'roles'},
         ]
