@@ -63,7 +63,8 @@
             {% if rec.active ==0 or rec.active == None %}{% set extras = ' checked="checked"' %}{% endif %}
             {{ radio_field(0,"active","Inactive:",extras=extras ,right=True ) }}
         </p>
-        <p>{{ label_only("Last Access:")}} {{rec.last_access|default('Never',True)}} (UTC)</p>
+        <p>{{ label_only("Record Created:")}} {{rec.created| local_date_and_time_string | default('Not Set',True)}}</p>
+        <p>{{ label_only("Last Access:")}} {{rec.last_access| local_date_and_time_string | default('Never',True)}}</p>
     {% endif %}
 </fieldset>
 {% endblock %}
