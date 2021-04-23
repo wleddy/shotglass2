@@ -265,7 +265,7 @@ class User(SqliteTable):
     def update_last_access(self,user_id,no_commit=False):
         """Update the 'last_access' field with the current datetime. Default is for record to be committed"""
         if type(user_id) is int:
-            self.db.execute('update user set last_access = datetime() where id = ?',(user_id,))
+            self.db.execute('update user set last_access = ? where id = ?',(local_datetime_now(),user_id,))
             if not no_commit:
                 self.db.commit()
                 
