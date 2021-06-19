@@ -1,29 +1,19 @@
-""" An example / tool to set up oAuth authentication
+""" Generates an access token for gmail authentication
 
-A tool to collect the needed credentials to connect to a gmail account for the
-purpose of sending (and possibly receiving) mail through their server.
+Run the script to generate an authentication token that
+can be used to send mail through the gmail servers
 
-This is a lightly edited version of a script creatd by Seppe "Macuyiko" vanden Broucke
+Option to send a test email as well
+
+This is an edited version of a script creatd by Seppe "Macuyiko" vanden Broucke
 on his/her/their blog 'Bed Against The Wall' at 
 https://blog.macuyiko.com/post/2016/how-to-send-html-mails-with-oauth2-and-gmail-in-python.html
 Unless mentioned otherwise, this work is licensed under a Creative Commons Attribution-Share 
 Alike 2.0 Belgium License (http://creativecommons.org/licenses/by-sa/2.0/be/).
 
-Adapted from:
-https://github.com/google/gmail-oauth2-tools/blob/master/python/oauth2.py
-https://developers.google.com/identity/protocols/OAuth2
 
-1. Generate and authorize an OAuth2 (generate_oauth2_token)
-2. Generate a new access tokens using a refresh token(refresh_token)
-3. Generate an OAuth2 string to use for login (access_token)
+See the README.md file for more info.
 
-See pdf of original post included in this directory
-
-Args: None
-
-Returns:  None
-
-Raises: None
 """
 
 import base64
@@ -43,13 +33,6 @@ from email.mime.text import MIMEText
 
 GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
 REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
-
-GOOGLE_CLIENT_ID = '<FILL ME IN>'
-GOOGLE_CLIENT_SECRET = '<FILL ME IN>'
-GOOGLE_REFRESH_TOKEN = None
-
-FROM_EMAIL_ADDRESS = '_______________@gmail.com' # A gmail address
-TO_EMAIL_ADDRESS = '_______________@gmail.com' # Any other address
 EMAIL_SUBJECT = 'A mail from you from Python'
 EMAIL_BODY = '<b>A mail from you from Python</b><br><br>So happy to hear from you!'
 
@@ -129,8 +112,12 @@ def test_smpt(user, base64_auth_string):
 
 def get_authorization(google_client_id, google_client_secret):
     scope = "https://mail.google.com/"
-    print('Navigate to the following URL to auth:', generate_permission_url(google_client_id, scope))
-    authorization_code = input('Enter verification code: ')
+    print()
+    print('Navigate to the following URL to auth:')
+    print()
+    print(generate_permission_url(google_client_id, scope))
+    print()
+    authorization_code = get_input('Enter verification code')
     response = call_authorize_tokens(google_client_id, google_client_secret, authorization_code)
     return response['refresh_token'], response['access_token'], response['expires_in']
 
@@ -151,8 +138,6 @@ def send_mail(fromaddr, toaddr, subject, message):
     msg.preamble = 'This is a multi-part message in MIME format.'
     msg_alternative = MIMEMultipart('alternative')
     msg.attach(msg_alternative)
-    # part_text = MIMEText(lxml.html.fromstring(message).text_content().encode('utf-8'), 'plain', _charset='utf-8')
-    # msg_alternative.attach(part_text)
     part_html = MIMEText(message.encode('utf-8'), 'html', _charset='utf-8')
     msg_alternative.attach(part_html)
     server = smtplib.SMTP('smtp.gmail.com:587')
@@ -162,15 +147,35 @@ def send_mail(fromaddr, toaddr, subject, message):
     server.sendmail(fromaddr, toaddr, msg.as_string())
     server.quit()
 
-
+def get_input(prompt):
+    """Return an input string or exit"""
+    
+    response = None
+    
+    while not response:
+        response = input(prompt + " ('q' to exit): ")
+        
+    if response.lower() == 'q':
+        exit()
+        
+    return response
 
 if __name__ == '__main__':
-    if GOOGLE_REFRESH_TOKEN is None:
-        print('No refresh token found, obtaining one')
-        refresh_token, access_token, expires_in = get_authorization(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
-        print('Set the following as your GOOGLE_REFRESH_TOKEN:', refresh_token)
-        exit()
-
-    send_mail(FROM_EMAIL_ADDRESS, TO_EMAIL_ADDRESS,
-              EMAIL_SUBJECT,
-              EMAIL_BODY)
+    GOOGLE_CLIENT_ID = get_input("Enter Client ID")
+    GOOGLE_CLIENT_SECRET = get_input("Enter Client Secret")
+    GOOGLE_REFRESH_TOKEN, access_token, expires_in = get_authorization(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
+    print("")
+    print("*******")
+    print("Refresh Token: {}".format(GOOGLE_REFRESH_TOKEN))
+    print("*******")
+    print("")
+    proceed = get_input("Send test Email? Y/N")
+    if proceed.lower()=="y":
+        FROM_EMAIL_ADDRESS = get_input("Enter FROM email address")
+        TO_EMAIL_ADDRESS = get_input("Enter TO email address")
+        send_mail(FROM_EMAIL_ADDRESS, TO_EMAIL_ADDRESS,
+                  EMAIL_SUBJECT,
+                  EMAIL_BODY)
+                  
+        print("email sent")
+        
