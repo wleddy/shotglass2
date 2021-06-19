@@ -69,8 +69,8 @@ def edit(rec_id=None):
             return redirect(g.listURL)
 
     if request.form:
+        starter.update(rec,request.form)
         if validForm(rec):
-            starter.update(rec,request.form)
             starter.save(rec)
             g.db.commit()
 
