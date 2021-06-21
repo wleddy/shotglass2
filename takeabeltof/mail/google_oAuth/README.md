@@ -1,15 +1,24 @@
-## How to setup and access a gmail or gSuite email account with oAuth
+* Create gmail credentials
 
-1. Create a new project (if needed) at https://console.developers.google.com/
-2. Click "Configure Consent Screen", then choose "Internal" since we will be the only ones with access.
-3. Complete the required Project Name and email address fields and continue
-4. In Scopes section select the "openid" scope and save.
-5. Click "Back to Dashboard"
-6. In the dashboard under “Credentials”, select “Create credentials” near the top of the form.
-7. Choose "OAuth Client ID"
-8. For Application Type, choose "Desktop App"
-9. The Client ID and Client Secret are displayed. Save for later. 
-10. From ..../shotglass2/takeabeltof/mail/google_oAuth run `python3 gmail_oauth_tool.py`
-11. Record the Refresh Token returned by the tool
-12. Use the Client ID, Client Secret, and Refresh Token in the site_settings file to use the account.
+This is the procedure to create oAuth credentials for a gmail or gSuite email account that
+can be used in the `shotglass2` email system.
+
+1. Go to `https://console.developers.google.com` to set up your api and download your credentials.
     
+    *** Also, it's very important that you ENABLE the api at the same time. ***
+    
+    For background details got to 
+    `https://www.thepythoncode.com/article/use-gmail-api-in-python#Enabling_Gmail_API`
+    
+2. After you have downloaded the credentials file from the API dashboard/credentials page
+   from the terminal run `fetch_auth_pickle.py` and follow the prompts.
+   
+This will walk through the process of creating a gmail oAuth credentials object
+and store it in a pickle file.
+
+Once you have the pickle file you can move it to the web server machine and point your
+settings to it.
+
+The files used by and created by `fetch_auth_pickle.py` contain confidential information and
+should not be committed to the repo.
+
