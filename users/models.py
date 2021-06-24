@@ -402,6 +402,19 @@ class Pref(SqliteTable):
             user_name TEXT
             """
         super().create_table(sql)
+        
+        
+    @property
+    def _column_list(self):
+        """A list of dicts used to add fields to an existing table.
+        """
+
+        column_list = [
+            {'name':'description','definition':'TEXT',},
+        ]
+
+        return column_list
+        
 
     def get(self,name,user_name=None,**kwargs):
         """can get by pref name and user_name"""
@@ -416,13 +429,14 @@ class Pref(SqliteTable):
             
         result = self.select_one(where=where)
         
-        if not result and 'default' in kwargs and type(name) is str:
-            # create a record with the default value
+        if not result and ('default' in kwargs or 'description' in kwargs) and type(name) is str:
+            # create a record with the default values
             rec = self.new()
             rec.name = name
             rec.value = kwargs['default']
             rec.user_name = user_name
             rec.expires = kwargs.get('expires')
+            rec.description = kwargs.get("description")
             self.save(rec)
             self.db.commit()
             result = rec

@@ -10,7 +10,7 @@ import tempfile
 from flask import g
 
 import app
-from shotglass2.users.views.password import getPasswordHash
+from shotglass2.takeabeltof.date_utils import local_datetime_now, getDatetimeFromString
 
 @pytest.fixture
 def client():
@@ -120,6 +120,19 @@ def test_prefs():
     #Test that it's really gone
     rec = Pref(db).get(pref_name)
     assert rec == None
+    
+    # make with all values
+    temp_date = local_datetime_now()
+    
+    pref = Pref(db)
+    rec = pref.get("sample1",default="me",description="test me",user_name='willie',expires=temp_date)
+    assert rec != None
+    assert rec.name == "sample1"
+    assert rec.value == "me"
+    assert rec.description == "test me"
+    assert rec.user_name == "willie"
+    assert getDatetimeFromString(rec.expires).date() == temp_date.date()
+    
     
 def test_get_contact_email():
     from shotglass2.users.models import Pref

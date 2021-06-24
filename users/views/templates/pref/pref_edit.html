@@ -7,6 +7,8 @@
     <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
     <p>{{ input_field(rec.name,"name",req=True)}}</p>
     <p>{{ input_field(rec.value,"value",req=True)}}</p>
+    <p>{{ label_only("Description")}}</p>
+    <p><textarea name="description" class="w3-input" rows=4>{{ rec.description | default('',True)}}</textarea></p>
     <p>{{ input_field(rec.user_name,"user_name")}}</p>
     <p>{{ input_field(rec.expires,"expire_marker",label="Expires",placeholder="Never")}}</p>
 </fieldset>
