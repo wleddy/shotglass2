@@ -49,6 +49,7 @@ def edit(rec_id=None):
     role = PRIMARY_TABLE(g.db)
     rec = None
     super_user = User(g.db).user_has_role(session['user_id'],'Super')
+    no_delete = False
     
     rec_id = cleanRecordID(request.form.get('id',rec_id))
     
@@ -72,19 +73,19 @@ def edit(rec_id=None):
             rec = role.get(rec_id)
         else:
             # its a new unsaved record
+            import pdb;pdb.set_trace()
             rec = role.new()
             role.update(rec,request.form)
 
         if validForm(rec):
             #update the record
-            #import pdb;pdb.set_trace()
+            import pdb;pdb.set_trace()
+            # set default for locked
+            rec.locked = 0 
             role.update(rec,request.form)
-            # locked is a checkbox
-            if 'locked' in request.form:
+            if request.form.get('locked'):
                 rec.locked = 1
-            else:
-                rec.locked = 0
-            
+                
             try:
                 role.save(rec)
                 g.db.commit()
@@ -98,8 +99,11 @@ def edit(rec_id=None):
             # form did not validate
             pass
 
+    if rec and rec.locked and not super_user:
+        no_delete = True
+        
     # display form
-    return render_template('role_edit.html', rec=rec,super_user=super_user,no_delete=not super_user)
+    return render_template('role_edit.html', rec=rec,super_user=super_user,no_delete=no_delete)
     
     
 def validForm(rec):

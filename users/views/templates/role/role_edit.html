@@ -13,7 +13,6 @@
     
     <p>{{ input_field(rec.id,"id",type="hidden",default=0)}}</p>
      {% if not super_user %}
-         {{ input_field(rec.locked,"locked",type="hidden",default=0)}}
          {% if is_locked %}
          <p>{{ label_only("This Role is locked for system use. Requires Super user access.")}}</p>
          {% endif %}
