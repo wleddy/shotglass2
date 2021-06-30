@@ -73,13 +73,13 @@ def edit(rec_id=None):
             rec = role.get(rec_id)
         else:
             # its a new unsaved record
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             rec = role.new()
             role.update(rec,request.form)
 
         if validForm(rec):
             #update the record
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             # set default for locked
             rec.locked = 0 
             role.update(rec,request.form)
