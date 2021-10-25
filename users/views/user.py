@@ -5,7 +5,7 @@ from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.users.models import User, Role, UserRole
+from shotglass2.users.models import User, Role, UserRole, Pref
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.views.login import setUserStatus
 from shotglass2.users.views.password import getPasswordHash
@@ -470,6 +470,9 @@ def register():
                 
                 #inform the admin
                 to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
+                reply_to=to.copy()[0]
+                user_admin = Pref(g.db).get("New Account Admins",default=site_config['MAIL_DEFAULT_ADDR'],description="Admin for New User registrations. May use a comma separated list.")
+                to.append((user_admin.name,user_admin.value))
                 deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],g.deleteURL, rec.access_token)
                 editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
                 context={'rec':rec,'deleteURL':deleteURL,'editURL':editURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
@@ -478,7 +481,7 @@ def register():
                     subject = 'New Account Auto Activated - {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/admin_activate_acct.html'
                 text_template = None
-                send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
+                send_message(to,context=context,reply_to=reply_to,subject=subject,html_template=html_template,text_template=text_template)
 
 
             except Exception as e:
