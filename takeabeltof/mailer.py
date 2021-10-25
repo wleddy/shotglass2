@@ -38,8 +38,7 @@ class Mailer:
             * subject_prefix =<some text to prepend to the subject = ''
             * from_address =<from address> = sit_config['MAIL_DEFAULT_ADDR']
             * from_sender =<name of sender> = site_config['MAIL_DEFAULT_SENDER']
-            * reply_to_address =<reply to address> = from_address
-            * reply_to_name =<name of reply to account> = from_sender
+            * reply_to =<reply to name and address as a tuple> = from_address
             * cc = address list for carbon copy addresses
             * bcc  = address list for blind carbon copy addresses
             * attachment  = < a tuple of data as ("image.png", "image/png", 'data to attach') > = None
