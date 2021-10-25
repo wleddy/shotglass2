@@ -471,7 +471,12 @@ def register():
                 #inform the admin
                 to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
                 reply_to=to.copy()[0]
-                user_admin = Pref(g.db).get("New Account Admins",default=site_config['MAIL_DEFAULT_ADDR'],description="Admin for New User registrations. May use a comma separated list.")
+                user_admin = Pref(g.db).get(
+                    "New Account Admins",
+                    user_name=site_config.get("HOST_NAME"),
+                    default=site_config['MAIL_DEFAULT_ADDR'],
+                    description="Admin for New User registrations. May use a comma separated list.",
+                    )
                 to.append((user_admin.name,user_admin.value))
                 deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],g.deleteURL, rec.access_token)
                 editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
