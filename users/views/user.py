@@ -482,7 +482,7 @@ def register():
                 editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
                 context={'rec':rec,'deleteURL':deleteURL,'editURL':editURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
                 subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
-                if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',True):
+                if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',False):
                     subject = 'New Account Auto Activated - {}'.format(site_config['SITE_NAME'])
                 html_template = 'email/admin_activate_acct.html'
                 text_template = None
