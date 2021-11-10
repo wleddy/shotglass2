@@ -129,7 +129,6 @@ class UserView(TableView):
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user', static_folder="static")
 
 
-
 @mod.route('/save_table_search',methods=['POST'])
 @mod.route('/save_table_search/',methods=['POST'])
 def save_table_search():
@@ -271,7 +270,7 @@ def edit(rec_handle=None):
         
     else:
         #have the request form
-        #import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         is_new_user = False
         if rec_handle and request.form['id'] != 'None':
             rec = user.get(rec_handle,include_inactive=include_inactive)
@@ -333,7 +332,12 @@ def edit(rec_handle=None):
                 flash(printException('Error attempting to save '+g.title+' record.',"error",e))
                 return redirect(g.listURL)
                 
-            if is_new_user == True and rec.email:
+            if is_new_user:
+                rec.access_token = get_access_token()
+                rec.access_token_expires = time() + (3600 * 48)
+                
+                #inform the admins
+                inform_admin_of_registration(rec)
                 
                 # send an email to welcome the new user
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
@@ -399,6 +403,8 @@ def register():
     help = render_markdown_for("new_account_help.md",mod)  
     next = request.form.get('next',request.args.get('next',''))     
     
+    # import pdb;pdb.set_trace()
+    
     if 'confirm' in request.args:
         #Try to find the user record that requested registration
         rec=user.select_one(where='access_token = "{}"'.format(request.args.get('confirm','')).strip())
@@ -414,27 +420,19 @@ def register():
             else:
                 success="waiting"
                 
-            #inform the admin
-            to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
-            confirmURL = "{}://{}{}?activate={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.activate'), rec.access_token)
-            deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.delete'), rec.access_token)
-            context={'rec':rec,'confirmURL':confirmURL,'deleteURL':deleteURL}
-            subject = 'Activate Account Request from - {}'.format(site_config['SITE_NAME'])
-            html_template = 'email/admin_activate_acct.html'
-            text_template = None
-            send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
+            #inform the admins
+            inform_admin_of_registration(rec)
             
             return render_template('registration_success.html',success=success,next=next)
         else:
             flash("That registration request has expired")
             return redirect('/')
 
-    if not request.form:
-        pass
-    else:
+    if request.form:
+        #update the record
+        user.update(rec,request.form)
+        
         if validForm(rec):
-            #update the record
-            user.update(rec,request.form)
             rec.active = 0 # Self registered accounts are inactive by default
             set_password_from_form(rec)
             set_username_from_form(rec)
@@ -443,17 +441,21 @@ def register():
             if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',False):
                 rec.active = 1
                 success="active"
+            
             try:
                 user.save(rec)
-                
+            
                 # give user default roles
                 for role in site_config.get('DEFAULT_USER_ROLES',['user']):
                     User(g.db).add_role(rec.id,role)
-            
+        
                 g.db.commit()
                 # log the user in
                 setUserStatus(rec.email,rec.id)
                 
+                #inform the admins
+                inform_admin_of_registration(rec)
+            
                 #Send confirmation email to user if not already active
                 full_name = '{} {}'.format(rec.first_name,rec.last_name).strip()
                 to=[(full_name,rec.email)]
@@ -465,29 +467,9 @@ def register():
                     subject = 'Your account is now active at {}'.format(site_config['SITE_NAME'])
                     html_template = 'email/activation_complete.html'
                     text_template = 'email/activation_complete.txt'
-                    
-                send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
                 
-                #inform the admin
-                to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
-                reply_to=to.copy()[0]
-                user_admin = Pref(g.db).get(
-                    "New Account Admins",
-                    user_name=site_config.get("HOST_NAME"),
-                    default=site_config['MAIL_DEFAULT_ADDR'],
-                    description="Admin for New User registrations. May use a comma separated list.",
-                    )
-                to.append((user_admin.name,user_admin.value))
-                deleteURL = "{}://{}{}?delete={}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],g.deleteURL, rec.access_token)
-                editURL = "{}://{}{}{}".format(site_config['HOST_PROTOCOL'],site_config['HOST_NAME'],url_for('.edit'), rec.id)
-                context={'rec':rec,'deleteURL':deleteURL,'editURL':editURL,'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S')}
-                subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
-                if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',False):
-                    subject = 'New Account Auto Activated - {}'.format(site_config['SITE_NAME'])
-                html_template = 'email/admin_activate_acct.html'
-                text_template = None
-                send_message(to,context=context,reply_to=reply_to,subject=subject,html_template=html_template,text_template=text_template)
-
+                send_message(to,context=context,subject=subject,html_template=html_template,text_template=text_template)
+            
 
             except Exception as e:
                 g.db.rollback()
@@ -501,10 +483,7 @@ def register():
                 success = False
             
             return render_template('registration_success.html',success=success,next=next,)
-        else:
-            #validation failed
-            user.update(rec,request.form)
-            
+
     return render_template('user_edit.html',
         rec=rec, 
         no_delete=no_delete, 
@@ -639,6 +618,57 @@ def get_user_role_names(rec):
             user_roles.append(x.name)
             
     return user_roles
+    
+    
+def inform_admin_of_registration(rec):
+    site_config = get_site_config()
+    
+    to=[(site_config['MAIL_DEFAULT_SENDER'],site_config['MAIL_DEFAULT_ADDR'])]
+
+    #Add User List administrators
+    reply_to=to.copy()[0]
+    user_admin = Pref(g.db).get(
+        "New Account Admins",
+        user_name=site_config.get("HOST_NAME"),
+        default=site_config['MAIL_DEFAULT_ADDR'],
+        description="Admin for New User registrations. May use a comma separated list.",
+        )
+    to.append((user_admin.name,user_admin.value))
+
+    deleteURL = "{}://{}{}?delete={}".format(
+        site_config['HOST_PROTOCOL'],
+        site_config['HOST_NAME'],
+        g.deleteURL, 
+        rec.access_token,
+        )
+    editURL = "{}://{}{}{}".format(
+        site_config['HOST_PROTOCOL'],
+        site_config['HOST_NAME'],
+        url_for('.edit'),
+        rec.id,
+        )
+    confirmURL = "{}://{}{}?activate={}".format(
+        site_config['HOST_PROTOCOL'],
+        site_config['HOST_NAME'],
+        url_for('.activate'),
+        rec.access_token,
+        )
+    
+    context={'rec':rec,
+        'deleteURL':deleteURL,
+        'editURL':editURL,
+        'registration_exp':datetime.fromtimestamp(rec.access_token_expires).strftime('%Y-%m-%d %H:%M:%S'),
+        'confirmURL':confirmURL,
+        }
+    subject = 'Unconfirmed Account Request from - {}'.format(site_config['SITE_NAME'])
+    if site_config.get('AUTOMATICALLY_ACTIVATE_NEW_USERS',False):
+        subject = 'New Account Auto Activated - {}'.format(site_config['SITE_NAME'])
+        del context['confirmURL']
+    
+    html_template = 'email/admin_activate_acct.html'
+    text_template = None
+    send_message(to,context=context,reply_to=reply_to,subject=subject,html_template=html_template,text_template=text_template)
+
     
 def set_password_from_form(rec):
     if not request.form['new_password'] or (rec.password != None and request.form['new_password'].strip() == ''):
