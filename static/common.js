@@ -49,25 +49,18 @@ function modalFormSuccess(data){
 
 function submitModalToModalForm(formID, postingURL, successTarget, successURL,responseURL){
     /* Just like submitModalForm but doesn't close the modal form div on success */
-    // display a "busy" icon till the response loads
-    // console.log('mto m');
-    // $('#dialog-busy').addClass("sg-busy-dialog");
-    // alert("show busy");
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
-        if (data.toLowerCase() == 'success'){
-            $("#"+successTarget).load(successURL);
+		if (data.toLowerCase() == 'success'){
+			$("#"+successTarget).load(successURL);
             $("#modal-form").load(responseURL); // a new dialog after success
-        } else {
-            // there were errors, so the form will redisplay
-        }
-    }
-    ,"html");
+		} else {
+			// there were errors, so the form will redisplay
+		}
+	}
+	,"html");
 }
 
 function submitModalForm(formID, postingURL, successTarget, successURL){
-    // display a "busy" icon till the response loads
-    // $('#dialog-busy').addClass("sg-busy-dialog");
-    // alert("show busy");
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (modalFormSuccess(data)){
             if(successTarget == ''){
@@ -119,13 +112,12 @@ function cancelModalForm(){
 }
 
 // Paint the screen with a div to simulate a modal dialog
-function setModal(objectID,show) {
+function setModal(objectID,modalState) {
 	var objectID = "#"+objectID;
 	var docHeight = $(document).height()+"px";
 	var docWidth = $(document).width()+"px";
-    var show = show || false;
 	$(objectID).css("position","absolute").css("top","0").css("left","0");
-	if(show) {
+	if(modalState) {
 		// display the div
 		$(objectID).css("height",docHeight).css("width",docWidth).show();
 	}
@@ -136,8 +128,6 @@ function setModal(objectID,show) {
 		$(objectID).css("height",docHeight).css("width",docWidth).hide();
 	}
 }
-
-
 
 function getDateString(d) {
 	// format the LOCAL time string into the ISO formatted string that the db expects
