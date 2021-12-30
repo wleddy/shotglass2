@@ -49,6 +49,7 @@ function modalFormSuccess(data){
 
 function submitModalToModalForm(formID, postingURL, successTarget, successURL,responseURL){
     /* Just like submitModalForm but doesn't close the modal form div on success */
+    busyForm(formID);
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (data.toLowerCase() == 'success'){
 			$("#"+successTarget).load(successURL);
@@ -60,7 +61,13 @@ function submitModalToModalForm(formID, postingURL, successTarget, successURL,re
 	,"html");
 }
 
+function busyForm(formID){
+    // fill the form space with color and a busy a 'busy' icon
+    $("#"+formID + ":first-child").after('<p class="sg-busy-box">&nbsp;</p>');
+}
+
 function submitModalForm(formID, postingURL, successTarget, successURL){
+    busyForm(formID);
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (modalFormSuccess(data)){
             if(successTarget == ''){
