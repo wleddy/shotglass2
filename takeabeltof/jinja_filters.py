@@ -203,11 +203,25 @@ def plural(value,count=2,plural_form=None):
         'vita': 'vitae',
         'woman': 'women',
     }
-    
+
     if not isinstance(value,str):
         return value
+
+    if isinstance(count,str):
+        try:
+            count = int(count)
+        except:
+            return value
+    # test if count is some kind of iterable
+    try:
+        count = len(count)
+    except:
+        pass
+        
     if count == 1:
+        # not a plural
         return value
+    
     if plural_form and count != 1:
         return plural_form
     
