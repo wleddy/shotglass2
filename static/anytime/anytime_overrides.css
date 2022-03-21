@@ -2,13 +2,14 @@
     you can change the default styling of anytime pickers 
     See anytime.XXX.css file for defaults
 */
-/*
 .AnyTime-win {
+    z-index:200;
+/*
           background-color:rgb(247, 240, 230) !important;
           border:2px solid rgb(63, 36, 20) !important;
+*/
       }
 
-*/
 /*
 .AnyTime-btn {
             background-color:#eee !important;
