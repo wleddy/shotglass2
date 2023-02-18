@@ -176,7 +176,24 @@ class SqliteTable:
             out.append(col['name'])
             
         return out
- 
+        
+    def _get_table_info(self):
+        """Returns the table data in a tuple of:
+            (id, name, type, notnull, default_value, primary_key)
+        """
+        return self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
+        
+    def column_not_null(self,column_name):
+        out = False
+        cols = self._get_table_info()
+        print("Table Info:",cols)
+        for col in cols:
+            if col[1] == column_name:
+                out = col[3] == 1
+                break
+                
+        return out
+  
     def get_column_type(self,column_name):
         """Return the Sqlite column type (as text) for the specified column name
         
@@ -187,7 +204,7 @@ class SqliteTable:
         """
         #import pdb;pdb.set_trace()
         out = None
-        cols = self.db.execute('PRAGMA table_info({})'.format(self.table_name)).fetchall()
+        cols = self._get_table_info()
         
         for col in cols:
             if col[1] == column_name:

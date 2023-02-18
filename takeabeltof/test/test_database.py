@@ -306,6 +306,22 @@ def test_iter():
     rec.save()
     for item in rec:
         assert item in rec
+        
+def test_col_type():
+    tester = make_table()
+    col_type = tester.get_column_type("id")
+    assert col_type == "INTEGER"
+    col_type = tester.get_column_type("name")
+    assert col_type == "TEXT"
+    col_type = tester.get_column_type("real_field")
+    assert col_type == "REAL"
+    
+def test_col_not_null():
+    tester = make_table()
+    nulity = tester.column_not_null("id")
+    assert nulity
+    nulity = tester.column_not_null("name")
+    assert not nulity
 
 ############################ The final 'test' ########################
 ######################################################################
