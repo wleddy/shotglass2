@@ -106,6 +106,12 @@ span.deleteicon input {
     box-sizing: border-box;
 }
 
+.sg-list-add-button {
+    background-image: url('/static/images/add-rec-background.png');
+    background-repeat: no-repeat;;
+    background-position:2pt;
+    padding-left:24pt;
+}
 /* labels for the search fields in list forms */
 .sg-list-search-label{
     vertical-align:top;
