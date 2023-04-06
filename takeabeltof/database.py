@@ -240,11 +240,16 @@ class SqliteTable:
         id = cleanRecordID(id)
         row = self.get(id,**kwargs)
         if row:
-            self.db.execute('delete from {} where id = ?'.format(self.table_name),(id,))
-            if kwargs.get('commit',False):
-                self.db.commit()
-                
-            return True
+            try:
+                self.db.execute('delete from {} where id = ?'.format(self.table_name),(id,))
+                if kwargs.get('commit',False):
+                    self.db.commit()
+                    
+                return True
+            except sqlite3.IntegrityError as e:
+                flash(f"Database error: {str(e)}")
+            except Exception as e:
+                flash(f"Unexpected error: {str(e)}")
                
         return False
         

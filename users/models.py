@@ -72,7 +72,7 @@ class UserRole(SqliteTable):
             'user_id' INTEGER NOT NULL,
             'role_id' INTEGER NOT NULL,
             FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-            FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE """
+            FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE RESTRICT """
         super().create_table(sql)
                 
         
