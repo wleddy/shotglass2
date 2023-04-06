@@ -416,7 +416,10 @@ def do_backups(source_file_path,**kwargs):
             email_admin("Fatal Backup Error Occurred",mes)
             break
         else:
-            app.logger.info("[{}] -- Backup Result: {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code))
+            # limit the amount of logging the backup process does
+            if app.config['DEBUG'] or bac.result_code == 0 or bac.result_code >= 10:
+                app.logger.info("[{}] -- Backup Result: {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code))
+
             time.sleep(30*60) #sleep for half an hour
     
     
@@ -430,5 +433,6 @@ def start_backup_thread(source_file_path,**kwargs):
     backup_thread = threading.Thread(target=do_backups,args=(source_file_path,),kwargs=kwargs,name='backup_thread',daemon=True)
 
     backup_thread.start()
-    app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
+    if app.config['DEBUG']:
+        app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
     
