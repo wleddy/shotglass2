@@ -307,10 +307,10 @@ class Mailer:
                 outgoing.send(msg)
                 sent_cnt += 1
             except Exception as e:
-                mes = "Error Sending email"
+                mes = "Error sending message to {} err: {}".format(recipient,str(e))
                 printException(mes,"error",e)
                 err_cnt += 1
-                err_list.append("Error sending message to {} err: {}".format(recipient,str(e)))
+                err_list.append(mes)
 
         # End Loop
         if sent_cnt == 0:
