@@ -185,9 +185,7 @@ class SqliteTable:
         
     def column_not_null(self,column_name):
         out = False
-        cols = self._get_table_info()
-        print("Table Info:",cols)
-        for col in cols:
+        for col in self._get_table_info():
             if col[1] == column_name:
                 out = col[3] == 1
                 break
