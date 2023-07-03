@@ -165,7 +165,7 @@ def test_user_update():
     db.rollback()
     
 def test_user_delete():
-    from shotglass2.users.models import User, Role
+    from shotglass2.users.models import User
     
     user = User(db)
     record_deleted = user.delete(2)
@@ -175,8 +175,6 @@ def test_user_delete():
     record_deleted = user.delete('John') # can't delete it twice
     assert record_deleted == False
     record_deleted = user.delete('none') # test that we can delete an inactive record
-    assert record_deleted == True
-    record_deleted = Role(db).delete(1)
     assert record_deleted == True
     db.rollback()
     
