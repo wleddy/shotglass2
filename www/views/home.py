@@ -1,5 +1,6 @@
 from flask import request, session, g, redirect, url_for, abort, \
-     render_template, flash, Blueprint, Response, safe_join
+     render_template, flash, Blueprint, Response
+from werkzeug.utils import safe_join
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.utils import render_markdown_for, printException, handle_request_error, send_static_file
 from shotglass2.takeabeltof.date_utils import datetime_as_string
@@ -9,33 +10,13 @@ import json
 mod = Blueprint('www',__name__, template_folder='templates/www', url_prefix='')
 
 
-# return a dict of all the routes for this blueprint
-def get_default_routes():
-    # modify this dict before calling mod.add_url_rule to override any of the routes
-    # options is a dict of extra values to pass to add_url_rule. pass {} to use default of GET, HEAD, and OPTION
-    put_options = {'methods':['POST', 'GET',]}
-    route_dict = {}
-    route_dict['/'] = ('/','home',home,{})
-    route_dict['/index.html'] = ('/index.html','home',home,{})
-    route_dict['/index.htm'] = ('/index.htm','home',home,{})
-    route_dict['/about/'] = ('/about/','about',about,{})
-    route_dict['/contact/'] = ('/contact/','contact',contact,put_options)
-    route_dict['/docs/'] = ('/docs/','docs',docs,{})
-    route_dict['/docs/<path:filename>'] = ('/docs/<path:filename>','docs',docs,{})
-    route_dict['/help/'] = ('/help/','help',docs,{})
-    route_dict['/help/<path:filename>'] = ('/help/<path:filename>','help',docs,{})
-    route_dict['/robots.txt'] = ('/robots.txt','robots',robots,{})
-
-    return route_dict
-
-
 def setExits():
     g.homeURL = url_for('www.home')
     g.aboutURL = url_for('www.about')
     g.contactURL = url_for('www.contact')
     g.title = 'Home'
 
-#@mod.route('/')
+@mod.route('/')
 def home():
     setExits()
     g.title = 'Home'
@@ -45,8 +26,8 @@ def home():
     return render_template('index.html',rendered_html=rendered_html,)
 
 
-#@mod.route('/about', methods=['GET',])
-#@mod.route('/about/', methods=['GET',])
+@mod.route('/about', methods=['GET',])
+@mod.route('/about/', methods=['GET',])
 def about():
     setExits()
     g.title = "About"
@@ -56,8 +37,8 @@ def about():
     return render_template('about.html',rendered_html=rendered_html)
 
 
-#@mod.route('/contact', methods=['POST', 'GET',])
-#@mod.route('/contact/', methods=['POST', 'GET',])
+@mod.route('/contact', methods=['POST', 'GET',])
+@mod.route('/contact/', methods=['POST', 'GET',])
 def contact(**kwargs):
     """Send an email to the administator or contact specified.
     
@@ -178,9 +159,9 @@ def contact(**kwargs):
     flash(mes)
     return render_template('500.html'), 500
     
-#@mod.route('/docs', methods=['GET',])
-#@mod.route('/docs/', methods=['GET',])
-#@mod.route('/docs/<path:filename>', methods=['GET',])
+@mod.route('/docs', methods=['GET',])
+@mod.route('/docs/', methods=['GET',])
+@mod.route('/docs/<path:filename>', methods=['GET',])
 def docs(filename=None):
     #setExits()
     g.title = "Docs"
@@ -265,7 +246,7 @@ def render_for(filename=None):
         return abort(404)
 
 
-#@mod.route('/robots.txt', methods=['GET',])
+@mod.route('/robots.txt', methods=['GET',])
 def robots():
     #from shotglass2.shotglass import get_site_config
     return redirect('/static/robots.txt')

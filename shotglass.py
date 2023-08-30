@@ -182,16 +182,7 @@ def register_users(app,subdomain=None):
 
 
 def register_www(app,subdomain=None):
-    """I did this because I thought I could modify the routes
-    at startup by modifying the routes var returned from get_default_routes
-    Turns out flask complains that the routes already exist.
-    If you really want to make more extensive changes, just copy the www blueprint
-    into a new project and have your way with it."""
-    
     from shotglass2.www.views import home
-    routes = home.get_default_routes()
-    for key, value in routes.items():
-        home.mod.add_url_rule(value[0],value[1],value[2],**value[3])
     app.register_blueprint(home.mod, subdomain=subdomain)
 
 
