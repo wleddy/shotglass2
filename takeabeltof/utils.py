@@ -255,7 +255,8 @@ def render_markdown_text(text_to_render,**kwargs):
     """ 
     text_to_render = render_template_string(text_to_render,**kwargs)
     escape = kwargs.get('escape',True) #Set to False to preserve included html
-    markdown = mistune.Markdown(renderer=mistune.Renderer(escape=escape))
+    # markdown = mistune.Markdown(renderer=mistune.Renderer(escape=escape))
+    markdown = mistune.create_markdown(escape=escape)
     return markdown(text_to_render)
     
     
