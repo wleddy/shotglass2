@@ -1,6 +1,6 @@
 from shotglass2.takeabeltof.date_utils import date_to_string, getDatetimeFromString
 from shotglass2.takeabeltof.utils import render_markdown_text, formatted_phone_number
-from jinja2 import Markup
+from markupsafe import Markup
 from datetime import datetime
 import re
 
