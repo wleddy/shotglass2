@@ -270,11 +270,11 @@ class TableView:
         
     def select_recs(self,**kwargs):
         """Make a selection of recs based on the current filters"""
+        filters = self.get_list_filters()
         if self.sql:
-            # self.sql is assumed to be a fully formed sql statement
-            self.recs = self.table.query(self.sql)
+            # self.sql is assumed an sql statement but without the where or ordery by stanzas
+            self.recs = self.table.query(self.sql + "where {where} order by {order_by}".format(where=filters.where,order_by=filters.order_by))
         else:
-            filters = self.get_list_filters()
             self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
         
 
