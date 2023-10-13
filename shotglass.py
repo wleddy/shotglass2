@@ -139,8 +139,12 @@ def is_ajax_request():
         
     return False
     
-    
 def make_db_path(filespec):
+    # to support old code...
+    return make_path(filespec)
+    
+    
+def make_path(filespec):
     """
     Test the filespec path and if not found, create the path
     but not the file if a file name is included in the path.
