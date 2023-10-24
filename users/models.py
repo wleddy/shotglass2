@@ -445,9 +445,12 @@ class Pref(SqliteTable):
         
         
 def init_db(db):
-    """Create a intial user record."""
-    Role(db).init_table()
-    UserRole(db).init_table()
-    User(db).init_table()
-    Pref(db).init_table()
+    """Create Tables."""
+    l = globals().copy()
+    for n,o in l.items():
+        if type(o) == type and \
+            issubclass(o,SqliteTable) and \
+            o != SqliteTable:
+    
+            o(db).init_table()
     

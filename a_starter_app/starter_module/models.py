@@ -15,6 +15,7 @@ class StarterTable(SqliteTable):
         sql = """
             'name' TEXT,
             'description' TEXT,
+            -- FOREIGN KEY (sensor_id) REFERENCES sensor(id) ON DELETE CASCADE,
             'rank' INTEGER DEFAULT 0 """
         super().create_table(sql)
         
@@ -28,5 +29,13 @@ class StarterTable(SqliteTable):
         # {'name':'expires','definition':'DATETIME',},
         ]
     
-        return column_list
 
+def init_db(db):
+    """Create Tables."""
+    l = globals().copy()
+    for n,o in l.items():
+        if type(o) == type and \
+            issubclass(o,SqliteTable) and \
+            o != SqliteTable:
+    
+            o(db).init_table()
