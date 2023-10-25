@@ -26,7 +26,8 @@ class Database:
     def __repr__(self):
         return f"Database: '{self.filename}'"
         
-    def connect(self):
+        # Oct. 25, 2023 - increase timeout from default of 5 seconds
+    def connect(self,timeout=10):
         """Return a connection to the database"""
         self.connection = sqlite3.connect(self.filename)
         self.connection.row_factory = sqlite3.Row ## allows us to treat row as a dictionary
