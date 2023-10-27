@@ -267,8 +267,14 @@ class User(SqliteTable):
         if type(user_id) is int:
             self.db.execute('update user set last_access = ? where id = ?',(local_datetime_now(),user_id,))
             if not no_commit:
-                self.db.commit()
-                
+                # import pdb;pdb.set_trace()
+                try:
+                    self.db.commit()
+                except Exception as e:
+                    from app import app
+                    app.logger.exception(f'[{local_datetime_now()}] -- Error while committing to user table {str(e)}')
+                    self.db.rollback()
+                    
     def clear_roles(self,user_id):
         """Delete all user_role records from this user"""
         self.db.execute('delete from user_role where user_id = ?',(cleanRecordID(user_id),))

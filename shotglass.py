@@ -398,7 +398,9 @@ def do_backups(source_file_path,**kwargs):
 
     while not bac.fatal_error and (exit_after < loop_counter):
         loop_counter += 1
+        start_time = time.time()
         bac.backup()
+        end_time = round(time.time() - start_time,4)
         
         if app.config['TESTING']:
             return bac
@@ -413,7 +415,7 @@ def do_backups(source_file_path,**kwargs):
         else:
             # limit the amount of logging the backup process does
             if app.config['DEBUG'] or bac.result_code == 0 or bac.result_code >= 10:
-                app.logger.info("[{}] -- Backup Result: {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code))
+                app.logger.info("[{}] -- Backup Result: {}, code: {} in {} secs".format(local_datetime_now(),bac.result,bac.result_code,end_time))
 
             time.sleep(30*60) #sleep for half an hour
     
@@ -428,6 +430,6 @@ def start_backup_thread(source_file_path,**kwargs):
     backup_thread = threading.Thread(target=do_backups,args=(source_file_path,),kwargs=kwargs,name='backup_thread',daemon=True)
 
     backup_thread.start()
-    if app.config['DEBUG']:
+    if app.config['DEBUG'] or True:
         app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
     
