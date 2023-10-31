@@ -430,6 +430,6 @@ def start_backup_thread(source_file_path,**kwargs):
     backup_thread = threading.Thread(target=do_backups,args=(source_file_path,),kwargs=kwargs,name='backup_thread',daemon=True)
 
     backup_thread.start()
-    if app.config['DEBUG'] or True:
+    if app.config['DEBUG']:
         app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
     
