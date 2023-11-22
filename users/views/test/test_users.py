@@ -17,7 +17,7 @@ def client():
 
     with app.app.app_context():
         print(app.app.config['DATABASE_PATH'])
-        app.init_db(app.get_db(app.app.config['DATABASE_PATH'])) 
+        app.initalize_all_tables(app.get_db(app.app.config['DATABASE_PATH'])) 
         print(app.g.db)
         
     yield client
@@ -32,7 +32,7 @@ db = None
 
 with app.app.app_context():
     db = app.get_db(filespec)
-    app.init_db(db)
+    app.initalize_all_tables(db)
 
         
 def delete_test_db():

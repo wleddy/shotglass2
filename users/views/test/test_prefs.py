@@ -30,7 +30,7 @@ db = None
 
 with app.app.app_context():
     db = app.get_db(filespec)
-    app.init_db(db)
+    app.initalize_all_tables(db)
 
         
 def delete_test_db():
