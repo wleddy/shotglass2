@@ -17,7 +17,7 @@ def client():
 
     with app.app.app_context():
         #print(app.app.config['DATABASE'])
-        app.initalize_all_tables(app.get_db(app.app.config['DATABASE'])) 
+        app.initalize_base_tables(app.get_db(app.app.config['DATABASE'])) 
         #print(app.g.db)
         
     yield client
@@ -51,7 +51,7 @@ def test_create_test_data():
 
 with app.app.app_context():
     db = app.get_db(filespec)
-    app.initalize_all_tables(db)
+    app.initalize_base_tables(db)
 
 # These are used in other tests that need to login
 def login(client, username=None, password=None):

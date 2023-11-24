@@ -16,7 +16,7 @@ with app.app.app_context():
     app.app.config['TESTING'] = True
 
     db = app.get_db(filespec)
-    app.initalize_all_tables(db)
+    app.initalize_base_tables(db)
 
 #table to test save...
 from shotglass2.takeabeltof.database import SqliteTable
