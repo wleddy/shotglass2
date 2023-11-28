@@ -425,7 +425,10 @@ class SqliteTable:
         """
         where = kwargs.get('where','1')
         order_by = kwargs.get('order_by',self.order_by_col)
-        sql = 'SELECT * FROM {} WHERE {} ORDER BY {}'.format(self.table_name,where,order_by,)
+        limit = kwargs.get('limit',9999999)
+        offset = kwargs.get('offset',0)
+
+        sql = 'SELECT * FROM {} WHERE {} ORDER BY {} LIMIT {} OFFSET {}'.format(self.table_name,where,order_by,limit,offset)
         return sql
         
     def select(self,**kwargs):

@@ -16,7 +16,8 @@ class StarterTable(SqliteTable):
             'name' TEXT,
             'description' TEXT,
             -- FOREIGN KEY (sensor_id) REFERENCES sensor(id) ON DELETE CASCADE,
-            'rank' INTEGER DEFAULT 0 """
+            'rank' INTEGER DEFAULT 0 
+            """
         super().create_table(sql)
         
         
@@ -28,6 +29,8 @@ class StarterTable(SqliteTable):
         column_list = [
         # {'name':'expires','definition':'DATETIME',},
         ]
+        
+        return column_list
     
 
 def init_db(db):

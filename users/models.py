@@ -215,7 +215,10 @@ class User(SqliteTable):
 
             
         order_by = kwargs.get('order_by',self.order_by_col)
-        
+
+        limit = kwargs.get('limit',9999999)
+        offset = kwargs.get('offset',0)
+
         sql="""
         select 
             user.*,
@@ -224,7 +227,8 @@ class User(SqliteTable):
             "" as roles
             
              from user where {where} order by {order_by}
-        """.format(where=where,order_by=order_by)
+             limit {limit} offset {offset}
+        """.format(where=where,order_by=order_by,limit=limit,offset=offset)
         
         recs = self.query(sql)
         if recs:

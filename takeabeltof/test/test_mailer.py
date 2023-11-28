@@ -15,7 +15,7 @@ with app.app.app_context():
     app.app.config['TESTING'] = True
 
     db = app.get_db(filespec)
-    app.init_db(db)
+    app.initalize_base_tables(db)
     
     
 import shotglass2.takeabeltof.mailer as mail

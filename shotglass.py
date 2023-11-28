@@ -39,11 +39,6 @@ def create_app(name,instance_path=None,config_filename=None,**kwargs):
     return app
     
 
-def get_app_config(this_app=None):
-    """Depricated"""
-    return get_site_config(this_app)
-        
-        
 def get_menu_items():
     """The default items for the navigation menu
     
@@ -195,7 +190,6 @@ def register_maps(app,subdomain=None):
     app.register_blueprint(maps.mod,subdomain=subdomain)
     
     
-# @app.errorhandler(404)
 def page_not_found(error):
     from shotglass2.takeabeltof.utils import handle_request_error
     handle_request_error(error,request)
@@ -203,7 +197,6 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
-# @app.errorhandler(500)
 def server_error(error):
     from shotglass2.takeabeltof.utils import handle_request_error
     handle_request_error(error,request)
@@ -255,7 +248,6 @@ def set_template_dirs(this_app):
     ])
 
     
-#@app.route('/static/<path:filename>')
 def static(filename):
     """This takes full responsibility for loading static content"""
     #import pdb;pdb.set_trace()
@@ -430,6 +422,6 @@ def start_backup_thread(source_file_path,**kwargs):
     backup_thread = threading.Thread(target=do_backups,args=(source_file_path,),kwargs=kwargs,name='backup_thread',daemon=True)
 
     backup_thread.start()
-    if app.config['DEBUG'] or True:
+    if app.config['DEBUG']:
         app.logger.info("[{}] -- Backups started in a new thread".format(local_datetime_now()))
     

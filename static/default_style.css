@@ -1,4 +1,3 @@
-
 /* change the fixed width of the right menu here*/
 .menu_space {
     margin-right:200px;
@@ -236,3 +235,32 @@ span.deleteicon input {
 .w3-save-button-color,.w3-save-button-hover-color:hover{color:#fff!important;background-color:#009688!important}
 .w3-delete-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#ff5722!important}
 .w3-cancel-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#3f51b5!important}
+
+/* styles for the pagination in the record lists */
+
+/* .sg.pagination {} */
+.sg-page-current {
+    font-weight: bold;
+}
+a.sg-page-end, a.sg-page-prev,
+a.sg-page-next, a.sg-page-select,
+a.sg-page-begin
+    {
+    text-decoration: none;
+}
+.sg-page-end, .sg-page-begin,
+.sg-page-next, .sg-page-prev  {
+    background-color: rgb(133, 211, 133);
+    color:white;
+    padding:2pt;
+}
+.sg-page-begin.sg-page-inactive, .sg-page-end.sg-page-inactive,
+.sg-page-begin.sg-page-current, .sg-page-end.sg-page-current,
+.sg-page-next.sg-page-inactive, .sg-page-prev.sg-page-inactive,
+.sg-page-next.sg-page-current, .sg-page-prev.sg-page-current {
+    color:gainsboro;
+    background-color:rgb(167, 202, 167);
+    padding:2pt;
+}
+/* .sg-page-select {} */
+/* .sg-page-inactive {} */

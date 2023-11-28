@@ -6,12 +6,17 @@ if [ ! -d "env" ]
 then
     echo 'making env'
 
-    virtualenv --python=python3 env
+    python3 -m venv env
 
-    . env/bin/activate
+    if [ -d "env" ]
+    then
+        . env/bin/activate
 
-    echo 'installing requirements'
-    pip install -r requirements.txt
+        echo 'installing requirements'
+        pip install -r requirements.txt
+    else
+        echo "##### Not able to create env #####"
+    fi
 else
     echo "##### a directory named 'env' already exists ####"
 fi
