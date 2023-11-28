@@ -8,6 +8,7 @@ from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStre
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
 from datetime import date
+import math
 
 
 class TableView:
@@ -21,6 +22,9 @@ class TableView:
         self.display_name = self.table.display_name
         self.sql = None # may be used for a custom select
         self.recs = None
+        # for pagination
+        self.page_size = 50 # default page size, set to 0 to disable pagination
+        self.page = 1
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -44,9 +48,9 @@ class TableView:
         self.list_order_ready_temlate = 'list_order_ready.js'
         self.list_export_widget_template = 'list_export_widget.html'
         self.allow_record_addition = True #Set false to hide the 'add new record' link in the list page
-        
         self.edit_template = 'edit_template.html'
-        
+        self.pagination_template = 'list_pagination_template.html'
+
         # set the page title root
         g.title = self.display_name
         
@@ -270,14 +274,43 @@ class TableView:
         
     def select_recs(self,**kwargs):
         """Make a selection of recs based on the current filters"""
-        filters = self.get_list_filters()
-        if self.sql:
-            # self.sql is assumed an sql statement but without the where or ordery by stanzas
-            self.recs = self.table.query(self.sql + "where {where} order by {order_by}".format(where=filters.where,order_by=filters.order_by))
-        else:
-            self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
+
+        # for pagination
+        limit = 9999999
+        offset = 0
+        self.page = 1
+        self.page_count = 1
+        #query without limit or offset
+        self._query_data(limit=limit,offset=offset,**kwargs)
+        self.rec_count = len(self.recs)
+
+        if 'page' in request.args:
+            self.page = int(request.args['page'])
+
+        if  self.page_size and self.rec_count > self.page_size:
+            self.page_count = math.ceil(self.rec_count / self.page_size)
+            offset = max(self.page-1,0) * self.page_size
+            limit = self.page_size
+            # get the selection with limits
+            self._query_data(limit=limit,offset=offset,**kwargs)
         
 
+    def _query_data(self,**kwargs):
+        filters = self.get_list_filters()
+        limit = kwargs.get('limit',999999)
+        offset = kwargs.get('offset',0)
+
+        if self.sql:
+            # self.sql is assumed an sql statement but without the where or ordery by stanzas
+            self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
+                where=filters.where,order_by=filters.order_by,
+                    offset=offset,limit=limit,
+                    )
+                )
+        else:
+            self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
+            
+      
     def set_list_fields(self,fields):
         """Ensure that fields is a list of dicts and that the dicts have
         all the required keys

@@ -1,0 +1,34 @@
+<!-- list_pagination_template.html-->
+
+{% if data.page_size and data.recs %}
+{% if data.rec_count > data.page_size %}
+<div class="sg-pagination" >
+    <p>
+        {%if data.page == 1 %}
+        <span class="sg-page-begin sg-page-inactive"><<</span>
+        <span class="sg-page-prev sg-page-inactive"><</span>
+       {% else %}
+        <a class="sg-page-begin" href="?page=1"><<</a>
+        {% set prev_page = data.page - 1 %}
+        <a class="sg-page-prev" href="?page={{prev_page}}"><</a>
+        {% endif %}
+        {% for i in range(data.page_count) %}
+            {% set page = i + 1 %}
+            {% if page == data.page %}
+            <span class="sg-page-current">{{page}}</span>
+            {% else %}
+            <a class="sg-page-select" href="?page={{page}}">{{page}}</a>
+            {% endif %}
+        {% endfor %}
+        {%if data.page == data.page_count %}
+            <span class="sg-page-next sg-page-current">></span>
+            <span class="sg-page-end sg-page-current">>></span>
+       {% else %}
+            {% set next_page = data.page + 1 %}
+            <a class="sg-page-next" href="?page={{next_page}}">></a>
+            <a class="sg-page-end" href="?page={{data.page_count}}">>></a>
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+{% endif %}
