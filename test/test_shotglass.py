@@ -20,7 +20,7 @@ from shotglass2.takeabeltof.get_client import client
 #    with app.app.app_context():
 #        with app.app.test_request_context():
 #            #this context sets up a dummy request with a url of 'http://localhost/'
-#            app.initalize_all_tables((app.get_db(app.app.config['DATABASE_PATH'])))
+#            app.initalize_base_tables((app.get_db(app.app.config['DATABASE_PATH'])))
 #        
 #    yield client
 #
