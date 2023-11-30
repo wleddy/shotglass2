@@ -280,9 +280,19 @@ class TableView:
         offset = 0
         self.page = 1
         self.page_count = 1
-        #query without limit or offset
-        self._query_data(limit=limit,offset=offset,**kwargs)
-        self.rec_count = len(self.recs)
+
+        #query without limit or offset to get total record that could be listed
+        # import pdb;pdb.set_trace()
+        count_sql = self.table._select_sql(
+            field_list=f'count({self.table.table_name}.id) as x_rec_count',
+            where = self.get_list_filters().where,
+            limit = 1,
+            **kwargs
+            )
+        count_rows = self.table.query(count_sql)
+        self.rec_count = 0
+        if count_rows:
+            self.rec_count = int(count_rows[0].x_rec_count)
 
         if 'page' in request.args:
             self.page = int(request.args['page'])
@@ -291,15 +301,16 @@ class TableView:
             self.page_count = math.ceil(self.rec_count / self.page_size)
             offset = max(self.page-1,0) * self.page_size
             limit = self.page_size
-            # get the selection with limits
-            self._query_data(limit=limit,offset=offset,**kwargs)
+
+        # get the selection with limits
+        self._query_data(limit=limit,offset=offset,**kwargs)
         
 
     def _query_data(self,**kwargs):
         filters = self.get_list_filters()
         limit = kwargs.get('limit',999999)
         offset = kwargs.get('offset',0)
-
+ 
         if self.sql:
             # self.sql is assumed an sql statement but without the where or ordery by stanzas
             self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
