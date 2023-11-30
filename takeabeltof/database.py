@@ -422,13 +422,18 @@ class SqliteTable:
         optional kwargs are:
             where: text to use in the where clause
             order_by: text to include in the order by clause
+            limit: limit the number of records retrieved. defaults to all
+            offset: starting record to return. defaults to 0
+            field_list: list of fields to return. defaults to all 
         """
+
         where = kwargs.get('where','1')
         order_by = kwargs.get('order_by',self.order_by_col)
         limit = kwargs.get('limit',9999999)
         offset = kwargs.get('offset',0)
+        record_list = kwargs.get('field_list','*')
 
-        sql = 'SELECT * FROM {} WHERE {} ORDER BY {} LIMIT {} OFFSET {}'.format(self.table_name,where,order_by,limit,offset)
+        sql = 'SELECT {} FROM {} WHERE {} ORDER BY {} LIMIT {} OFFSET {}'.format(record_list,self.table_name,where,order_by,limit,offset)
         return sql
         
     def select(self,**kwargs):
