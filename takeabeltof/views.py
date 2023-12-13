@@ -24,6 +24,7 @@ class TableView:
         self.recs = None
         # for pagination
         self.page_size = 50 # default page size, set to 0 to disable pagination
+        self.page_limit = 10 # max number of page numbers to display in list view. 0 is unlimted
         self.page = 1
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
@@ -280,20 +281,13 @@ class TableView:
         offset = 0
         self.page = 1
         self.page_count = 1
-
-        #query without limit or offset to get total record that could be listed
-        # import pdb;pdb.set_trace()
-        count_sql = self.table._select_sql(
-            field_list=f'count({self.table.table_name}.id) as x_rec_count',
-            where = self.get_list_filters().where,
-            limit = 1,
-            **kwargs
-            )
-        count_rows = self.table.query(count_sql)
         self.rec_count = 0
-        if count_rows:
-            self.rec_count = int(count_rows[0].x_rec_count)
-
+       
+        # get the full record count
+        self._query_data(limit=limit,offset=offset,**kwargs)
+        if(self.recs):
+            self.rec_count = len(self.recs)
+            
         if 'page' in request.args:
             self.page = int(request.args['page'])
 
@@ -301,9 +295,16 @@ class TableView:
             self.page_count = math.ceil(self.rec_count / self.page_size)
             offset = max(self.page-1,0) * self.page_size
             limit = self.page_size
+            self.pages_start = 1
+            self.pages_end = self.page_count
+            if self.page_limit and self.page > int(self.page_limit/2):
+                self.pages_start = self.page - int(self.page_limit/2)
 
-        # get the selection with limits
-        self._query_data(limit=limit,offset=offset,**kwargs)
+            if self.page_limit and self.page < self.page_count - self.page_limit:
+                self.pages_end = self.page + self.page_limit
+
+            # get the selection with limits
+            self._query_data(limit=limit,offset=offset,**kwargs)
         
 
     def _query_data(self,**kwargs):
@@ -312,7 +313,7 @@ class TableView:
         offset = kwargs.get('offset',0)
  
         if self.sql:
-            # self.sql is assumed an sql statement but without the where or ordery by stanzas
+            # self.sql is assumed an sql statement but without the where or order by stanzas
             self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
                 where=filters.where,order_by=filters.order_by,
                     offset=offset,limit=limit,

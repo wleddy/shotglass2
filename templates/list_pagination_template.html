@@ -12,13 +12,15 @@
         {% set prev_page = data.page - 1 %}
         <a class="sg-page-prev" href="?page={{prev_page}}"><</a>
         {% endif %}
-        {% for i in range(data.page_count) %}
+        {% for i in range(data.pages_start - 1,data.pages_end ) %}
             {% set page = i + 1 %}
+            {% if page == data.pages_start and page != 1 %}...{% endif %}
             {% if page == data.page %}
             <span class="sg-page-current">{{page}}</span>
             {% else %}
             <a class="sg-page-select" href="?page={{page}}">{{page}}</a>
             {% endif %}
+            {% if page == data.pages_end and data.pages_end < data.page_count %}...{% endif %}
         {% endfor %}
         {%if data.page == data.page_count %}
             <span class="sg-page-next sg-page-current">></span>
