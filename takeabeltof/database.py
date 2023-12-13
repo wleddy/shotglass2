@@ -431,9 +431,9 @@ class SqliteTable:
         order_by = kwargs.get('order_by',self.order_by_col)
         limit = kwargs.get('limit',9999999)
         offset = kwargs.get('offset',0)
-        record_list = kwargs.get('field_list','*')
+        field_list = kwargs.get('field_list','*')
 
-        sql = 'SELECT {} FROM {} WHERE {} ORDER BY {} LIMIT {} OFFSET {}'.format(record_list,self.table_name,where,order_by,limit,offset)
+        sql = 'SELECT {} FROM {} WHERE {} ORDER BY {} LIMIT {} OFFSET {}'.format(field_list,self.table_name,where,order_by,limit,offset)
         return sql
         
     def select(self,**kwargs):
