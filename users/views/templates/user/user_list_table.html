@@ -1,5 +1,7 @@
 {#build table_list_data#}
 
+{% include 'list_pagination_template.html' %}
+
 {% include 'list_header_row.html'%}
 
 {% if data.recs %}
@@ -16,7 +18,6 @@
 {% endif %}
 </table>
 
-{% if data.recs %}
-{% set rec_count = data.recs | length %}
-<p class="list_record_count">{{ rec_count }} {{ "record" | plural(rec_count)}}.</p>
-{% endif %}
+{% include 'list_record_count.html' %}
+
+{% include 'list_pagination_template.html' %}
