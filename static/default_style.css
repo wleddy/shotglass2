@@ -194,7 +194,7 @@ span.deleteicon input {
        }
 }
 
-@media (prefers-color-scheme: dark) 
+media (prefers-color-scheme: dark) 
 {
     :root{
         --primary-color: rgb(101, 58, 32);
