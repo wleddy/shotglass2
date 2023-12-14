@@ -10,7 +10,7 @@ p {margin-top:0;margin-bottom:.4em;}
 
 p#addRecord {
     margin:0;
-    background-color: white;
+    /* background-color: white; */
     padding:4pt;
 }
 
@@ -81,7 +81,7 @@ p.clear {
 }
 
 #sg-list-template-contain {
-    background-color:white;
+    /* background-color:white; */
     padding-top:6pt;
     padding-bottom:6pt;
 }
@@ -167,6 +167,8 @@ span.deleteicon input {
 /* colors */
 /* Teal and Pale green */
 :root {
+    color:#000;
+    background-color: #f8f8f8;
     --primary-color: #009688;
     --primary-contrast: #fff;
     --primary-border: rgb(63, 36, 20);
@@ -176,6 +178,21 @@ span.deleteicon input {
     --menu-border: rgb(247, 240, 230);
    }
 
+@media (prefers-color-scheme: dark)
+{
+    :root {
+        color: #f8f8f8;
+        background-color: #747272;
+
+        --primary-color: #009688;
+        --primary-contrast: #fff;
+        --primary-border: rgb(63, 36, 20);
+        --secondary-color: #ddffdd; 
+        --secondary-contrast: #000;
+        --secondary-border: #ddffdd;
+        --menu-border: rgb(247, 240, 230);
+       }
+}
 /* brown and tan (SABA) */
 /*
 :root {
