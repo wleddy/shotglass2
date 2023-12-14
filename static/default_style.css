@@ -10,7 +10,7 @@ p {margin-top:0;margin-bottom:.4em;}
 
 p#addRecord {
     margin:0;
-    background-color: white;
+    /* background-color: white; */
     padding:4pt;
 }
 
@@ -81,7 +81,7 @@ p.clear {
 }
 
 #sg-list-template-contain {
-    background-color:white;
+    /* background-color:white; */
     padding-top:6pt;
     padding-bottom:6pt;
 }
@@ -167,6 +167,8 @@ span.deleteicon input {
 /* colors */
 /* Teal and Pale green */
 :root {
+    color:#000;
+    background-color: #f8f8f8;
     --primary-color: #009688;
     --primary-contrast: #fff;
     --primary-border: rgb(63, 36, 20);
@@ -175,6 +177,46 @@ span.deleteicon input {
     --secondary-border: #ddffdd;
     --menu-border: rgb(247, 240, 230);
    }
+
+@media (prefers-color-scheme: dark)
+{
+    :root {
+        color: #f8f8f8;
+        background-color: #747272;
+
+        --primary-color: #009688;
+        --primary-contrast: #fff;
+        --primary-border: rgb(63, 36, 20);
+        --secondary-color: #ddffdd; 
+        --secondary-contrast: #000;
+        --secondary-border: #ddffdd;
+        --menu-border: rgb(247, 240, 230);
+       }
+}
+
+@media (prefers-color-scheme: dark) 
+{
+    :root{
+        --primary-color: rgb(101, 58, 32);
+        --primary-contrast: #f8f5f5;
+        --primary-border: rgb(144, 83, 48);
+        --secondary-color: rgb(244, 195, 128); 
+        --secondary-contrast:#000;
+        --secondary-border: rgb(247, 240, 230);
+        --menu-border: rgb(247, 240, 230);   
+    }
+
+    .w3-table-all tr:nth-child(even), .datatable tr:nth-child(even) {
+        background-color: rgb(240, 206, 157)!important;
+        color:var(--secondary-contrast)!important;
+    }
+    
+    .w3-hoverable tbody tr:hover, .w3-ul.w3-hoverable li:hover, .datatable tr {
+        background-color:rgb(242, 189, 109)!important;
+        color: var(--secondary-contrast)!important;
+    }
+    
+}
 
 /* brown and tan (SABA) */
 /*
