@@ -271,7 +271,14 @@ class SqliteTable:
         # import pdb;pdb.set_trace()
         out = None
         
-        data = self.db.execute(sql).fetchall()
+        try:
+            data = self.db.execute(sql).fetchall()
+        except sqlite3.OperationalError as e:
+            # log the error...
+            printException(f"Sqlite Operational Error in query. SQL: {sql}",err=e)
+            # Re-raise the error
+            raise e
+
         if data != None and len(data) > 0:
             out = self.rows_to_data_row(data)
         return out
@@ -440,18 +447,32 @@ class SqliteTable:
         """
             perform a basic SELECT query returning a list DataRow objects for all columns
         """
-        recs = self.db.execute(self._select_sql(**kwargs)).fetchall()
+        sql = self._select_sql(**kwargs)
+        try:
+            recs = self.db.execute(sql).fetchall()
+        except sqlite3.OperationalError as e:
+            # log the error...
+            printException(f"Sqlite Operational Error in select. SQL: {sql}",err=e)
+            # Re-raise the error
+            raise e
+        
         if recs:
             return self.rows_to_data_row(recs)
         return None
         
     def select_one(self,**kwargs):
         """a version of select method that returns a single named list object or None"""
-        rows = self.rows_to_data_row(
-            [self.db.execute(
-                self._select_sql(**kwargs)
-                ).fetchone()]
-            )
+        sql = self._select_sql(**kwargs)
+        try:
+            rows = self.rows_to_data_row(
+                [self.db.execute(sql).fetchone()]
+                )
+        except sqlite3.OperationalError as e:
+            # log the error...
+            printException(f"Sqlite Operational Error in select_one. SQL: {sql}",err=e)
+            # Re-raise the error
+            raise e
+        
         return self._single_row(rows)
                 
     def select_raw(self,sql,params=''):

@@ -323,6 +323,27 @@ def test_col_not_null():
     nulity = tester.column_not_null("name")
     assert not nulity
 
+
+def test_select_error():
+    # call select with invalid sql should raise an error
+    tester = make_table()
+    with pytest.raises(sqlite3.OperationalError) as e:
+        recs = tester.select(where="id = 1",order_by="select * from user")
+        
+def test_select_one_error():
+    # call select with invalid sql should raise an error
+    tester = make_table()
+    with pytest.raises(sqlite3.OperationalError) as e:
+        recs = tester.select_one(where="id = 1",order_by="Something that sql does not do")
+ 
+
+def test_query_error():
+    # call select with invalid sql should raise an error
+    tester = make_table()
+    with pytest.raises(sqlite3.OperationalError) as e:
+        recs = tester.query("select * fron tester order by something bad")
+        
+
 ############################ The final 'test' ########################
 ######################################################################
 
