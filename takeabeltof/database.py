@@ -485,7 +485,8 @@ class SqliteTable:
             
     def get(self,id,**kwargs):
         """Return a single DataRow object for the record specified by `id` or None"""
-        return self._single_row(self.select(where='{}.id = {}'.format(self.table_name,cleanRecordID(id),)))
+        id = cleanRecordID(id)
+        return self._single_row(self.query(f"select * from {self.table_name} where {self.table_name}.id = {id}"))
         
     def _single_row(self,rows):
         """Return the first element of list rows or else None"""        
