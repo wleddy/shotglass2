@@ -289,7 +289,11 @@ class TableView:
             self.rec_count = len(self.recs)
             
         if 'page' in request.args:
-            self.page = int(request.args['page'])
+            try:
+                self.page = int(request.args['page'])
+            except ValueError:
+                # cant make int
+                self.page=1
 
         if  self.page_size and self.rec_count > self.page_size:
             self.page_count = math.ceil(self.rec_count / self.page_size)
