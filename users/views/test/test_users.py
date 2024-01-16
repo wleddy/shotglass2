@@ -59,9 +59,8 @@ def test_create_test_data():
     
     
 def test_user_get():
-    import shotglass2.users.views.password as login
     from shotglass2.users.models import User
-    
+
     #do some tests...
     user = User(db)
     rec = user.get(1)
@@ -91,7 +90,7 @@ def test_user_get():
     recs = user.select(include_inactive=True)
     assert len(recs) == 4
     #ensure that inactive users are not returned with get
-    rec = user.get('none')
+    rec = user.get('none') # search on username
     assert rec == None
     #and now we can...
     rec = user.get('none',include_inactive=True)
