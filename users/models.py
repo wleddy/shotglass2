@@ -90,7 +90,7 @@ class User(SqliteTable):
         if include_inactive:
             return ""
         
-        return 'and active = 1'
+        return 'and user.active = 1'
         
     def add_role(self,user_id,role):
         """Add roles for the user. role param may be int or str of Role name"""
@@ -207,33 +207,61 @@ class User(SqliteTable):
         return recs
                 
     def select(self,**kwargs):
-        """Limit selection to active user only unless 'include_inactive' is true in kwargs"""
-        where = '{} {}'.format(kwargs.get('where','1'),self._active_only_clause(kwargs.get('include_inactive',False)))
+        """ Custom select for User table
+        kwargs:
+            where -> str: the where clause to use. defaults to "1"
+            include_inactive -> bool: should inactive users be included. defaults to False
+            user_status_select -> str: Overrides include_inactive. may be any of -1, 0, or 1.
+                -1 means include all users
+                1 means active users only
+                0 means inactive users only
+            role_id_list_select -> list: a list of role id's used to limit the selection
+        """
+        # import pdb;pdb.set_trace()
+        where = f"{kwargs.get('where','1')} "
 
-        if "user_status_select" in kwargs and kwargs["user_status_select"] != "-1":
-            where = "{} and active = {}".format(kwargs.get('where','1'),kwargs["user_status_select"])
+        # set to active only by default
+        active_user_clause = self._active_only_clause(kwargs.get('include_inactive',False))
 
-            
+        # include_inactive and user_status_select may both be in kwargs
+        # If so, user_status_select takes precedent
+        if "user_status_select" in kwargs:
+            active_user_clause = '' # include all
+        if kwargs.get("user_status_select",'-1') != "-1":
+            # -1 means show all users, 0 is inactive only, 1 is active only
+            active_user_clause = f' and active = {kwargs["user_status_select"]} '
+
+        # Filter by role?
+        roles_where_clause = ''
+        if "role_id_list_select" in kwargs and kwargs['role_id_list_select'] and 0 not in kwargs['role_id_list_select']:
+            str_ids = [str(x) for x in kwargs['role_id_list_select']]
+            roles_where_clause = f" and role.id in ({','.join(str_ids)})"
+
+
         order_by = kwargs.get('order_by',self.order_by_col)
 
         limit = kwargs.get('limit',9999999)
         offset = kwargs.get('offset',0)
-
-        sql="""
-        select 
-            user.*,
-            user.first_name || ' ' || user.last_name as full_name,
-            0 as max_rank,
-            "" as roles
-            
-             from user where {where} order by {order_by}
-             limit {limit} offset {offset}
-        """.format(where=where,order_by=order_by,limit=limit,offset=offset)
+        
+        sql = f"""select user.*,
+                    user.first_name || ' ' || user.last_name as full_name,
+                    -- max(role.rank) as max_rank,
+                    "" as roles
+                from user
+                join user_role on user_role.user_id = user.id
+                join role on role.id = user_role.role_id
+                where {where} --lower(role.name) in ('admin') 
+                {active_user_clause}
+                {roles_where_clause}
+                group by user.id
+                order by {order_by}
+                limit {limit} offset {offset}
+            """
         
         recs = self.query(sql)
         if recs:
             for rec in recs:
-                rec.max_rank = self.max_role_rank(rec.id)
+                # rec.max_rank = self.max_role_rank(rec.id)
                 
                 # Create a semi-colon separated text list of user roles
                 role_sql = """
