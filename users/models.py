@@ -245,7 +245,7 @@ class User(SqliteTable):
         
         sql = f"""select user.*,
                     user.first_name || ' ' || user.last_name as full_name,
-                    -- max(role.rank) as max_rank,
+                    max(role.rank) as max_rank,
                     "" as roles
                 from user
                 join user_role on user_role.user_id = user.id
@@ -261,7 +261,7 @@ class User(SqliteTable):
         recs = self.query(sql)
         if recs:
             for rec in recs:
-                # rec.max_rank = self.max_role_rank(rec.id)
+                rec.max_rank = self.max_role_rank(rec.id)
                 
                 # Create a semi-colon separated text list of user roles
                 role_sql = """
