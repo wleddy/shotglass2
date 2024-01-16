@@ -27,6 +27,8 @@ class TableView:
         self.page_size = 50 # default page size, set to 0 to disable pagination
         self.page_limit = 10 # max number of page numbers to display in list view. 0 is unlimted
         self.page = 1
+        self.session_table_name = "list_page_table_name"
+        self.session_page_number = 'list_page_number'
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -273,35 +275,44 @@ class TableView:
         return filters
         
         
-    def select_recs(self,**kwargs):
+    def select_recs(self,**kwargs) ->None:
         """Make a selection of recs based on the current filters"""
 
         # for pagination
-        limit = 9999999
-        offset = 0
         self.page = 1
-        self.page_count = 1
         self.rec_count = 0
        
         # get the full record count
-        self._query_data(limit=limit,offset=offset,**kwargs)
+        self._query_data(**kwargs)
         if(self.recs):
             self.rec_count = len(self.recs)
             
         # last page num for this table may be stored here
         # page num is only stored for one table per session. resets to 1 when viewing diff table list
-        session_table_name = "list_page_table_name"
-        session_page_number = 'list_page_number'
-        if session.get(session_table_name,'no match') != self.table.table_name:
-            session[session_page_number] = 1
-        session[session_table_name] = self.table.table_name
+        if session.get(self.session_table_name,'no match') != self.table.table_name:
+            session[self.session_page_number] = 1
+        session[self.session_table_name] = self.table.table_name
         
         try:
-            self.page = int(request.args.get('page',session.get(session_page_number,1)))
+            self.page = int(request.args.get('page',session.get(self.session_page_number,1)))
         except ValueError:
             # cant make int
             self.page=1
 
+        offset, limit = self.set_pagination()
+
+        # get the selection with limits
+        self._query_data(limit=limit,offset=offset,**kwargs)
+
+    def set_pagination(self) ->tuple:
+        """Generate values for pagination
+        Sets self.page_count
+        returns offset and limit as ints
+        """
+        self.page_count = 1
+        limit = 9999999
+        offset = 0
+     
         if  self.page_size and self.rec_count > self.page_size:
             self.page_count = math.ceil(self.rec_count / self.page_size)
             offset = max(self.page-1,0) * self.page_size
@@ -318,10 +329,9 @@ class TableView:
             self.page = 1
 
        # store the page number in session
-        session[session_page_number] = self.page
+        session[self.session_page_number] = self.page
 
-        # get the selection with limits
-        self._query_data(limit=limit,offset=offset,**kwargs)
+        return offset, limit
     
 
     def _query_data(self,**kwargs):
@@ -694,7 +704,6 @@ class ListFilter:
                     else:
                         where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
                         
-            print(where_list)  
             # import pdb;pdb.set_trace()
             order_list = []
             for order_data in session_data[table.table_name][self.ORDERS_NAME]:
