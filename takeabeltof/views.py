@@ -4,6 +4,7 @@ from flask.views import View
 from shotglass2.shotglass import get_site_config, is_ajax_request
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
+from shotglass2.takeabeltof.jinja_filters import plural
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
@@ -53,7 +54,7 @@ class TableView:
         self.pagination_template = 'list_pagination_template.html'
 
         # set the page title root
-        g.title = self.display_name
+        g.title = self.table.table_name.replace('_', ' ').title()
         
         # Include any text you want inserted into the page <head> section
         self.head = ''
@@ -103,7 +104,6 @@ class TableView:
         #### For some reason, passing commit keyword arg 
         #### fails for reasons I can't understand
         ###############################
-        # import pdb;pdb.set_trace()
         # success = self.table.delete(record_identifier,commit=True)
             
         self.success = self.table.delete(record_identifier)
@@ -118,7 +118,7 @@ class TableView:
             for handler in self.handlers:
                 if handler == self.path[0].lower():
                     if handler == 'edit':
-                        return 'Edit Record'
+                        return 'Edit Record method not set'
                         break
                     if handler == 'delete':
                         self.delete()
@@ -213,7 +213,7 @@ class TableView:
     def list(self,**kwargs):
         """Return the response text for flask request"""
         # import pdb;pdb.set_trace()
-        g.title = "{} Record List".format(g.title)
+        g.title = "{} Record List".format(plural(g.title,2))
                 
         self.select_recs(**kwargs)
         
@@ -288,12 +288,19 @@ class TableView:
         if(self.recs):
             self.rec_count = len(self.recs)
             
-        if 'page' in request.args:
-            try:
-                self.page = int(request.args['page'])
-            except ValueError:
-                # cant make int
-                self.page=1
+        # last page num for this table may be stored here
+        # page num is only stored for one table per session. resets to 1 when viewing diff table list
+        session_table_name = "list_page_table_name"
+        session_page_number = 'list_page_number'
+        if session.get(session_table_name,'no match') != self.table.table_name:
+            session[session_page_number] = 1
+        session[session_table_name] = self.table.table_name
+        
+        try:
+            self.page = int(request.args.get('page',session.get(session_page_number,1)))
+        except ValueError:
+            # cant make int
+            self.page=1
 
         if  self.page_size and self.rec_count > self.page_size:
             self.page_count = math.ceil(self.rec_count / self.page_size)
@@ -306,10 +313,16 @@ class TableView:
 
             if self.page_limit and self.page < self.page_count - self.page_limit:
                 self.pages_end = self.page + self.page_limit
+        else:
+            # in the case where no paging is required, set the current page to 1
+            self.page = 1
 
-            # get the selection with limits
-            self._query_data(limit=limit,offset=offset,**kwargs)
-        
+       # store the page number in session
+        session[session_page_number] = self.page
+
+        # get the selection with limits
+        self._query_data(limit=limit,offset=offset,**kwargs)
+    
 
     def _query_data(self,**kwargs):
         filters = self.get_list_filters()
@@ -681,7 +694,7 @@ class ListFilter:
                     else:
                         where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
                         
-                        
+            print(where_list)  
             # import pdb;pdb.set_trace()
             order_list = []
             for order_data in session_data[table.table_name][self.ORDERS_NAME]:
