@@ -12,7 +12,7 @@ from shotglass2.users.views.password import getPasswordHash
 
 from time import time
 
-USER_ROLES_SELECT_OBJ = "user_roles_select" #The ID of the role select html object
+USER_ROLES_SELECT_OBJ = "role_id_list_select" #The ID of the role select html object
 USER_STATUS_SELECT_OBJ = "user_status_select"
 
 from shotglass2.takeabeltof.views import TableView
@@ -49,7 +49,6 @@ class UserView(TableView):
             {'name':'roles'},
         ]
         
-        # self.list_template = 'user_list.html'
         self.list_table_template = 'user_list_table.html'
         g.listURL = url_for('.display')
         g.adminURL = url_for('.admin',id=0)
@@ -95,36 +94,6 @@ class UserView(TableView):
             
         flash(self.result_text)
 
-           
-    def select_recs(self,**kwargs):
-        """Override the default record selection method for lists"""
-        # import pdb;pdb.set_trace()
-        
-        # get user status requested
-        kwargs.update({'user_status_select':session.get(self.USER_STATUS_SELECT_OBJ,"-1"),'user_rank':self.table.max_role_rank(g.user)})
-        super().select_recs(**kwargs)
-        
-        if not self.recs:
-            return
-            
-        """The user list has a potential to limit the selection by user's role(s)
-        
-        After running the normal search, loop through the found records and delete any without the 
-        requested roles
-        
-        """
-
-        user_role_id_list = session.get(self.USER_ROLES_SELECT_OBJ)
-        if not user_role_id_list or 0 in user_role_id_list:
-            return
-            
-        user_role_id_list = ','.join(str(x) for x in user_role_id_list)
-        
-        for x in range(len(self.recs)-1,-1,-1): # turkey shoot loop
-            user_role_rec = UserRole(self.db).select_one(where="user_id = {} and role_id in ({})".format(self.recs[x].id,user_role_id_list))
-            if not user_role_rec:
-                del self.recs[x]
-        
         
 mod = Blueprint('user',__name__, template_folder='templates/user', url_prefix='/user', static_folder="static")
 
@@ -174,6 +143,7 @@ def home():
         return redirect(g.listURL)
         
     return redirect('/')
+
     
 @mod.route('/<path:path>',methods=['GET','POST',])
 @mod.route('/<path:path>/',methods=['GET','POST',])
@@ -185,9 +155,13 @@ def display(path=""):
     user = User(g.db)
     user_rank = user.max_role_rank(g.user)
     user_list = UserView(User,g.db)
-    return user_list.dispatch_request(include_inactive=True,user_rank=user_rank)
-            
+    return user_list.dispatch_request(
+        user_rank=user_rank,
+        role_id_list_select = session.get(USER_ROLES_SELECT_OBJ,[]),
+        user_status_select = session.get(USER_STATUS_SELECT_OBJ,'-1'),
+    )
     
+
 @mod.route('/edit/<int:id>/', methods=['POST','GET'])
 @table_access_required(User)
 def admin(id=None):
