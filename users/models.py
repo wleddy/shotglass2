@@ -117,7 +117,7 @@ class User(SqliteTable):
         return False
         
     def get(self,id,**kwargs):
-        """Return a single namedlist for the user with this id.
+        """Return a single Datarow instance or None for the user with this id.
         If 'id' is a string, try to find the user by username or email using self.get_by_username_or_email
         If include_inactive=True is in kwargs the search will include inactive users else they are excluded from 
         the result.
@@ -131,7 +131,7 @@ class User(SqliteTable):
         return self.select_one(where=where)
 
     def get_by_username_or_email(self,nameoremail,**kwargs):
-        """Return a single namedlist obj or none based on the username or email"""
+        """Return a single Datarow instance or None based on the username or email"""
 
         include_inactive = kwargs.get('include_inactive',False)
 
@@ -140,7 +140,7 @@ class User(SqliteTable):
         return self._single_row(self.select_raw(sql,(nameoremail.strip(),nameoremail.strip())))
     
     def get_roles(self,userID,**kwargs):
-        """Return a list of the role namedlist objects for the user's roles"""
+        """Return a list of the role DataRow objects for the user's roles"""
         
         order_by = kwargs.get('order_by','rank desc, name')
         sql = """select * from role where id in
@@ -184,7 +184,7 @@ class User(SqliteTable):
         
     def get_with_roles(self,role_list):
         """Return a list of users who have one or more of the roles in role_list
-        Role list may be a list of role id's or it may be a namedlist of role records
+        Role list may be a list of role id's or it may be a DataRows of role records
         """
         if not isinstance(role_list,list):
             raise ValueError("role_list must be a list of records or ints")
