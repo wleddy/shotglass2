@@ -76,14 +76,17 @@ Database access and some utility functions are grouped in the 'takeabeltof' pack
 
 A basic users and roles functionality is provided in the 'users' package. [Read More Here.](/docs/users/index.md)
 
-### Required packages:
+### Required packages from the Python Package Index:
 
-* python 3.6
-* Flask
-* Flask-mail
-* mistune for Markdown support
-* namedlist
+* python >= 3.11
+* Flask >= 3
+* google-api-python-client 
+* google-auth-httplib2
+* google-auth-oauthlib
+* icalendar
+* mistune (for Markdown support)
+* Pillow
 * pytest
 * pytz
-
+* Werkzeug
 
