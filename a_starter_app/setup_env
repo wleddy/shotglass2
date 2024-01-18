@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo ""
+set -e
 
 if [ ! -d "env" ]
 then
@@ -16,6 +17,7 @@ then
         pip install -r requirements.txt
     else
         echo "##### Not able to create env #####"
+        exit 1
     fi
 else
     echo "##### a directory named 'env' already exists ####"
