@@ -87,8 +87,6 @@ def _before():
     if 'instance' in request.url:
         return abort(404)
         
-    # import pdb;pdb.set_trace()
-    # print(app.url_map)
     session.permanent = True
     
     shotglass.get_site_config(app)
@@ -98,9 +96,35 @@ def _before():
     
     # Is the user signed in?
     g.user = None
-    if 'user' in session:
-        g.user = session['user']
-        
+    is_admin = False
+    if 'user_id' in session and 'user' in session:
+        # Refresh the user session
+        setUserStatus(session['user'],cleanRecordID(session['user_id']))
+        is_admin = User(g.db).is_admin(session['user_id'])
+
+    # if site is down and user is not admin, stop them here.
+    # will allow an admin user to log in
+    down = Pref(g.db).get("Site Down Till",
+                        user_name=shotglass.get_site_config().get("HOST_NAME"),
+                        default='',
+                        description = 'Enter something that looks like a date or time. It will be displayed to visitors and make the site inaccessable. Delete the value to allow access again.',
+                        )
+    if down and down.value.strip():
+        if not is_admin:
+            # log the user out...
+            from shotglass2.users.views import login
+            if g.user:
+                login.logout()
+
+            # this will allow an admin to log in.
+            if request.url.endswith(url_for('login.login')):
+                return login.login()
+            
+            g.title = "Sorry"
+            return render_template('site_down.html',down_till = down.value.strip())
+        else:
+            flash("The Site is in Maintenance Mode. Changes may be lost...",category='warning')
+         
     create_menus()
         
         
