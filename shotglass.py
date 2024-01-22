@@ -176,7 +176,7 @@ def register_users(app,subdomain=None):
     mes = 'shotglass.register_users should be replaced with users.register_users'
     from app import app
     app.logger.warning(mes)
-    raise DeprecationWarning(mes)
+
     from shotglass2.users.views import user, login, role, pref
     app.register_blueprint(user.mod, subdomain=subdomain)
     app.register_blueprint(login.mod, subdomain=subdomain)
@@ -287,7 +287,7 @@ def static(filename):
 
 
 def user_setup():
-    raise DeprecationWarning('Use set_user_menus instead')
+    # To support old app.py code
     setup_user_menus()
 
 
