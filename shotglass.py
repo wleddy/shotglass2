@@ -119,7 +119,7 @@ def get_site_config(this_app=None):
 
 def initalize_user_tables(db):
     """Initialize the Users, Prefs and Roles tables"""
-        
+            
     from shotglass2.users.models import init_db as users_init_db 
     users_init_db(db)
     
@@ -173,6 +173,10 @@ def make_path(filespec):
 
 
 def register_users(app,subdomain=None):
+    mes = 'shotglass.register_users should be replaced with users.register_users'
+    from app import app
+    app.logger.warning(mes)
+    raise DeprecationWarning(mes)
     from shotglass2.users.views import user, login, role, pref
     app.register_blueprint(user.mod, subdomain=subdomain)
     app.register_blueprint(login.mod, subdomain=subdomain)
@@ -283,6 +287,11 @@ def static(filename):
 
 
 def user_setup():
+    raise DeprecationWarning('Use set_user_menus instead')
+    setup_user_menus()
+
+
+def set_user_menus():
     if 'admin' not in g:
         g.admin = Admin(g.db)
         # Add items to the Admin menu
@@ -299,9 +308,10 @@ def user_setup():
 class ShotLog():
     """Handle creation and access to log"""
     
-    def __init__(self,log_file_path=None):
+    def __init__(self,log_file_path=None,level=logging.INFO):
         site_config = get_site_config()
         self.log_file_path = log_file_path or site_config.get('INSTANCE_PATH','instance/') + site_config.get('LOG_FILE_NAME',"log.log")
+        self.log_level = level
 
     def start(self,app,filename=None,maxBytes=10000,backupCount=5):
         filename = filename if filename else self.log_file_path
@@ -309,11 +319,11 @@ class ShotLog():
         # initialize the log handler
         logHandler = RotatingFileHandler(filename=filename, maxBytes=maxBytes, backupCount=backupCount)
 
-        # set the log handler level
-        logHandler.setLevel(logging.INFO)
 
+        # set the log handler level
+        logHandler.setLevel(self.log_level)
         # set the app logger level
-        app.logger.setLevel(logging.INFO)
+        app.logger.setLevel(self.log_level)
 
         app.logger.addHandler(logHandler)
         
@@ -355,9 +365,9 @@ class ShotLog():
                 yield segment
  
     
-def start_logging(app,filename=None,maxBytes=100000,backupCount=5):
+def start_logging(app,filename=None,maxBytes=100000,backupCount=5,level=logging.INFO):
     # to handle legacy code
-    log = ShotLog()
+    log = ShotLog(level=level)
     log.start(app,filename=None,maxBytes=100000,backupCount=5)
     
     
@@ -390,9 +400,7 @@ def do_backups(source_file_path,**kwargs):
 
     while not bac.fatal_error and (exit_after < loop_counter):
         loop_counter += 1
-        start_time = time.time()
         bac.backup()
-        end_time = round(time.time() - start_time,4)
         
         if app.config['TESTING']:
             return bac
@@ -407,7 +415,7 @@ def do_backups(source_file_path,**kwargs):
         else:
             # limit the amount of logging the backup process does
             if app.config['DEBUG'] or bac.result_code == 0 or bac.result_code >= 10:
-                app.logger.info("[{}] -- Backup Result: {}, code: {} in {} secs".format(local_datetime_now(),bac.result,bac.result_code,end_time))
+                app.logger.info("[{}] -- Backup Result: {}, code: {}".format(local_datetime_now(),bac.result,bac.result_code))
 
             time.sleep(30*60) #sleep for half an hour
     

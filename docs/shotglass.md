@@ -70,7 +70,7 @@ Handle the lookup and delivery of a static file. Return the first matching file 
 4. finally, root static and shotglass2/static directories
 
 ---
-> #### user_setup(): => Nothing
+> #### set_user_menus(): => Nothing
 
 Add to or create `g.admin` global with the admin privileges for the User, Roles and Prefs tables.
 
