@@ -288,7 +288,7 @@ def static(filename):
 
 def user_setup():
     # To support old app.py code
-    setup_user_menus()
+    set_user_menus()
 
 
 def set_user_menus():
