@@ -3,7 +3,7 @@ import hashlib
 import random
 
 
-def getPasswordHash(pw, theSalt=None, timesAround='05',encoding='utf-8'):
+def getPasswordHash(pw :str, theSalt :str | None=None, timesAround='05',encoding='utf-8') -> str | None:
     """Return a string hash of the password or None"""
     from shotglass2.shotglass import get_site_config
     
