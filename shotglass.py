@@ -126,7 +126,7 @@ def _after_request(response :object) -> object:
     """
     # ses = session.get('session_id','No Session')
     # print('_after:',request.path,ses[15:25])
-    print('_after:',session)
+    # print('_after:',session)
     # import pdb; pdb.set_trace()
 
     if not 'static' in request.url:
@@ -179,7 +179,7 @@ def _before_request(db :object) -> None:
     """
     # ses = session.get('session_id','No Session')
     # print('_before:',request.path,ses[15:25])
-    print('_before:',session)
+    # print('_before:',session)
     # import pdb; pdb.set_trace()
 
     # restore session from database
