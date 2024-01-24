@@ -1,6 +1,6 @@
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import cleanRecordID
-from shotglass2.takeabeltof.date_utils import local_datetime_now
+from shotglass2.takeabeltof.date_utils import local_datetime_now, getDatetimeFromString
 from shotglass2.users.views.password import getPasswordHash
 import time
 import random
@@ -520,7 +520,24 @@ class VisitData(SqliteTable):
         column_list = []
 
         return column_list
-        
+    
+    def _is_expired(self,rec: object) -> True | False :
+        """Return True if record has expired else False"""
+
+        if rec and rec.expires:
+            ex =  getDatetimeFromString(rec.expires)
+            if ex and ex < local_datetime_now():
+                return True
+            
+        return False
+
+
+    def delete(self,identifier):
+        """Accept Session_id or record id for deletion"""
+        rec = self.get(identifier)
+        if rec:
+            super().delete(rec.id)
+
 
     def get(self,value,**kwargs):
         """can get by data by id or session_id"""
@@ -529,8 +546,14 @@ class VisitData(SqliteTable):
         else:
             where = ' id = {}'.format(cleanRecordID(value))
             
-        return self.select_one(where=where)
+        rec =  self.select_one(where=where)
 
+        #Check expires date
+        if self._is_expired(rec):
+            rec = None
+
+        return rec
+    
 
     def new(self):
         """Create a new VisitData record and assign a session_id"""
