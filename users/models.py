@@ -2,7 +2,9 @@ from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.takeabeltof.date_utils import local_datetime_now
 from shotglass2.users.views.password import getPasswordHash
-        
+import time
+import random
+
 class Role(SqliteTable):
     """Handle some basic interactions with the role table"""
     def __init__(self,db_connection):
@@ -480,7 +482,81 @@ class Pref(SqliteTable):
             result = rec
             
         return result
+    
+
+class VisitData(SqliteTable):
+    """
+        A table to store a visitor's session data between requests.
+
+        My Session data has got too big for the officially allowed browser space.
+        The session data will now be stored here and reloaded into session with
+        each request.
+
+    """
+    
+    def __init__(self,db_connection):
+        super().__init__(db_connection)
+        self.table_name = 'visit_data'
+        self.order_by_col = 'id'
+        self.defaults = {'value':'','user_name':'Unknown'}
         
+    def create_table(self):
+        """Define and create the table"""
+
+        sql = """
+            session_id TEXT,
+            user_name TEXT,
+            value TEXT,
+            expires DATETIME,
+            """
+        super().create_table(sql)
+        
+        
+    @property
+    def _column_list(self):
+        """A list of dicts used to add fields to an existing table.
+        """
+
+        column_list = []
+
+        return column_list
+        
+
+    def get(self,value,**kwargs):
+        """can get by data by id or session_id"""
+        if type(value) is str:
+            where = f' session_id = "{value}"'
+        else:
+            where = ' id = {}'.format(cleanRecordID(value))
+            
+        return self.select_one(where=where)
+
+
+    def new(self):
+        """Create a new VisitData record and assign a session_id"""
+
+        from shotglass2.shotglass import get_site_config
+
+        rec = super().new()
+
+        found_match = True
+        while found_match:
+            rec.session_id = get_site_config()['HOST_NAME'] + "_"
+            rec.session_id += str(getPasswordHash(str(time.time() + random.randint(100,1000))))
+            found_match = self.get(rec.session_id) is not None
+
+        return rec
+    
+
+    def save(self,rec):
+        """Update the expries field and save the record"""
+        from shotglass2.shotglass import get_site_config
+        rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
+        super().save(rec)
+        self.commit()
+
+        return rec
+
         
 def init_db(db):
     """Create Tables."""

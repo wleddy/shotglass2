@@ -1,11 +1,12 @@
-from flask import Flask, render_template, g, url_for, request, flash
+from flask import Flask, render_template, g, url_for, request, flash, session
 import logging
 from logging.handlers import RotatingFileHandler
 from shotglass2.takeabeltof.sqlite_backup import SqliteBackup
 from shotglass2.takeabeltof.date_utils import local_datetime_now
 from shotglass2.takeabeltof.utils import send_static_file
-from shotglass2.users.models import User,Role,Pref
+from shotglass2.users.models import User,Role,Pref,VisitData
 from shotglass2.users.admin import Admin
+import json
 import os  
 import threading
 import time
@@ -35,6 +36,8 @@ def create_app(name,instance_path=None,config_filename=None,**kwargs):
     app.instance_relative_config=True
     app.instance_path = os.path.normpath(os.path.join(app.root_path,instance_path))
     app.config.from_pyfile(os.path.join(app.instance_path,config_filename))
+
+    app.after_request(_after_request)
     
     return app
     
@@ -116,13 +119,87 @@ def get_site_config(this_app=None):
     
     return site_config
 
+def _after_request(response :object) -> object:
+    """Register Final steps before response is returned
+    
+    Receives the response object from Flask and must return it.
+    """
+    # ses = session.get('session_id','No Session')
+    # print('_after:',request.path,ses[15:25])
+    print('_after:',session)
+    # import pdb; pdb.set_trace()
+
+    if not 'static' in request.url:
+
+
+        session_id = session.get('session_id')
+        visit_data = VisitData(g.db)
+        rec = None
+        if session_id:
+            rec = visit_data.get(session_id)
+        if not rec:
+            rec = visit_data.new()
+
+        if rec:
+            visit_dict = {}
+            values_to_remove = []
+            for k, v in session.items():
+                if k == 'session_id': 
+                    continue
+                visit_dict.update({k:v})
+                if not k.startswith('_'):
+                    # these seem to be flask specific
+                    values_to_remove.append(k)
+
+            #### For inital testing, just compare what I got from session with stored data
+            from app import app
+            if rec.value and rec.value != json.dumps(visit_dict):
+                app.logger.warning(f"###### Stored Session Failed --- {request.path}")
+                app.logger.warning(f"stored session values:\n{rec.value}")
+                app.logger.warning(f"session values:\n{json.dumps(visit_dict)}")
+
+            rec.value = json.dumps(visit_dict)
+            rec.user_name = session.get('user_name','Unknown')
+            visit_data.save(rec)
+
+            #### disable for inital testing
+            # # remove my items from session
+            # for k in values_to_remove:
+            #     del session[k]
+            
+            session['session_id'] = rec.session_id
+        
+    return response
+
+def _before_request(db :object) -> None:
+    """This is designed to be called as the request is initally processed.
+    
+    It will be used to inject visit_data (the saved session) into the Flask session obj.
+
+    """
+    # ses = session.get('session_id','No Session')
+    # print('_before:',request.path,ses[15:25])
+    print('_before:',session)
+    # import pdb; pdb.set_trace()
+
+    # restore session from database
+    visit_data = VisitData(db)
+    session_id = session.get('session_id')
+    if session_id:
+        rec = visit_data.get(session_id)
+        if rec and isinstance(rec.value,str):
+
+            #### For initial testing purposes, don't actually update the session
+            return
+            session.update(json.loads(rec.value))
+
 
 def initalize_user_tables(db):
     """Initialize the Users, Prefs and Roles tables"""
-            
+
     from shotglass2.users.models import init_db as users_init_db 
     users_init_db(db)
-    
+
     
 def is_ajax_request():
     """Return True if this request was submitted as XMLHttpRequest else False"""
@@ -303,6 +380,7 @@ def set_user_menus():
     g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
     g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
+    g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)
         
         
 class ShotLog():
