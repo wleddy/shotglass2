@@ -3,12 +3,16 @@ import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
 from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
+from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.tools.views import tools
 from shotglass2.users.admin import Admin
-from shotglass2.users.models import User
+from shotglass2.users.views import login, user
+from shotglass2.users.models import User, Pref
 
 # Create app
-import logging 
+import logging
+
+import shotglass2.users.views.user 
 
 app = shotglass.create_app(
         __name__,
@@ -18,17 +22,9 @@ app = shotglass.create_app(
         )
         
 def start_app():
-    shotglass.start_logging(app)
+    shotglass.start_logging(app,level=logging.DEBUG)
     initalize_base_tables()
-    ## Setup the routes for users
-    shotglass.register_users(app)
-
-    # setup www.routes...
-    shotglass.register_www(app)
-
-    app.register_blueprint(tools.mod)
-    
-    register_blueprints() # Register all the other bluepints for the app
+    register_blueprints() # Register all bluepints
 
     # use os.path.normpath to resolve true path to data file when using '../' shorthand
     shotglass.start_backup_thread(
@@ -99,7 +95,7 @@ def _before():
     is_admin = False
     if 'user_id' in session and 'user' in session:
         # Refresh the user session
-        setUserStatus(session['user'],cleanRecordID(session['user_id']))
+        login.setUserStatus(session['user'],cleanRecordID(session['user_id']))
         is_admin = User(g.db).is_admin(session['user_id'])
 
     # if site is down and user is not admin, stop them here.
@@ -112,7 +108,6 @@ def _before():
     if down and down.value.strip():
         if not is_admin:
             # log the user out...
-            from shotglass2.users.views import login
             if g.user:
                 login.logout()
 
@@ -128,6 +123,13 @@ def _before():
     create_menus()
         
         
+@app.after_request
+def _after(response):
+    # print(session)
+    # session.clear()
+    # session['visit_id'] = "123456"
+    return response
+ 
 def create_menus():
     """Create g.menu_items and g.admin objects.
     
@@ -169,8 +171,9 @@ def create_menus():
             minimum_rank_required=500,
         )
     
-    
-    shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
+    # set up the User menu
+    shotglass.set_user_menus() # g.admin now holds access rules Users, Prefs and Roles
+    # shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
 
 @app.teardown_request
 def _teardown(exception):
@@ -193,16 +196,21 @@ def initalize_base_tables(db=None):
         db = get_db()
     
     shotglass.initalize_user_tables(db)
-
-    # ### setup any other tables you need here....
-    # import starter_module.models
-    # starter_module.models.init_db(db)
     
 def register_blueprints():
     """Register all your blueprints here and initialize 
     any data tables they need.
     """
-    # # add app specific modules...
+    # Some basic pages
+    ## Setup the routes for users
+    user.register_users(app)
+
+    # setup www.routes...
+    shotglass.register_www(app)
+
+    app.register_blueprint(tools.mod)
+
+    # add app specific modules...
     # from starter_module.models import init_db as starter_init
     # starter_init(g.db) #initialize the tables for the module
     # from starter_module.views import starter

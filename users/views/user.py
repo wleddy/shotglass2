@@ -669,4 +669,12 @@ def set_username_from_form(rec):
             rec.username = user_name
         else:
             rec.username = None
+
+
+def register_users(app,subdomain=None):
+    from shotglass2.users.views import user, login, role, pref
+    app.register_blueprint(user.mod, subdomain=subdomain)
+    app.register_blueprint(login.mod, subdomain=subdomain)
+    app.register_blueprint(role.mod, subdomain=subdomain)
+    app.register_blueprint(pref.mod, subdomain=subdomain)
     
