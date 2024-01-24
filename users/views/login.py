@@ -2,7 +2,7 @@ from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash, Blueprint
 from time import sleep, time
 import random
-from shotglass2.users.models import User
+from shotglass2.users.models import User, VisitData
 from shotglass2.users.views.password import getPasswordHash, matchPasswordToHash
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.admin import silent_login
@@ -58,6 +58,7 @@ def login():
             get_pass=True
         elif result != 0:
             session['loginTries'] = 0
+            del session['loginTries']
             if result == -1:
                 flash("Your account is inactive")
                 return render_template('inactive.html')
@@ -83,6 +84,8 @@ def login():
 @mod.route('/logout', methods=['GET'])
 @mod.route('/logout/', methods=['GET'])
 def logout():
+    # Delete the visit data if present
+    VisitData(g.db).delete(session.get('session_id'))
     session.clear()
     g.user = None
     #flash("Successfully Logged Out")
