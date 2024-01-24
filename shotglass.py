@@ -124,13 +124,12 @@ def _after_request(response :object) -> object:
     
     Receives the response object from Flask and must return it.
     """
-    # ses = session.get('session_id','No Session')
-    # print('_after:',request.path,ses[15:25])
-    # print('_after:',session)
-    # import pdb; pdb.set_trace()
 
-    if not 'static' in request.url:
-
+    if not request.path.startswith('/static'):
+        # ses = session.get('session_id','No Session')
+        # print('_after:',request.path,ses[15:25])
+        # print('_after:',session)
+        # import pdb; pdb.set_trace()
 
         session_id = session.get('session_id')
         visit_data = VisitData(g.db)
@@ -147,26 +146,19 @@ def _after_request(response :object) -> object:
                 if k == 'session_id': 
                     continue
                 visit_dict.update({k:v})
-                if not k.startswith('_'):
+                if k.startswith('_'):
                     # these seem to be flask specific
-                    values_to_remove.append(k)
-
-            #### For inital testing, just compare what I got from session with stored data
-            from app import app
-            if rec.value and rec.value != json.dumps(visit_dict):
-                app.logger.warning(f"###### Stored Session Failed --- {request.path}")
-                app.logger.warning(f"stored session values:\n{rec.value}")
-                app.logger.warning(f"session values:\n{json.dumps(visit_dict)}")
+                    continue
+                values_to_remove.append(k)
 
             rec.value = json.dumps(visit_dict)
             rec.user_name = session.get('user_name','Unknown')
             visit_data.save(rec)
 
-            #### disable for inital testing
-            # # remove my items from session
-            # for k in values_to_remove:
-            #     del session[k]
-            
+            # remove my items from session
+            for k in values_to_remove:
+                del session[k]
+
             session['session_id'] = rec.session_id
         
     return response
@@ -188,9 +180,6 @@ def _before_request(db :object) -> None:
     if session_id:
         rec = visit_data.get(session_id)
         if rec and isinstance(rec.value,str):
-
-            #### For initial testing purposes, don't actually update the session
-            return
             session.update(json.loads(rec.value))
 
 
@@ -446,8 +435,9 @@ class ShotLog():
     
 def start_logging(app,filename=None,maxBytes=100000,backupCount=5,level=logging.INFO):
     # to handle legacy code
+    # import pdb;pdb.set_trace()
     log = ShotLog(level=level)
-    log.start(app,filename=None,maxBytes=100000,backupCount=5)
+    log.start(app,filename,maxBytes,backupCount)
     
     
 def do_backups(source_file_path,**kwargs):
