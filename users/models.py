@@ -532,19 +532,23 @@ class VisitData(SqliteTable):
         return False
 
 
-    def delete(self,identifier):
+    def delete(self,identifier: str | int) ->bool:
         """Accept Session_id or record id for deletion"""
         rec = self.get(identifier)
         if rec:
-            super().delete(rec.id)
+            return super().delete(rec.id)
+
+        return False
 
 
-    def get(self,value,**kwargs):
+    def get(self,value: str | int,**kwargs) -> object | None:
         """can get by data by id or session_id"""
-        if type(value) is str:
+        if isinstance(value,int) or value.isnumeric():
+            where = ' id = {}'.format(cleanRecordID(value))
+        elif isinstance(value,str):
             where = f' session_id = "{value}"'
         else:
-            where = ' id = {}'.format(cleanRecordID(value))
+            return None
             
         rec =  self.select_one(where=where)
 
@@ -555,7 +559,7 @@ class VisitData(SqliteTable):
         return rec
     
 
-    def new(self):
+    def new(self) -> object:
         """Create a new VisitData record and assign a session_id"""
 
         from shotglass2.shotglass import get_site_config
@@ -571,7 +575,7 @@ class VisitData(SqliteTable):
         return rec
     
 
-    def save(self,rec):
+    def save(self,rec:object) -> object:
         """Update the expries field and save the record"""
         from shotglass2.shotglass import get_site_config
         rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
