@@ -29,6 +29,7 @@ class TableView:
         self.page = 1
         self.session_table_name = "list_page_table_name"
         self.session_page_number = 'list_page_number'
+        self.filter_changed = False
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -131,12 +132,17 @@ class TableView:
                             # redirect to clear the old path name in browser
                         return redirect(g.listURL)
                     if handler == 'filter':
+                        self.filter_changed = True
                         return ListFilter()._save_list_filter()
                     if handler == 'order':
+                        self.filter_changed = True
                         return ListFilter()._save_list_order()
                     if handler == 'export':
                         # export the currently selected records
                         return self.export()
+                    
+        if self._ajax_request:
+            self.filter_changed = True
                     
         return self.list(**kwargs)
         
@@ -299,6 +305,16 @@ class TableView:
         except ValueError:
             # cant make int
             self.page=1
+
+        if self.filter_changed:
+            # go to page one when a new filter or order is applied
+            self.page = 1
+            # Reset the marker
+            self.filter_changed = False
+
+        if (self.page - 1) * self.page_size > self.rec_count:
+            # selection results in too few pages
+            self.page = 1
 
         offset, limit = self.set_pagination()
 
