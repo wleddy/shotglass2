@@ -107,7 +107,8 @@ class TableView:
         #### fails for reasons I can't understand
         ###############################
         # success = self.table.delete(record_identifier,commit=True)
-            
+        # import pdb;pdb.set_trace()
+
         self.success = self.table.delete(record_identifier)
         if not self.success:
             self.result_text = 'Not able to delete that record.'
@@ -120,7 +121,7 @@ class TableView:
             for handler in self.handlers:
                 if handler == self.path[0].lower():
                     if handler == 'edit':
-                        return 'Edit Record method not set'
+                        return 'Edit Record method not set. Maybe use EditView?'
                         break
                     if handler == 'delete':
                         self.delete()
@@ -421,7 +422,6 @@ class EditView():
         self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
         if not self.edit_fields:
             self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
-        self._set_edit_fields() # ensure that all dictionaries are complete
 
 
     def after_get_hook(self):
