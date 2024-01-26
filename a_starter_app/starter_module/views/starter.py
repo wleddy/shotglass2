@@ -2,9 +2,9 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-from starter_module.models import StarterTable
+import models
 
-PRIMARY_TABLE = StarterTable
+PRIMARY_TABLE = models.StarterTable
 
 mod = Blueprint('starter',__name__, template_folder='templates/', url_prefix='/starter')
 
@@ -85,4 +85,45 @@ def validForm(rec):
     goodForm = True
                 
     return goodForm
+
     
+def create_menus():
+    """
+    Create menu items for this module
+
+    g.menu_items and g.admin are created in app.
+
+    Menu elements defined directly in menu_items have no access control.
+    Menu elements defined using g.admin.register can have access control.
+
+    """
+    g.menu_items.append({'title':'Something','url':url_for('.something')})
+    g.admin.register(models.StarterTable,
+        url_for('starter.display'),
+        display_name='Starter',
+        top_level=True,
+        minimum_rank_required=500,
+    )
+
+def register_blueprints(app, subdomain = None) -> None:
+    """
+    Register this module with the app for this module
+
+    Arguments:
+        app -- the current app
+
+    Keyword Arguments:
+        subdomain -- limit access to this subdomain if difined (default: {None})
+    """ 
+    app.register_blueprint(mod, subdomain=subdomain)
+
+
+def initialize_tables(db) -> None:
+    """
+    Initialize all the tables for this module
+
+    Arguments:
+        db -- connection to the database
+    """
+    
+    models.init_db(db)

@@ -22,9 +22,10 @@ app = shotglass.create_app(
         )
         
 def start_app():
-    shotglass.start_logging(app,level=logging.DEBUG)
-    initalize_base_tables()
-    register_blueprints() # Register all bluepints
+    shotglass.start_logging(app)
+    initalize_tables()
+    register_jinja_filters(app)
+    register_blueprints() # Register all the bluepints for the app
 
     # use os.path.normpath to resolve true path to data file when using '../' shorthand
     shotglass.start_backup_thread(
@@ -40,8 +41,6 @@ def start_app():
 def inject_site_config():
     # Add 'site_config' dict to template context
     return {'site_config':shotglass.get_site_config()}
-
-register_jinja_filters(app)
 
 
 def get_db(filespec=None):
@@ -82,20 +81,24 @@ def _before():
     #ensure that nothing is served from the instance directory
     if 'instance' in request.url:
         return abort(404)
-        
+            
+    if 'static' in request.url:
+        return
+    
     session.permanent = True
     
-    shotglass.get_site_config(app)
     shotglass.set_template_dirs(app)
-    
     get_db()
     
+    # load the saved visit_data into session
+    shotglass._before_request(g.db)
+
     # Is the user signed in?
     g.user = None
     is_admin = False
     if 'user_id' in session and 'user' in session:
         # Refresh the user session
-        login.setUserStatus(session['user'],cleanRecordID(session['user_id']))
+        setUserStatus(session['user'],cleanRecordID(session['user_id']))
         is_admin = User(g.db).is_admin(session['user_id'])
 
     # if site is down and user is not admin, stop them here.
@@ -108,6 +111,7 @@ def _before():
     if down and down.value.strip():
         if not is_admin:
             # log the user out...
+            from shotglass2.users.views import login
             if g.user:
                 login.logout()
 
@@ -119,9 +123,9 @@ def _before():
             return render_template('site_down.html',down_till = down.value.strip())
         else:
             flash("The Site is in Maintenance Mode. Changes may be lost...",category='warning')
-         
+
     create_menus()
-        
+
         
 @app.after_request
 def _after(response):
@@ -144,6 +148,10 @@ def create_menus():
     # g.menu_items should be a list of dicts
     #  with keys of 'title' & 'url' used to construct
     #  the non-table based items in the main menu
+
+    # g.admin items are added to the navigation menu by default
+    g.admin = Admin(g.db) # This is where user access rules are stored
+
     g.menu_items = [
         {'title':'Home','url':url_for('www.home')},
         {'title':'About','url':url_for('www.about')},
@@ -151,10 +159,10 @@ def create_menus():
         {'title':'Docs','url':url_for('www.docs')},
         ]
         
-    # g.admin items are added to the navigation menu by default
-    g.admin = Admin(g.db) # This is where user access rules are stored
-    
     # # Add a module to the menu
+    from starter_module.views import starter
+    starter.create_menus()
+
     # from starter_module.models import StarterTable
     # g.admin.register(StarterTable,
     #         url_for('starter.display'),
@@ -190,12 +198,10 @@ def server_error(error):
     return shotglass.server_error(error)
 
 
-def initalize_base_tables(db=None):
+def initalize_tables(db=None):
     """Place code here as needed to initialze all the tables for this site"""
-    if not db:
-        db = get_db()
     
-    shotglass.initalize_user_tables(db)
+    user.initalize_tables(g.db)
     
 def register_blueprints():
     """Register all your blueprints here and initialize 
@@ -203,18 +209,17 @@ def register_blueprints():
     """
     # Some basic pages
     ## Setup the routes for users
-    user.register_users(app)
+    user.register_blueprints(app)
 
     # setup www.routes...
     shotglass.register_www(app)
 
     app.register_blueprint(tools.mod)
 
-    # add app specific modules...
-    # from starter_module.models import init_db as starter_init
-    # starter_init(g.db) #initialize the tables for the module
+    # # add app specific modules...
     # from starter_module.views import starter
-    # app.register_blueprint(starter.mod)
+    # starter.db_init(g.db) #initialize the tables for the module
+    # starter.register_blueprints(app)
     # # update function 'create_menus' to display menu items for the app
 
 
