@@ -183,13 +183,6 @@ def _before_request(db :object) -> None:
             session.update(json.loads(rec.value))
 
 
-def initalize_user_tables(db):
-    """Initialize the Users, Prefs and Roles tables"""
-
-    from shotglass2.users.models import init_db as users_init_db 
-    users_init_db(db)
-
-    
 def is_ajax_request():
     """Return True if this request was submitted as XMLHttpRequest else False"""
     try:
@@ -238,17 +231,17 @@ def make_path(filespec):
     return True
 
 
-def register_users(app,subdomain=None):
-    mes = 'shotglass.register_users should be replaced with users.register_users'
-    from app import app
-    app.logger.warning(mes)
+# def register_users(app,subdomain=None):
+    # shotglass.register_users should be replaced with users.register_users
+    # from app import app
+    # app.logger.warning(mes)
 
-    from shotglass2.users.views import user, login, role, pref, visit_data
-    app.register_blueprint(user.mod, subdomain=subdomain)
-    app.register_blueprint(login.mod, subdomain=subdomain)
-    app.register_blueprint(role.mod, subdomain=subdomain)
-    app.register_blueprint(pref.mod, subdomain=subdomain)
-    app.register_blueprint(visit_data.mod, subdomain=subdomain)
+    # from shotglass2.users.views import user, login, role, pref, visit_data
+    # app.register_blueprint(user.mod, subdomain=subdomain)
+    # app.register_blueprint(login.mod, subdomain=subdomain)
+    # app.register_blueprint(role.mod, subdomain=subdomain)
+    # app.register_blueprint(pref.mod, subdomain=subdomain)
+    # app.register_blueprint(visit_data.mod, subdomain=subdomain)
 
 
 def register_www(app,subdomain=None):
