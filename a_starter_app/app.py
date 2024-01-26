@@ -1,4 +1,4 @@
-from flask import g, session, request, redirect, abort, url_for
+from flask import g, session, request, redirect, abort, url_for, render_template, flash
 import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
@@ -58,7 +58,7 @@ def get_db(filespec=None):
     # test the path, if not found, try to create it
     if shotglass.make_db_path(filespec):
         g.db = Database(filespec).connect()
-        initalize_base_tables(g.db)
+        initalize_tables(g.db)
     
         return g.db
     else:
@@ -98,11 +98,12 @@ def _before():
     is_admin = False
     if 'user_id' in session and 'user' in session:
         # Refresh the user session
-        setUserStatus(session['user'],cleanRecordID(session['user_id']))
+        login.setUserStatus(session['user'],cleanRecordID(session['user_id']))
         is_admin = User(g.db).is_admin(session['user_id'])
 
     # if site is down and user is not admin, stop them here.
     # will allow an admin user to log in
+    from shotglass2.users.models import Pref
     down = Pref(g.db).get("Site Down Till",
                         user_name=shotglass.get_site_config().get("HOST_NAME"),
                         default='',
