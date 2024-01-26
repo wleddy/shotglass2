@@ -5,7 +5,7 @@ from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
 from shotglass2.users.admin import login_required, table_access_required
-from shotglass2.users.models import User, Role, Pref, init_db
+from shotglass2.users.models import User, Role, Pref, VisitData, init_db
 from shotglass2.users.utils import get_access_token
 from shotglass2.users.views import user, login, role, pref, visit_data
 from shotglass2.users.views.login import setUserStatus
@@ -673,13 +673,38 @@ def set_username_from_form(rec):
 
 
 def register_blueprints(app,subdomain=None):
+    """
+    Register Blueprints with the current app.
+
+    Arguments:
+        app -- the current app. app must exist
+
+    Keyword Arguments:
+        subdomain -- Optionaly limit the blueprint to being called on a specific subdomain (default: {None})
+    """
+
     app.register_blueprint(user.mod, subdomain=subdomain)
     app.register_blueprint(login.mod, subdomain=subdomain)
     app.register_blueprint(role.mod, subdomain=subdomain)
     app.register_blueprint(pref.mod, subdomain=subdomain)
     app.register_blueprint(visit_data.mod, subdomain=subdomain)
     
+
 def initalize_tables(db):
     "Initialize the User and related tables"
     
     init_db(db)
+
+
+def create_menus():
+    """
+    Add menu items to g.menu_items and register access permissions for table_search
+
+    """
+    # a header row must have the some permissions or higher than the items it heads
+    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
+        
+    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
+    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
+    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
+    g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)

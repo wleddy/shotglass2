@@ -346,24 +346,24 @@ def static(filename):
     return send_static_file(filename,path_list=local_path)
 
 
-def user_setup():
-    # To support old app.py code
-    set_user_menus()
+# def user_setup():
+#     # To support old app.py code
+#     set_user_menus()
 
 
-def set_user_menus():
-    if 'admin' not in g:
-        g.admin = Admin(g.db)
-        # Add items to the Admin menu
-        # the order here determines the order of display in the menu
+# def set_user_menus():
+#     if 'admin' not in g:
+#         g.admin = Admin(g.db)
+#         # Add items to the Admin menu
+#         # the order here determines the order of display in the menu
         
-    # a header row must have the some permissions or higher than the items it heads
-    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
+#     # a header row must have the some permissions or higher than the items it heads
+#     g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
         
-    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
-    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
-    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
-    g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)
+#     g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
+#     g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
+#     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
+#     g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)
         
         
 class ShotLog():
