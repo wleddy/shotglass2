@@ -2,21 +2,24 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-import models
+from shotglass2.takeabeltof.views import TableView, EditView
+from shotglass2.takeabeltof.jinja_filters import plural
 
-PRIMARY_TABLE = models.StarterTable
+import travel_log.models as models
 
-mod = Blueprint('starter',__name__, template_folder='templates/', url_prefix='/starter')
+PRIMARY_TABLE = models.SampleTable
+MOD_NAME = PRIMARY_TABLE.TABLE_IDENTITY
+
+mod = Blueprint(MOD_NAME,__name__, template_folder='templates/', url_prefix=f'/{MOD_NAME}')
 
 
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
     g.deleteURL = url_for('.display') + 'delete/'
-    g.title = 'Starter'
+    g.title = f'{plural(PRIMARY_TABLE(g.db).display_name,2)}'
 
 
-from shotglass2.takeabeltof.views import TableView
 
 # this handles table list and record delete
 @mod.route('/<path:path>',methods=['GET','POST',])
@@ -29,11 +32,8 @@ def display(path=None):
     
     view = TableView(PRIMARY_TABLE,g.db)
     # optionally specify the list fields
-    view.list_fields = [
-            {'name':'id','label':'ID','class':'w3-hide-small','search':True},
-            {'name':'description'},
-            {'name':'rank'},
-        ]
+    # view.list_fields = [
+    #     ]
     
     return view.dispatch_request()
     
@@ -46,39 +46,27 @@ def display(path=None):
 def edit(rec_id=None):
     setExits()
     g.title = "Edit {} Record".format(g.title)
-
-    starter = PRIMARY_TABLE(g.db)
-    rec = None
-    
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-        
-    rec_id = cleanRecordID(rec_id)
-    #import pdb;pdb.set_trace
-
-    if rec_id < 0:
-        flash("That is not a valid ID")
-        return redirect(g.listURL)
-        
-    if rec_id == 0:
-        rec = starter.new()
-    else:
-        rec = starter.get(rec_id)
-        if not rec:
-            flash("Unable to locate that record")
-            return redirect(g.listURL)
+    view = EditView(PRIMARY_TABLE,g.db,rec_id)
 
     if request.form:
-        starter.update(rec,request.form)
-        if validForm(rec):
-            starter.save(rec)
-            g.db.commit()
-
+        table = PRIMARY_TABLE(g.db)
+        id = cleanRecordID(request.form.get('id',-1))
+        if id < 0:
+            return redirect(g.listURL)
+        if id == 0:
+            rec = table.new()
+        else:
+            rec = table.get(id)
+        if not rec:
+            flash(f'{table.display_name} record not found')
+        else:
+            table.update(rec,request.form)
+            if validForm(rec):
+                table.save(rec)
             return redirect(g.listURL)
 
-    # display form
-    return render_template('starter/starter_edit.html', rec=rec)
-    
+    return view.render()
+
     
 def validForm(rec):
     # Validate the form
@@ -97,13 +85,24 @@ def create_menus():
     Menu elements defined using g.admin.register can have access control.
 
     """
-    g.menu_items.append({'title':'Something','url':url_for('.something')})
-    g.admin.register(models.StarterTable,
-        url_for('starter.display'),
-        display_name='Starter',
-        top_level=True,
-        minimum_rank_required=500,
-    )
+
+    # # Static dropdown menu...
+    # g.menu_items.append({'title':'Drop down header','drop_down_menu':{
+    #         'name':'First','url':url_for('.something'),
+    #         'name':'Second','url':url_for('.another'),
+    #         }
+    #     })
+    # # single line menu
+    # g.menu_items.append({'title':'Something','url':url_for('.something')})
+    
+    # # This makes a drop down menu for this application
+    # g.admin.register(models.TripSegment,url_for('trip_segment.display'),display_name='Trip Logging',header_row=True,minimum_rank_required=500,roles=['admin',])
+    # g.admin.register(models.TripSegment,
+    #     url_for('trip_segment.display'),
+    #     display_name='Trip Segments',
+    #     top_level=False,
+    #     minimum_rank_required=500,
+    # )
 
 def register_blueprints(app, subdomain = None) -> None:
     """
