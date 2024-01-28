@@ -10,7 +10,7 @@
     {% for field in data.edit_fields %}
         {% set _ = value_list.pop()%}
         {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
-        {% if field['type'].lower() == 'hidden' or field['name'] == "id" == 'hidden'%}
+        {% if field['type'].lower() == 'hidden' or field['name'] == "id" %}
             <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
         {% elif field['type'].lower() == 'textarea' %}
             <p>{{ label_only(field['label'],req=field['req'],) }}</p>
