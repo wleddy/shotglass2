@@ -363,10 +363,11 @@ def register():
     """Allow people to sign up thier own accounts on the web site"""
     setExits()
     site_config = get_site_config()
-    
+    next = request.args.get('next',request.form.get('next',''))
+
     g.title = "Account Registration"
-    g.editURL = url_for('.register')
-    g.listURL = '/' # incase user cancels
+    g.editURL = url_for('.register') + f'?next={next}' if next else ''
+    g.listURL = next if next else '/' # incase user cancels
     user = User(g.db)
     rec=user.new()
     
@@ -401,6 +402,8 @@ def register():
             return render_template('registration_success.html',success=success,next=next)
         else:
             flash("That registration request has expired")
+            if next:
+                return redirect(next)
             return redirect('/')
 
     if request.form:

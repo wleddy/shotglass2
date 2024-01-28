@@ -7,9 +7,11 @@
 {% if success == 'active' %}
     <h3>Signup Successful</h3>
     <h3>Your account is now active.</h3>
-    <p>Your account is now ready to use. 
+    <p>Your account is now ready to use.</p>
         {% if g.user %}
-        You are logged in. <a href="{{next | default(url_for('www.home')) }}">Continue</a>
+        <p >
+        You are logged in. <a class="w3-button w3-primary-color w3-round-large" href="{{next | default(url_for('www.home')) }}">Continue</a>
+        </p>
         {% else %}
         You may <a href="{{url_for('login.login')}}">log in</a> here.
         {% endif %}

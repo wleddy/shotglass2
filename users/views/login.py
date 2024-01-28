@@ -84,11 +84,15 @@ def login():
 @mod.route('/logout', methods=['GET'])
 @mod.route('/logout/', methods=['GET'])
 def logout():
+    next = request.args.get('next',request.form.get('next',''))
+
     # Delete the visit data if present
     VisitData(g.db).delete(session.get('session_id'))
     session.clear()
     g.user = None
     #flash("Successfully Logged Out")
+    if next:
+        return redirect(next)
     return redirect('/')
     
 @mod.route('/reset', methods=['GET','POST'])
