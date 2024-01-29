@@ -574,9 +574,26 @@ class VisitData(SqliteTable):
 
         return rec
     
+    def prune(self) -> None:
+        """
+        Remove and out of date or otherwise undesirable visit records.
+        """
+        sql = """
+            select id from visit_data where
+                expires is not null and 
+                date(expires,'localtime') < date("{now}",'localtime')
+        
+            """.format(now=local_datetime_now())
+        
+        recs = self.query(sql)
+        
+        if recs:
+            for rec in recs:
+                    self.delete(rec.id)
+
 
     def save(self,rec:object) -> object:
-        """Update the expries field and save the record"""
+        """Update the expires field and save the record"""
         from shotglass2.shotglass import get_site_config
         rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
         super().save(rec)
