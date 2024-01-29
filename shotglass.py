@@ -133,11 +133,20 @@ def _after_request(response :object) -> object:
 
         session_id = session.get('session_id')
         visit_data = VisitData(g.db)
+
+        visit_data.prune() # remove old visit records
+
         rec = None
         if session_id:
             rec = visit_data.get(session_id)
-        if not rec:
-            rec = visit_data.new()
+
+        # Only record "important" sessions
+        unimportant_keys = ['_perminent','_flashes']
+        for key in session.keys():
+            if key not in unimportant_keys:
+                if not rec:
+                    rec = visit_data.new()
+                break
 
         if rec:
             visit_dict = {}
