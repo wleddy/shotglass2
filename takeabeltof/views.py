@@ -438,6 +438,7 @@ class EditView():
         self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
         if not self.edit_fields:
             self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
+        self.use_anytime_date_picker = True # A way to shut this off in input form if desired
 
 
     def after_get_hook(self):
