@@ -2,7 +2,7 @@
     Some utility functions
 """
 
-from flask import g, render_template_string, flash, send_from_directory, abort, url_for, Response
+from flask import g, render_template_string, send_from_directory, abort, Response, request
 from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
@@ -297,7 +297,24 @@ def handle_request_error(error=None,request=None):
         
     return mes # just to make it testable
         
-        
+
+def is_mobile_device() -> bool:
+    """
+    Return True if request user agent looks like a mobile device
+
+    Returns:
+        bool
+    """
+    if not request:
+        return False
+    
+    mobile_devices = 'Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini'
+    for agent in mobile_devices.split('|'):
+        if agent in request.headers.get('User-Agent'):
+            return True
+    return False
+
+
 def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory"""
     from shotglass2.shotglass import get_site_config
