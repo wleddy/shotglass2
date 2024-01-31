@@ -4,7 +4,7 @@
 
 {% set type_list = ["text"] %}
 {% set value_list = [0] %}
-{% set options = [] %}
+
 {% block fieldset %}
 <fieldset>
     {% for field in data.edit_fields %}
@@ -20,10 +20,13 @@
                      {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
                 >{{ value_list[0] | default('',True)}}</textarea>
             </p>
-        {% elif field['type'] == 'select' %}
+            {% elif field['type'] == 'select' %}
             <p>
-                {{ option_select_field(value_list[0],field['name'],label="",id=field['name'],options=field['options'],class="",req=False,extras="") }}
+                {{ option_select_field(value_list[0],field['name'],label=field['label'],id=field['name'],options=field['options'],class="",req=field['req'],extras=field['extras']) }}
             </p>
+        {% elif field['type'].lower() == 'raw' %}
+            {# display exactly as provided #}
+            {{ field['content'] | safe }}
         {% else %}
             <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
         {% endif%}
@@ -33,6 +36,7 @@
 
 {% block head %}
 {{ super() }}
+{% if not data or data.use_anytime_date_picker %}
 {% include "anytime_head.html"%}
     <script>
     {% for field in data.edit_fields %}
@@ -41,4 +45,5 @@
     {% endif %}
     {% endfor %}
 </script>
+{% endif %}
 {% endblock head %}
