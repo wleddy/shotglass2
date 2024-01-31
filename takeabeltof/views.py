@@ -50,7 +50,7 @@ class TableView:
         self.list_search_widget_extras_template = 'list_search_widget_extras.html'
         self.list_header_row_template = 'list_header_row.html'
         self.list_search_widget_ready_template = 'list_search_widget_ready.js'
-        self.list_order_ready_temlate = 'list_order_ready.js'
+        self.list_order_ready_template = 'list_order_ready.js'
         self.list_export_widget_template = 'list_export_widget.html'
         self.allow_record_addition = True #Set false to hide the 'add new record' link in the list page
         self.edit_template = 'edit_template.html'
