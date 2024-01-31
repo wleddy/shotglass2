@@ -810,9 +810,7 @@ class ListFilter:
         
         table_name = request.form.get('table_name')
         
-        if table_name:
-            session_data = self._create_filter_session(table_name)
-            
+        if table_name:            
             # import pdb;pdb.set_trace()
             filter_dict = self.filter_dict.copy()
             for k,v in self.filter_dict.items():
