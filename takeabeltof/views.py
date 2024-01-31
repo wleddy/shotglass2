@@ -5,7 +5,7 @@ from shotglass2.shotglass import get_site_config, is_ajax_request
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
 from shotglass2.takeabeltof.jinja_filters import plural
-from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer
+from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer, is_mobile_device
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
 from datetime import date
@@ -55,6 +55,7 @@ class TableView:
         self.allow_record_addition = True #Set false to hide the 'add new record' link in the list page
         self.edit_template = 'edit_template.html'
         self.pagination_template = 'list_pagination_template.html'
+        self.is_mobile_device = is_mobile_device()
 
         # set the page title root
         g.title = self.table.table_name.replace('_', ' ').title()
@@ -440,6 +441,7 @@ class EditView():
         if not self.edit_fields:
             self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
         self.use_anytime_date_picker = True # A way to shut this off in input form if desired
+        self.is_mobile_device = is_mobile_device()
 
     @staticmethod
     def after_get_hook(self):
