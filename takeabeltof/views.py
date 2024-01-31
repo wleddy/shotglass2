@@ -571,6 +571,7 @@ class EditView():
                 'default':'',
                 'placeholder':None,
                 'extras':None,
+                'raw':False,
                 'options':None,
                 }
             
