@@ -61,12 +61,14 @@ def date_to_string(value,format):
     formats ={
     'date':"%m/%d/%y",
     'date_full_year': "%m/%d/%Y",
+    'datetime-local' : '%Y-%m-%dT%H:%M',
     'time':'%I:%M',
     'time_long':'%H:%M:%S',
     'ampm': '%p',
     'local_time': '%-I:%M%p',
     'iso_date': '%Y-%m-%d',
     'iso_datetime': '%Y-%m-%d %H:%M:%S',
+    'iso_8601': '%Y-%m-%dT%H:%M:%S',
     'iso_date_tz': '%Y-%m-%d %H:%M:%S%z',
     }
     
