@@ -623,11 +623,11 @@ class ListFilter:
     The layout within the session dict is:
         'table_filters':{
             {<table name 1>:
-                filters:[{< id of input element>:{'type':<'text' | 'date'>,field_name':<field name>,'value':< filter value >}},{...},],
+                filters:[{< id of input element>:{'type':<'text' | 'date | 'datetime'>,field_name':<field name>,'value':< filter value >}},{...},],
                 'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
             {<table name 2>:
-                'filters':[{'id':< DOM id of input element>,'type':<text | date>,'field_name:<field name>,'value':< filter value >},{...},],
+                'filters':[{'id':< DOM id of input element>,'type':<text | date | 'datetime'>,'field_name:<field name>,'value':< filter value >},{...},],
                 'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
         }
@@ -700,6 +700,7 @@ class ListFilter:
         self._create_filter_session(table.table_name) # ensure it exists
         
         where_list = []
+        # import pdb;pdb.set_trace()
         session_data = session.get(self.HEADER_NAME)
         if session_data and table.table_name in session_data:
             filter_data = session_data[table.table_name][self.FILTERS_NAME]
@@ -716,12 +717,16 @@ class ListFilter:
                     if col in table_column_names and '.' not in col:
                         col = table.table_name + '.' + col
                         
-                    if kind == 'date':
+                    if kind.lower() in ['date','datetime',]:
                         start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
                         end = iso_date_string(end if end else self.END_OF_TIME)
                         # print(start,end)
-                        where_list.append("""date({col}) >= date('{start}') and date({col}) <= date('{end}')""".format(col=col,start=start,end=end))
-                        # print(where_list[-1])
+                        local_time = ''
+                        print('kind: ',kind)
+                        if kind.lower() == 'datetime':
+                            local_time = ", 'localtime'"
+                        where_list.append(f"""date({col}{local_time}) >= date('{start}') and date({col}{local_time}) <= date('{end}')""")
+                        print(where_list[-1])
                     else:
                         where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
                         

@@ -45,7 +45,7 @@
                   {% if sf.TYPE in v %}
                      {% set kind =  v[sf.TYPE] %}
                   {% endif %}
-                  {% if kind == 'date'%}
+                  {% if kind == 'date' or kind == 'datetime'%}
                   $('#'+'{{id_prefix}}'+'start_date').val('{{ start }}'); 
                   $('#'+'{{id_prefix}}'+'end_date').val('{{ end }}'); 
                   {% else %}
