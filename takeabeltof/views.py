@@ -538,7 +538,7 @@ class EditView():
         # import pdb;pdb.set_trace()
         
         for field in self.edit_fields:
-            if not field['name']:
+            if 'name' not in field or not field['name']:
                 raise ValueError("The 'name' property in edit_fields may not be empty ")
                 break
             
