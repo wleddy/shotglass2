@@ -433,6 +433,7 @@ class EditView():
         self.stay_on_form = False
         self.form_template = "edit_template.html"
         self.rec_id = rec_id
+        self.rec = None
         self._validate_rec_id() # self.rec_id may have a value now
         self.get() # could be an empty (new) record, existing record or None
         self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
@@ -440,12 +441,14 @@ class EditView():
             self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
         self.use_anytime_date_picker = True # A way to shut this off in input form if desired
 
-
+    @staticmethod
     def after_get_hook(self):
         """ do anything you want here"""
-        pass
-        
-        
+        if request.form:
+            # In the case where a submit failed, load the form values
+            self.table.update(self.rec,request.form)
+
+    @staticmethod
     def before_commit_hook(self):
         # a place to put some code after the record is saved, but before it's committed
         pass
@@ -453,7 +456,7 @@ class EditView():
         
     def get(self):
         # Select an existing record or make a new one
-        if not self.rec_id:
+        if self.rec_id == 0:
             self.rec = self.table.new()
         else:
             self.rec = self.table.get(self.rec_id)
@@ -461,8 +464,8 @@ class EditView():
             self.result_text = "Unable to locate that record"
             flash(self.result_text)
             self.success = False
-
-        self.after_get_hook()
+          
+        self.after_get_hook(self)
             
 
     def render(self):
@@ -471,7 +474,7 @@ class EditView():
             data = self,
             )
             
-            
+    @staticmethod
     def save(self):
         try:
             self.table.save(self.rec)
@@ -484,7 +487,7 @@ class EditView():
             self.success = False
             return
     
-        self.before_commit_hook() # anyting special you want to do
+        self.before_commit_hook(self) # anyting special you want to do
         if not self.success:
             self.db.rollback()
             if not self.result_text:
@@ -496,12 +499,11 @@ class EditView():
 
 
     def update(self,save_after_update=True):
-        # import pdb;pdb.set_trace()
         if request.form:
             self.table.update(self.rec,request.form)
-            if self.validate_form():
+            if self.validate_form(self):
                 if save_after_update:
-                    self.save()
+                    self.save(self)
             else:
                 self.success = False
                 self.result_text = "Form Validation Failed"
@@ -509,7 +511,7 @@ class EditView():
             self.success = False
             self.result_text = "No input form provided"
 
-
+    @staticmethod
     def validate_form(self):
         valid_form = True
         self._set_edit_fields()
@@ -569,6 +571,7 @@ class EditView():
                 'default':'',
                 'placeholder':None,
                 'extras':None,
+                'options':None,
                 }
             
             
