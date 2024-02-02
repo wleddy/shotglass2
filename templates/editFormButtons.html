@@ -1,6 +1,6 @@
 {# for the edit forms that use view.EditView #}
 {% if data %}{% set rec = data.rec %}{% endif %}
-{% if data.is_mobile_device %}
+{% if data and data.is_mobile_device %}
 	{% set base_class = 'w3-btn w3-circle w3-xlarge' %}
 	{% set save_value = '&check;' %}
 	{% set delete_value = '&#9851;' %}

@@ -432,6 +432,7 @@ class EditView():
         self.success = True
         self.result_text = ''
         self.stay_on_form = False
+        self.base_layout = "form_layout.html"
         self.form_template = "edit_template.html"
         self.rec_id = rec_id
         self.rec = None
