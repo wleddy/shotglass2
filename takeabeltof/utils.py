@@ -323,7 +323,7 @@ def send_static_file(filename,**kwargs):
     
     path = None
     
-    explain = get_site_config().get('EXPLAIN_TEMPLATE_LOADING',False)
+    explain = str(get_site_config().get('EXPLAIN_STATIC_LOADING',False))
     
     if explain:
         print("\nSearching for {}".format(filename))
@@ -333,10 +333,14 @@ def send_static_file(filename,**kwargs):
         if os.path.isfile(file_loc):
             path = temp_path
             if explain:
-                print("{} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
+                # print in red '\033[31m' + 'hi there' + '\033[0m'
+                print('\033[31m' + 
+                      "{} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
+                      + '\033[0m'
+                      )
             break
         else:
-            if explain:
+            if explain and explain != 'found only':
                 print("{} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
     
     if path:
