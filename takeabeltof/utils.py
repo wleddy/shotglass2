@@ -332,15 +332,15 @@ def send_static_file(filename,**kwargs):
         file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
         if os.path.isfile(file_loc):
             path = temp_path
-            if explain:
+            if explain.lower() != 'false':
                 # print in red '\033[31m' + 'hi there' + '\033[0m'
                 print('\033[31m' + 
-                      "{} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
+                      "++++   {} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
                       + '\033[0m'
                       )
             break
         else:
-            if explain and explain != 'found only':
+            if explain.lower() != 'false' and explain.lower() != 'found only':
                 print("{} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
     
     if path:
