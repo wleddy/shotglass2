@@ -12,10 +12,16 @@
 	{% set cancel_value = 'Cancel' %}
 {% endif %}
 
+{% if data and data.next %}
+	{% set next = '?next=' + data.next %}
+{% else %}
+	{% set next = '' %}
+{% endif %}
+
 <p class="form_button_row w3-contain w3-panel" >
 	<input type=submit title="Click to Save" class="{{ base_class }} w3-save-button-color" value='{{ save_value | safe }}' />&nbsp;&nbsp;
 	{% if rec.id and rec.id > 0 and (not no_delete or is_admin) and not g.cancelURL %}
-	<a id="form_delete_link"  class="{{ base_class }} w3-delete-button-color" title="Click to Delete" href = "{{g.deleteURL}}{{rec.id}}/" onclick="return confirmRecordDelete();">{{ delete_value | safe }}</a>&nbsp;&nbsp;
+	<a id="form_delete_link"  class="{{ base_class }} w3-delete-button-color" title="Click to Delete" href = "{{g.deleteURL}}{{rec.id}}/{{ next }}" onclick="return confirmRecordDelete();">{{ delete_value | safe }}</a>&nbsp;&nbsp;
 	{% endif %}
-    <a  class="{{ base_class }} w3-cancel-button-color" title="Click to Cancel" href="{% if g.cancelURL %}{{g.cancelURL}}{% else %}{{ g.listURL }}{% endif %}" >{{ cancel_value | safe }}</a>
+    <a  class="{{ base_class }} w3-cancel-button-color" title="Click to Cancel" href="{% if g.cancelURL %}{{g.cancelURL}}{{ next }}{% else %}{{ g.listURL }}{{ next }}{% endif %}" >{{ cancel_value | safe }}</a>
 </p> 

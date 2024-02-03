@@ -8,6 +8,9 @@
 
 {% block fieldset %}
 <fieldset>
+    {% if data.next %}
+        <input type="hidden" name="next" value="{{ data.next }}" id="next" />
+    {% endif %}
     {% for field in data.edit_fields %}
         {% set _ = value_list.pop()%}
         {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}

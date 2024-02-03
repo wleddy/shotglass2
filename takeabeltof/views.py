@@ -22,6 +22,7 @@ class TableView:
         self.display_name = self.table.display_name
         self.sql = None # may be used for a custom select
         self.recs = None
+        self.next = request.args.get('next',request.form.get('next',''))
         # for pagination
         self.page_size = 50 # default page size, set to 0 to disable pagination
         self.page_limit = 10 # max number of page numbers to display in list view. 0 is unlimted
@@ -439,6 +440,7 @@ class EditView():
         self.form_template = "edit_template.html"
         self.rec_id = rec_id
         self.rec = None
+        self.next = request.args.get('next',request.form.get('next',''))
         self._validate_rec_id() # self.rec_id may have a value now
         self.get() # could be an empty (new) record, existing record or None
         self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
