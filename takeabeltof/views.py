@@ -98,7 +98,6 @@ class TableView:
         
         """
     def delete(self,*args,**kwargs):
-        g.title = "Delete {} Record".format(self.display_name)
         
         record_identifier = None
         
@@ -118,22 +117,33 @@ class TableView:
         else:
             self.db.commit()
             
-    def dispatch_request(self,*args,**kwargs):
+    def dispatch_request(self,*args,**kwargs) -> object:
+        """
+        Handle the response to a table listing request
+
+        This usually returns a table listing page but also handles the
+        Delete and Export functions
+
+        Returns:
+            A Flask Response object
+        """
+
         # import pdb;pdb.set_trace()
-        x = len(self.path)
-        for h in range(x):
+        next = ''
+        if self.next:
+            next = '?next=' + self.next
+        while self.path:
             for handler in self.handlers:
                 if self.path and handler == self.path[0].lower():
                     if handler == 'edit':
-                        flash('Edit Record method not set. Maybe use EditView?') 
-                        return redirect(g.listURL)
+                        flash('Record editing not handled here. Maybe use EditView?') 
+                        return redirect(g.listURL + next )
                     if handler == 'delete':
                         self.delete()
                         if self._ajax_request:
                             resp = 'success' if self.success else 'failue: {}'.format(self.result_text)
                             return resp
-                            # redirect to clear the old path name in browser
-                        return redirect(g.listURL)
+                        return redirect(g.listURL + next)
                     if handler == 'filter':
                         self.filter_changed = True
                         return ListFilter()._save_list_filter()
