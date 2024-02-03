@@ -43,6 +43,7 @@ class TableView:
         self.export_file_name = kwargs.get('export_file_name',None)
             
         # templates to use in the list view by default
+        self.base_layout = "layout.html"
         self.list_template = 'list_template.html'
         # These are includes in the main list template, so may want to point to a different file
         self.list_table_template = 'list_template_table.html'
@@ -119,12 +120,13 @@ class TableView:
             
     def dispatch_request(self,*args,**kwargs):
         # import pdb;pdb.set_trace()
-        if self.path:
+        x = len(self.path)
+        for h in range(x):
             for handler in self.handlers:
-                if handler == self.path[0].lower():
+                if self.path and handler == self.path[0].lower():
                     if handler == 'edit':
-                        return 'Edit Record method not set. Maybe use EditView?'
-                        break
+                        flash('Edit Record method not set. Maybe use EditView?') 
+                        return redirect(g.listURL)
                     if handler == 'delete':
                         self.delete()
                         if self._ajax_request:
@@ -141,7 +143,9 @@ class TableView:
                     if handler == 'export':
                         # export the currently selected records
                         return self.export()
-                    
+                
+            self.path.pop(0)
+
         if self._ajax_request:
             self.filter_changed = True
                     
