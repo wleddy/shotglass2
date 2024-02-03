@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% if data.base_layout %}{% extends data.base_layout %}{% else %}{% extends "layout.html" %}{% endif %}
 
 {% block title %}{{ g.title }}{% endblock %}
 
