@@ -1,6 +1,5 @@
 from flask import request, session, g, url_for, \
      render_template, render_template_string, redirect, flash, Response
-from flask.views import View
 from shotglass2.shotglass import get_site_config, is_ajax_request
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
@@ -729,11 +728,11 @@ class ListFilter:
                         end = iso_date_string(end if end else self.END_OF_TIME)
                         # print(start,end)
                         local_time = ''
-                        print('kind: ',kind)
+                        # print('kind: ',kind)
                         if kind.lower() == 'datetime':
                             local_time = ", 'localtime'"
                         where_list.append(f"""date({col}{local_time}) >= date('{start}') and date({col}{local_time}) <= date('{end}')""")
-                        print(where_list[-1])
+                        # print(where_list[-1])
                     else:
                         where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
                         
