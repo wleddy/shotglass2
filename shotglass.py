@@ -125,6 +125,10 @@ def _after_request(response :object) -> object:
     Receives the response object from Flask and must return it.
     """
 
+    if get_site_config()['DEBUG']:
+        # always reload files in development
+        response.headers["Cache-Control"] = "no-store"
+
     if not request.path.startswith('/static'):
         # ses = session.get('session_id','No Session')
         # print('_after:',request.path,ses[15:25])
