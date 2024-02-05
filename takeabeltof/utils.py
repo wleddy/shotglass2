@@ -318,31 +318,33 @@ def is_mobile_device() -> bool:
 def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory"""
     from shotglass2.shotglass import get_site_config
-    
+    # import pdb;pdb.set_trace()
     path_list = kwargs.get('path_list',['static','shotglass2/static'])
     
     path = None
     
-    explain = str(get_site_config().get('EXPLAIN_STATIC_LOADING',False))
+    explain = str(get_site_config().get('EXPLAIN_STATIC_LOADING',False)).lower()
     
-    if explain:
+    if explain != 'false':
         print("\nSearching for {}".format(filename))
     
     for temp_path in path_list:
         file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
         if os.path.isfile(file_loc):
             path = temp_path
-            if explain.lower() != 'false':
+            if explain != 'false':
                 # print in red '\033[31m' + 'hi there' + '\033[0m'
-                print('\033[31m' + 
+                print('\033[32m' + 
                       "++++   {} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
                       + '\033[0m'
                       )
             break
         else:
-            if explain.lower() != 'false' and explain.lower() != 'found only':
-                print("{} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
-    
+            if explain != 'false' and explain.lower() != 'found only':
+             print('\033[31m' + 
+                      " ----  {} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
+                      + '\033[0m'
+                      )    
     if path:
         return send_from_directory(path,filename, as_attachment=False)
             
