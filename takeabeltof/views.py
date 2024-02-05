@@ -462,9 +462,7 @@ class EditView():
     @staticmethod
     def after_get_hook(self):
         """ do anything you want here"""
-        if request.form:
-            # In the case where a submit failed, load the form values
-            self.table.update(self.rec,request.form)
+        pass
 
     @staticmethod
     def before_commit_hook(self):
@@ -492,12 +490,14 @@ class EditView():
             data = self,
             )
             
-    @staticmethod
     def save(self):
         try:
-            self.table.save(self.rec)
-            self.rec_id = self.rec.id
-    
+            if self.validate_form(self):
+                self.table.save(self.rec)
+                self.rec_id = self.rec.id
+            else:
+                self.success = False
+        
         except Exception as e:
             self.db.rollback()
             self.result_text = printException('Error attempting to save {} record.'.format(self.table.display_name),"error",e)
@@ -506,6 +506,7 @@ class EditView():
             return
     
         self.before_commit_hook(self) # anyting special you want to do
+        
         if not self.success:
             self.db.rollback()
             if not self.result_text:
@@ -519,12 +520,8 @@ class EditView():
     def update(self,save_after_update=True):
         if request.form:
             self.table.update(self.rec,request.form)
-            if self.validate_form(self):
-                if save_after_update:
-                    self.save(self)
-            else:
-                self.success = False
-                self.result_text = "Form Validation Failed"
+            if save_after_update:
+                self.save()
         else:
             self.success = False
             self.result_text = "No input form provided"
