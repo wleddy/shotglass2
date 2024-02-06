@@ -42,7 +42,8 @@ def more(value,size=80,more_text="More...") ->str:
 
 def sanitize(value) ->str:
     """
-    Attempt to remove any dangerous content from "safe" text
+    Attempt to remove any dangerous content from "safe" text.
+    BE SURE TO CALL THIS BEFORE "safe" filter
 
     Arguments:
         value -- a string
@@ -57,7 +58,6 @@ def sanitize(value) ->str:
         "<a",
         "</a>",
     ]
-    import pdb;pdb.set_trace()
 
     for baddy in forbidden:
         print(baddy)
