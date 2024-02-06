@@ -60,9 +60,7 @@ def sanitize(value) ->str:
     ]
 
     for baddy in forbidden:
-        print(baddy)
         value = value.replace(baddy,"")
-        print(value)
 
     return value
         
