@@ -503,7 +503,8 @@ class EditView():
                 self.rec_id = self.rec.id
             else:
                 self.success = False
-        
+                return
+            
         except Exception as e:
             self.db.rollback()
             self.result_text = printException('Error attempting to save {} record.'.format(self.table.display_name),"error",e)
