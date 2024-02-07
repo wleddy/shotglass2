@@ -1,5 +1,7 @@
 {# a search form for table lists #}
 
+{% if data.allow_user_filters %}
+
 {% set search_id_prefix = 'text-search-id-' %}
 {% set has_date_search = [] %}
 <div class="w3-col l8 m9 s12">
@@ -65,4 +67,6 @@
         });
     }
 </script>
+
+{% endif %}
     

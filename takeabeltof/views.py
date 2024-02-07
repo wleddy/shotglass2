@@ -30,6 +30,7 @@ class TableView:
         self.session_table_name = "list_page_table_name"
         self.session_page_number = 'list_page_number'
         self.filter_changed = False
+        self.allow_user_filters = True # can user search and sort?
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -373,11 +374,16 @@ class TableView:
  
         if self.sql:
             # self.sql is assumed an sql statement but without the where or order by stanzas
-            self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
-                where=filters.where,order_by=filters.order_by,
-                    offset=offset,limit=limit,
+            if 'where' in self.sql or 'order by' in self.sql:
+                # disallow user filtering and ordering
+                self.allow_user_filters = False
+                self.recs = self.table.query(self.sql)
+            else:
+                self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
+                    where=filters.where,order_by=filters.order_by,
+                        offset=offset,limit=limit,
+                        )
                     )
-                )
         else:
             self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
             
