@@ -12,30 +12,32 @@
         <input type="hidden" name="next" value="{{ data.next }}" id="next" />
     {% endif %}
     {% for field in data.edit_fields %}
-        {% set _ = value_list.pop()%}
-        {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
-        {% if field['type'].lower() == 'hidden' or field['name'] == "id" %}
-            <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
-        {% elif field['raw'] %}
+        {% if field['type'] =='raw' %}
             {# display exactly as provided #}
-            {{ field['content'] | safe }}
-        {% elif field['type'].lower() == 'textarea' %}
-            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
-            <p>
-                <textarea style="width:100%;" rows="6" name="{{ field['name'] }}" id="{{ field['name'] }}"
-                    {% if field['req'] %}>required{% endif %}
-                     {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
-                >{{ value_list[0] | default('',True)}}</textarea>
-            </p>
-            {% elif field['type'] == 'select' %}
-            <p>
-                {{ option_select_field(value_list[0],field['name'],label=field['label'],id=field['name'],options=field['options'],class="",req=field['req'],extras=field['extras']) }}
-            </p>
-        {% elif field['type'].lower() == 'label_only' %}
-            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+            {{ field['value'] | sanitize | safe }}
         {% else %}
-            <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
-        {% endif%}
+            {% set _ = value_list.pop()%}
+            {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
+            {% if field['type'].lower() == 'hidden' or field['name'] == "id" %}
+                <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
+            {% elif field['type'].lower() == 'textarea' %}
+                <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+                <p>
+                    <textarea style="width:100%;" rows="6" name="{{ field['name'] }}" id="{{ field['name'] }}"
+                        {% if field['req'] %}>required{% endif %}
+                        {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
+                    >{{ value_list[0] | default('',True)}}</textarea>
+                </p>
+                {% elif field['type'] == 'select' %}
+                <p>
+                    {{ option_select_field(value_list[0],field['name'],label=field['label'],id=field['name'],options=field['options'],class="",req=field['req'],extras=field['extras']) }}
+                </p>
+            {% elif field['type'].lower() == 'label_only' %}
+                <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+            {% else %}
+                <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
+            {% endif%}
+        {% endif %}
     {% endfor %}
 </fieldset>
 {% endblock fieldset %}
