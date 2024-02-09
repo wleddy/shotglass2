@@ -73,13 +73,13 @@
 {{radio_field(value,name,label,type,id,class,req,placeholder,default,extras,right)}}
 {%endmacro%}
 
-{% macro label_only(label="Label",req=False)%}
+{% macro label_only(label="Label",req=False,class='')%}
 {{ make_label(label,'',req) }}
 {%endmacro%}
 
-{% macro make_label(label,name,req,class='w3-block') %}
+{% macro make_label(label,name,req,class='') %}
 {% if label != None %}
-<label class="{{ class }} {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}} {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}</label>
+<label class="w3-block {{ class }} {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}} {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}</label>
 {% endif %}
 {% endmacro %}
 
