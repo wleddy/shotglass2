@@ -12,9 +12,9 @@
         <input type="hidden" name="next" value="{{ data.next }}" id="next" />
     {% endif %}
     {% for field in data.edit_fields %}
-        {% if field['type'] =='raw' %}
+        {% if field['raw'] %}
             {# display exactly as provided #}
-            {{ field['value'] | sanitize | safe }}
+            {{ field['content'] | sanitize | safe }}
         {% else %}
             {% set _ = value_list.pop()%}
             {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
