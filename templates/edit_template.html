@@ -35,7 +35,7 @@
             {% elif field['type'].lower() == 'label_only' %}
                 <p>{{ label_only(field['label'],req=field['req'],) }}</p>
             {% else %}
-                <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
+                <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],class=field['class'],extras=field['extras'])}}</p>
             {% endif%}
         {% endif %}
     {% endfor %}
