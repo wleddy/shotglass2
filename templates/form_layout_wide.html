@@ -16,4 +16,20 @@
         {% block fieldset %}{% endblock %}
     </form>
 </div>
+
+{% if data and data.is_mobile_device %}
+<!-- field must have class "keypad_input" for this to be displayed -->
+{% include "keypad.html" %}
+{% endif %}
+
 {% endblock body %}
+
+{% block head %}
+{{ super() }}
+
+{% if data and data.is_mobile_device %}
+<script src="{{ url_for('static', filename='keypad.js') }}"></script>
+{% endif %}
+
+{% endblock head%}
+
