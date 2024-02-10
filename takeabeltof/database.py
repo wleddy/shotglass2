@@ -1,6 +1,7 @@
 import sqlite3
 import warnings
 from flask import flash
+from shotglass2.takeabeltof.jinja_filters import plural
 from shotglass2.takeabeltof.utils import cleanRecordID ,printException
 from shotglass2.takeabeltof.date_utils import getDatetimeFromString, local_datetime_now
 from datetime import datetime
@@ -163,7 +164,7 @@ class SqliteTable:
         if self._display_name:
             return self._display_name
             
-        return '{}s'.format(self.table_name.replace('_',' ').title())
+        return plural(self.table_name.replace('_',' ').title(),2)
 
     def init_table(self):
         """Base init method. Just create the table"""
