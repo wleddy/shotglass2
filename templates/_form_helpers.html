@@ -17,7 +17,7 @@
 {% endif %}
 {% set baseclass = "w3-input" %}
     {% if type=="radio" %}{% set baseclass = "w3-radio" %}{% elif type=="checkbox"%}{% set baseclass = "w3-check" %}{% endif %}
-    <input class="{{baseclass}} {{ class }}" type="{{type}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %}
+    <input class="{{baseclass}} {{ class }}" type="{{type}}" name="{{name}}" label="{{get_label_text(label,name)}}" {%if id %}id="{{id}}"{% endif %}
     {%if req %}required{%endif%} value="{{ value | default_if_none(default) }}" 
     {% if placeholder%}placeholder="{{placeholder}}"{%endif%} {{extras | safe }} >
 {% endmacro %}
@@ -83,6 +83,4 @@
 {% endif %}
 {% endmacro %}
 
-{% macro get_label_text(label,name) %}
-{% if label %}{{ label | safe }}{% else%}{{ name | replace("_"," ") | title }}{%endif%}
-{% endmacro %}
+{% macro get_label_text(label,name) %}{% if label %}{{ label | safe }}{% else%}{{ name | replace("_"," ") | title }}{%endif%}{% endmacro %}
