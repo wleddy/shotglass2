@@ -130,7 +130,7 @@ def local_time_string(value):
     """6:00AM"""
     return date_to_string(value,'local_time')
 
-def two_decimal_string(value):
+def two_decimal_string(value,denomination=''):
     try:
         if type(value) is str:
             value = value.strip()
@@ -141,6 +141,9 @@ def two_decimal_string(value):
         pos = value.find(".")
         if pos > 0:
             value = value[:pos+3]
+
+        if denomination:
+            value = denomination + value
     except ValueError as e:
         pass
         
