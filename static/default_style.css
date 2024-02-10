@@ -321,7 +321,7 @@ a.sg-page-begin
 /* buttons */
 .w3-save-button-color,.w3-save-button-hover-color:hover{color:#fff!important;background-color:#009688!important}
 .w3-delete-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#ff5722!important}
-.w3-cancel-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#3f51b5!important}
+.w3-cancel-button-color,.w3-cancel-button-hover-color:hover{color:#fff!important;background-color:#3f51b5!important}
 
 .flash {}
 /* For warning category messages */
