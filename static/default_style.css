@@ -372,3 +372,12 @@ a.sg-page-begin
     font-size: 16pt;
     font-weight:bold;
 }
+
+@media (prefers-color-scheme: dark) {
+    #keypad_header {
+        color:white;
+    }
+    #keypad_window div:first-child {
+        background-color:black;
+    }
+}
