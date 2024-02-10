@@ -8,7 +8,7 @@ function open_keypad(){
     $('#keypad_window #keypad_value').text(value);
     input_id = this.id;
     $('#keypad_window #input_id').text(input_id)
-    label = $("#" + input_id ).attr('label')
+    label = $("#" + input_id ).attr('data-label')
     $('#keypad_window #keypad_header').text(label)
     $('#keypad_window').show();
 }
