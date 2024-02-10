@@ -332,3 +332,43 @@ a.sg-page-begin
     padding-bottom:3pt;
     font-weight: bold;
 }
+
+/* Styles for the mobile input keypad */
+#keypad_window {
+    display:none;
+}
+#keypad_window div:first-child {
+    max-width:225pt;
+    margin:auto;
+    padding:6pt;
+    border-width: 6pt;
+    border-style: solid;
+    border-radius:16pt;
+    border-color:gainsboro;
+}
+#keypad_value {
+    height:50pt;
+    border: 2pt black inset;
+    padding: 2pt;
+    margin:6pt 30pt;
+    font-weight:bold;
+    font-size:28pt;
+    background-color:#ccc;
+    color:forestgreen;
+}
+.keypad_button, .keypad_zero {
+    width: 40pt;
+    margin: 3pt 4pt;
+    touch-action:none;
+}
+.keypad_zero {
+    width: 90pt
+}
+.keypad_right_button {
+    margin-right:0;
+}
+#keypad_header {
+    text-align: center;
+    font-size: 16pt;
+    font-weight:bold;
+}
