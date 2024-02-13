@@ -15,6 +15,8 @@
         {% if field['raw'] %}
             {# display exactly as provided #}
             {{ field['content'] | sanitize | safe }}
+        {% elif field['type'].lower() == 'label_only' %}
+            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
         {% else %}
             {% set _ = value_list.pop()%}
             {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
@@ -32,8 +34,6 @@
                 <p>
                     {{ option_select_field(value_list[0],field['name'],label=field['label'],id=field['name'],options=field['options'],class="",req=field['req'],extras=field['extras']) }}
                 </p>
-            {% elif field['type'].lower() == 'label_only' %}
-                <p>{{ label_only(field['label'],req=field['req'],) }}</p>
             {% else %}
                 <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],class=field['class'],extras=field['extras'])}}</p>
             {% endif%}
