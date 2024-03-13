@@ -5,6 +5,7 @@ $().ready(function(){
 
 function open_keypad(){
     value = this.value;
+    if(value == '0.0' || value == '0' ){value = ''} // remove zero
     $('#keypad_window #keypad_value').text(value);
     input_id = this.id;
     $('#keypad_window #input_id').text(input_id)
@@ -34,5 +35,8 @@ function keypad_backspace() {
 }
 function keypad_value(which) {
     value = $('#keypad_window #keypad_value').text();
+    if(which.textContent == '.' && value.indexOf('.') != -1) {
+        return; // only one decimal point in field
+    }
     $('#keypad_window #keypad_value').text(value + which.textContent);
 }

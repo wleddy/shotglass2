@@ -5,6 +5,24 @@ from datetime import datetime
 import re
 
 # some custom filters for templates
+
+def duration_minutes(value):
+    """Return number of minutes as hour and minutes"""
+    try:
+        mins = int(value)
+        hrs, min = divmod(mins,60)
+        if hrs and min:
+            return f"{hrs}:{min}"
+        elif hrs:
+            return f"{hrs} {plural('hr',hrs)}."
+        else:
+            return f'{min} min.'
+    except:
+        pass
+
+    return value
+    
+
 def iso_date_string(value):
     """YYYY-MM-DD"""
     format = '%Y-%m-%d'
@@ -327,3 +345,4 @@ def register_jinja_filters(app):
     app.jinja_env.filters['phone'] = phone
     app.jinja_env.filters['more'] = more
     app.jinja_env.filters['sanitize'] = sanitize
+    app.jinja_env.filters['duration_minutes'] = duration_minutes
