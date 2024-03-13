@@ -131,8 +131,8 @@ def _after_request(response :object) -> object:
     if not request.path.startswith('/static'):
         # import pdb; pdb.set_trace()
 
-        # somehow this is getting called whe g.db does not exist
-        if not getattr(g,'db'):
+        # somehow this is getting called when g.db does not exist
+        if not g or not getattr(g,'db'):
             return response
 
         session_id = session.get('session_id')
