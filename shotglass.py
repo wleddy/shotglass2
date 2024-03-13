@@ -11,7 +11,6 @@ import os
 import threading
 import time
   
-  
 def create_app(name,instance_path=None,config_filename=None,**kwargs):
     """Initialize and return an instance of the flask app
     
@@ -130,10 +129,11 @@ def _after_request(response :object) -> object:
         response.headers["Cache-Control"] = "no-store"
 
     if not request.path.startswith('/static'):
-        # ses = session.get('session_id','No Session')
-        # print('_after:',request.path,ses[15:25])
-        # print('_after:',session)
         # import pdb; pdb.set_trace()
+
+        # somehow this is getting called whe g.db does not exist
+        if not getattr(g,'db'):
+            return response
 
         session_id = session.get('session_id')
         visit_data = VisitData(g.db)
@@ -186,6 +186,9 @@ def _before_request(db :object) -> None:
     # print('_before:',request.path,ses[15:25])
     # print('_before:',session)
     # import pdb; pdb.set_trace()
+    from app import app
+    start_logging(app) # Site specfic log
+
 
     # restore session from database
     visit_data = VisitData(db)
@@ -401,11 +404,13 @@ class ShotLog():
 
         app.logger.addHandler(logHandler)
         
-        
     def get_text(self):
         # return the contents of the log in reverse order mostly for display
 
-        # def reverse_readline(filename, ):
+        if not os.path.exists(self.log_file_path):
+            fh = open(self.log_file_path,'w')
+            fh.close()
+        
         """A generator that returns the lines of a file in reverse order"""
         with open(self.log_file_path) as fh:
             buf_size=8192
@@ -442,7 +447,9 @@ class ShotLog():
 def start_logging(app,filename=None,maxBytes=100000,backupCount=5,level=logging.INFO):
     # to handle legacy code
     # import pdb;pdb.set_trace()
-    log = ShotLog(level=level)
+    site_config = get_site_config()
+    filename = filename or site_config.get('INSTANCE_PATH','instance/') + site_config.get('LOG_FILE_NAME',"log.log")
+    log = ShotLog(log_file_path=filename,level=level)
     log.start(app,filename,maxBytes,backupCount)
     
     
