@@ -85,7 +85,8 @@ class User(SqliteTable):
         self.table_name = 'user'
         self.order_by_col = 'lower(last_name), lower(first_name)'
         self.defaults = {'active':1,}
-        
+        self.indexes = {"user_active":"active"}
+
     def _active_only_clause(self,include_inactive=False,**kwargs):
         """Return a clause for the select statement to include active only or empty string"""
         include_inactive = kwargs.get('include_inactive',include_inactive)
