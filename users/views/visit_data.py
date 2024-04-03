@@ -23,7 +23,14 @@ def display(path=None):
     g.title = "{} Record List".format(g.title)
     view = TableView(VisitData,g.db)
     view.allow_record_addition = False
-        
+    view.list_fields = [
+        {'name':'id'},
+        {'name':'session_id'},
+        {'name':'user_name'},
+        {'name':'expires','search':'date'},
+        {'name':'value'},
+    ]
+    
     return view.dispatch_request()
     
 
