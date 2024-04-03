@@ -3,6 +3,7 @@ from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.takeabeltof.date_utils import local_datetime_now, getDatetimeFromString
 from shotglass2.users.views.password import getPasswordHash
 import time
+from datetime import timedelta
 import random
 
 class Role(SqliteTable):
@@ -534,6 +535,29 @@ class VisitData(SqliteTable):
         return False
 
 
+    def get_session_data(self,session_id:str,**kwargs) -> object:
+        """
+        return the requested session data record or None
+
+        Test for expired sessions
+
+        Arguments:
+            session_id -- session_id
+
+        Returns:
+            A single record or None
+        """
+        rec = self.select_one(where = f'session_id = "{session_id}"')
+        if not rec:
+            return None
+        
+        #Check expires date
+        if self._is_expired(rec):
+            rec = None
+
+        return rec
+
+
     def delete(self,identifier: str | int) ->bool:
         """Accept Session_id or record id for deletion"""
         rec = self.get(identifier)
@@ -541,25 +565,7 @@ class VisitData(SqliteTable):
             return super().delete(rec.id)
 
         return False
-
-
-    def get(self,value: str | int,**kwargs) -> object | None:
-        """can get by data by id or session_id"""
-        if isinstance(value,int) or value.isnumeric():
-            where = ' id = {}'.format(cleanRecordID(value))
-        elif isinstance(value,str):
-            where = f' session_id = "{value}"'
-        else:
-            return None
-            
-        rec =  self.select_one(where=where)
-
-        #Check expires date
-        if self._is_expired(rec):
-            rec = None
-
-        return rec
-    
+        
 
     def new(self) -> object:
         """Create a new VisitData record and assign a session_id"""
@@ -597,7 +603,11 @@ class VisitData(SqliteTable):
     def save(self,rec:object) -> object:
         """Update the expires field and save the record"""
         from shotglass2.shotglass import get_site_config
-        rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
+        # Unknown users' sessions expire in one hour
+        if rec.user_name.lower() == 'unknown':
+            rec.expires = local_datetime_now() + timedelta(seconds=3600)
+        else:
+            rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
         super().save(rec)
         self.commit()
 
