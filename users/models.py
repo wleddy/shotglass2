@@ -500,7 +500,8 @@ class VisitData(SqliteTable):
         self.table_name = 'visit_data'
         self.order_by_col = 'id'
         self.defaults = {'value':'','user_name':'Unknown'}
-        
+        self.indexes = {"session_id_index":"session_id"}
+
     def create_table(self):
         """Define and create the table"""
 
