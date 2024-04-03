@@ -142,7 +142,7 @@ def _after_request(response :object) -> object:
 
         rec = None
         if session_id:
-            rec = visit_data.get(session_id)
+            rec = visit_data.get_session_data(session_id)
 
         # Only record "important" sessions
         unimportant_keys = ['_perminent','_flashes']
@@ -194,7 +194,7 @@ def _before_request(db :object) -> None:
     visit_data = VisitData(db)
     session_id = session.get('session_id')
     if session_id:
-        rec = visit_data.get(session_id)
+        rec = visit_data.get_session_data(session_id)
         if rec and isinstance(rec.value,str):
             session.update(json.loads(rec.value))
 
