@@ -299,7 +299,15 @@ span.deleteicon input {
         background-color:lightgray;
     }
     .w3-striped tbody tr:nth-child(even) {
-        background-color:#e1e0e0;
+        background-color:#666;
+    }
+    .w3-input, textarea {
+        background-color:#666;
+        color:white;
+    }
+    .w3-select {
+        background-color:#666;
+        color:white;
     }
     .sg-busy-box {
         background-color:black;
