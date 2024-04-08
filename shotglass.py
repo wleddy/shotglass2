@@ -132,7 +132,7 @@ def _after_request(response :object) -> object:
         # import pdb; pdb.set_trace()
 
         # somehow this is getting called when g.db does not exist
-        if not g or not getattr(g,'db'):
+        if not g or 'db' not in g:
             return response
 
         session_id = session.get('session_id')
