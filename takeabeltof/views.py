@@ -750,7 +750,7 @@ class ListFilter:
                         where_list.append(f"""date({col}{local_time}) >= date('{start}') and date({col}{local_time}) <= date('{end}')""")
                         # print(where_list[-1])
                     else:
-                        where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
+                        where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).replace("'","''").replace('"','""').lower()))
                         
             # import pdb;pdb.set_trace()
             order_list = []
