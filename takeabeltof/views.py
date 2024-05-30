@@ -170,6 +170,8 @@ class TableView:
         
         # provide for case where recs are set extenally
         if not self.recs:
+            kwargs["offset"] = 0
+            kwargs["limit"] = -1
             self.select_recs(**kwargs)
         if self.recs:
             if self.export_file_name:
@@ -334,8 +336,12 @@ class TableView:
 
         offset, limit = self.set_pagination()
 
+        # respect limits in kwargs if present
+        kwargs["offset"] = kwargs.get("offset",offset)
+        kwargs["limit"] = kwargs.get("limit",limit)
+
         # get the selection with limits
-        self._query_data(limit=limit,offset=offset,**kwargs)
+        self._query_data(**kwargs)
 
     def set_pagination(self) ->tuple:
         """Generate values for pagination
@@ -343,7 +349,7 @@ class TableView:
         returns offset and limit as ints
         """
         self.page_count = 1
-        limit = 9999999
+        limit = -1
         offset = 0
      
         if  self.page_size and self.rec_count > self.page_size:
@@ -369,7 +375,7 @@ class TableView:
 
     def _query_data(self,**kwargs):
         filters = self.get_list_filters()
-        limit = kwargs.get('limit',999999)
+        limit = kwargs.get('limit',-1)
         offset = kwargs.get('offset',0)
  
         if self.sql:
