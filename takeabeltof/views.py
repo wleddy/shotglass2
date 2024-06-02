@@ -601,6 +601,7 @@ class EditView():
                 'extras':None,
                 'raw':False,
                 'options':None,
+                'code':False,
                 }
             
             

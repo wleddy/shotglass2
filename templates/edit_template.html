@@ -9,19 +9,24 @@
 {% block fieldset %}
 <fieldset>
     {% if data.next %}
-        <input type="hidden" name="next" value="{{ data.next }}" id="next" />
+        <input type="hidden" name="next" value="{{ data.next }}" id="next" >
     {% endif %}
     {% for field in data.edit_fields %}
-        {% if field['raw'] %}
-            {# display exactly as provided #}
+        {% if field['raw'] or field['code'] %}
+            {% if field['code'] %}
+            {# display exactly as provided. Never use code if any risk of user input data #}
+            {{ field['content'] | safe }}
+            {% else %}
+            {# sanitize to remove dangerous user data #}
             {{ field['content'] | sanitize | safe }}
+            {% endif %}
         {% elif field['type'].lower() == 'label_only' %}
             <p>{{ label_only(field['label'],req=field['req'],) }}</p>
         {% else %}
             {% set _ = value_list.pop()%}
             {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
             {% if field['type'].lower() == 'hidden' or field['name'] == "id" %}
-                <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
+                <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" >
             {% elif field['type'].lower() == 'textarea' %}
                 <p>{{ label_only(field['label'],req=field['req'],) }}</p>
                 <p>
