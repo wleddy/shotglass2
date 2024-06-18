@@ -64,7 +64,7 @@ class FileUpload:
             self.error_text = "No file name specified"
             return
             
-        if not self.allowed_file(self.filename):
+        if not self.allowed_file():
             self.success = False
             self.error_text = "'{}' is not an allowed file type".format(self.filename)
             return
@@ -122,9 +122,10 @@ class FileUpload:
         return Path(self.resource_path,filename)
 
 
-    def allowed_file(self,filename):
+    def allowed_file(self):
         """Test that file is of an allowed type"""
-        
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.allowed_extensions
+        if not self.filename:
+            return False
+        return '.' in self.filename and self.filename.rsplit('.', 1)[1].lower() in self.allowed_extensions
 
     
