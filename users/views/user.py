@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash, Blueprint, session
+     render_template, flash, Blueprint, abort
 from shotglass2.shotglass import get_site_config
 from shotglass2.takeabeltof.mailer import send_message
 from shotglass2.takeabeltof.utils import printException, cleanRecordID, looksLikeEmailAddress, render_markdown_for
@@ -364,6 +364,10 @@ def register():
     setExits()
     site_config = get_site_config()
     next = request.args.get('next',request.form.get('next',''))
+
+    # if self registration is disabled, reject the request
+    if not site_config['ALLOW_USER_SIGNUP']:
+        return abort(500)
 
     g.title = "Account Registration"
     g.editURL = url_for('.register') + f'?next={next}' if next else ''
