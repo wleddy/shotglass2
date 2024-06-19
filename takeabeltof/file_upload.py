@@ -27,7 +27,29 @@ class FileUpload:
         """The abreviated path and file name as a string"""
         return self.saved_file_path.as_posix()
         
+    def remove_file(self,target):
+        """ Remove the target file and also it's directory if empty
         
+        
+        Args: target : str path
+        
+        Returns:  None
+        
+        Raises: None
+        """
+
+        path = self.get_file_path(target)
+        if path.exists() and not path.is_dir():
+            path.unlink() #remove file
+        # Delete the enclosing directory if empty
+        path = path.parent
+        try:
+            path.rmdir()
+        except:
+            # not emtpy, most likely
+            pass
+
+
     def save(self,file,filename=None,max_size=None):
         """Save the file to disk
         
