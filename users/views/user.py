@@ -367,7 +367,7 @@ def register():
 
     # if self registration is disabled, reject the request
     if not site_config['ALLOW_USER_SIGNUP']:
-        return abort(500)
+        return "Regisration Disabled"
 
     g.title = "Account Registration"
     g.editURL = url_for('.register') + f'?next={next}' if next else ''
