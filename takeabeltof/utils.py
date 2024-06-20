@@ -26,7 +26,15 @@ def cleanRecordID(id):
         return int(id)
         
     return -1
+
+def get_rec_id_if_none(rec_id):
+    # Attempt to get the rec_id from the request form if not valid
+    rec_id = cleanRecordID(rec_id)
+    if rec_id < 0 and request.form:
+        rec_id = cleanRecordID(request.form.get('id',request.args.get("id")))
     
+    return rec_id
+
     
 class Numeric():
     """Try to convert the input value to a number
