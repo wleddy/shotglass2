@@ -22,6 +22,7 @@ class TableView:
         self.display_name = self.table.display_name
         self.sql = None # may be used for a custom select
         self.recs = None
+        self.rec_id = -1 # only the delete method uses this
         self.next = request.args.get('next',request.form.get('next',''))
         # for pagination
         self.page_size = 50 # default page size, set to 0 to disable pagination
@@ -70,6 +71,8 @@ class TableView:
         if not self.path:
             self.path = ['/']
         self.root = self.path.pop(0)
+        if len(self.path) > 1:
+            self.rec_id = cleanRecordID(self.path[-1])
         
         self.handlers = ['/','edit','delete','filter','order','export']
         
@@ -98,21 +101,17 @@ class TableView:
         edit_template:
         
         """
-    def delete(self,*args,**kwargs):
-        
-        record_identifier = None
-        
-        if len(self.path) > 1:
-            record_identifier = self.path[1]
+
+    @staticmethod
+    def delete(self):
         
         ################################
         #### For some reason, passing commit keyword arg 
         #### fails for reasons I can't understand
         ###############################
-        # success = self.table.delete(record_identifier,commit=True)
         # import pdb;pdb.set_trace()
 
-        self.success = self.table.delete(record_identifier)
+        self.success = self.table.delete(self.rec_id)
         if not self.success:
             self.result_text = 'Not able to delete that record.'
         else:
@@ -140,11 +139,16 @@ class TableView:
                         flash('Record editing not handled here. Maybe use EditView?') 
                         return redirect(g.listURL + next )
                     if handler == 'delete':
-                        self.delete()
+                        self.delete(self)
                         if self._ajax_request:
-                            resp = 'success' if self.success else 'failue: {}'.format(self.result_text)
+                            resp = 'success' if self.success else 'failure: {}'.format(self.result_text)
                             return resp
-                        return redirect(g.listURL + next)
+                        if not self.success:
+                            flash(self.result_text)
+                        if self.next:
+                            return redirect(self.next)
+                        else:
+                            return redirect(g.listURL)
                     if handler == 'filter':
                         self.filter_changed = True
                         return ListFilter()._save_list_filter()
@@ -160,7 +164,10 @@ class TableView:
         if self._ajax_request:
             self.filter_changed = True
                     
-        return self.list(**kwargs)
+        if self.next:
+            return redirect(self.next)
+        else:
+            return self.list(**kwargs)
         
         
     def export(self,**kwargs):
