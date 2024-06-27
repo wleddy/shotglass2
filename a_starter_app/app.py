@@ -6,8 +6,8 @@ from shotglass2.takeabeltof.jinja_filters import register_jinja_filters
 from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.tools.views import tools
 from shotglass2.users.admin import Admin
-from shotglass2.users.views import login, user
-from shotglass2.users.models import User, Pref
+from shotglass2.users.views import user
+from shotglass2.users.models import User
 
 # Create app
 import logging
@@ -23,7 +23,7 @@ app = shotglass.create_app(
         
 def start_app():
     shotglass.start_logging(app)
-    initalize_tables()
+    get_db()
     register_jinja_filters(app)
     register_blueprints() # Register all the bluepints for the app
 
@@ -56,7 +56,7 @@ def get_db(filespec=None):
     # for the current request.
 
     # test the path, if not found, try to create it
-    if shotglass.make_db_path(filespec):
+    if shotglass.make_path(filespec):
         g.db = Database(filespec).connect()
         initalize_tables(g.db)
     
@@ -202,7 +202,7 @@ def server_error(error):
 def initalize_tables(db=None):
     """Place code here as needed to initialze all the tables for this site"""
     
-    user.initalize_tables(g.db)
+    user.initalize_tables(db)
     
 def register_blueprints():
     """Register all your blueprints here and initialize 
