@@ -12,7 +12,6 @@ from shotglass2.users.models import User
 # Create app
 import logging
 
-import shotglass2.users.views.user 
 
 app = shotglass.create_app(
         __name__,
@@ -161,8 +160,8 @@ def create_menus():
         ]
         
     # # Add a module to the menu
-    from starter_module.views import starter
-    starter.create_menus()
+    # from starter_module.views import starter
+    # starter.create_menus()
 
     # from starter_module.models import StarterTable
     # g.admin.register(StarterTable,
@@ -181,8 +180,8 @@ def create_menus():
         )
     
     # set up the User menu
-    shotglass.set_user_menus() # g.admin now holds access rules Users, Prefs and Roles
-    # shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
+    user.create_menus()
+
 
 @app.teardown_request
 def _teardown(exception):
