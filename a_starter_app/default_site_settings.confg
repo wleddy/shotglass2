@@ -169,12 +169,11 @@ TEMPLATE_DIRS = [
 # each blueprint in the order defined
     
 # Mapping credentials
-# SABA_2020.1 version 3/10/20
-MAPBOX_PROJECT_ID = "bleddy/ck7mere9w0g8k1inv74yyvgl6"
-MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYmxlZGR5IiwiYSI6ImNrN21neWUxMjAwNzYzbWs0Y3NsNHJrcjUifQ.fVJNw-pAYGvnCDhO6aYhhA"
+MAPBOX_PROJECT_ID = "< your Mapbox ID >"
+MAPBOX_ACCESS_TOKEN = "< your Mapbox Access Token>"
 
 #Mapquest is used for the location search function
-MAPQUEST_ACCESS_KEY = 'uUoJSKvxDLAzmvAt6imvGctAAGSOQG41'
+MAPQUEST_ACCESS_KEY = '< your Mapquest Access Key >'
 
 # A list of dictionaries of settings for sites that share this config and virtualenv
 SHARED_HOST_SETTINGS = [
