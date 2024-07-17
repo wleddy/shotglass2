@@ -28,9 +28,10 @@ class Database:
         return f"Database: '{self.filename}'"
         
         # Oct. 25, 2023 - increase timeout from default of 5 seconds
+        # Jul. 16, 2024 - Actually pass the timeout to the connection
     def connect(self,timeout=10):
         """Return a connection to the database"""
-        self.connection = sqlite3.connect(self.filename)
+        self.connection = sqlite3.connect(self.filename,timeout=timeout)
         self.connection.row_factory = sqlite3.Row ## allows us to treat row as a dictionary
         self.connection.execute('PRAGMA foreign_keys = ON') #Turn on foreign key cascade support
         return self.connection
@@ -92,20 +93,24 @@ class SqliteTable:
         
     def create_table(self,definition="",column_list=[]):
         """The default table definition script. definition arg is a string of valid SQL"""
-        
+
         # clean up the definition if needed
         definition = definition.rstrip()
         if definition != "":
             definition = ',' + definition.strip(',')
             
-        sql = """CREATE TABLE IF NOT EXISTS '{}' (
-            id INTEGER NOT NULL PRIMARY KEY{}
-            )""".format(self.table_name,definition,)
-        self.db.execute(sql)
-        # additional fields?
-        column_list = column_list if column_list else self._column_list
-        self._add_columns(column_list)
-        self.init_index()
+        try:
+            sql = """CREATE TABLE IF NOT EXISTS '{}' (
+                id INTEGER NOT NULL PRIMARY KEY{}
+                )""".format(self.table_name,definition,)
+        
+            self.db.execute(sql)
+            # additional fields?
+            column_list = column_list if column_list else self._column_list
+            self._add_columns(column_list)
+            self.init_index()
+        except Exception as e:
+            self.alert_admin(printException(f"Error creating {self.table_name}",err=e))
         
     @property
     def _column_list(self):
