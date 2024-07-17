@@ -22,7 +22,19 @@
             {% endif %}
         {% elif field['type'].lower() == 'label_only' %}
             <p>{{ label_only(field['label'],req=field['req'],) }}</p>
-        {% else %}
+        {% elif field['type'].lower() == 'file' %}
+            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+            <p><input type=file name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                {% if field['class'] %}class="{{ field.class }}"{% endif %} />
+            </p>
+        {% elif field['type'].lower() == 'button' %}
+            <p>
+                <button type="button" name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}">
+                {{field['label'] | default('Button',True)}}
+                </button>
+            </p>
+       {% else %}
             {% set _ = value_list.pop()%}
             {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
             {% if field['name'] == "id" %}

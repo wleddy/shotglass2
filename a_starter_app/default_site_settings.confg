@@ -168,6 +168,13 @@ TEMPLATE_DIRS = [
 # 'shotglass2/templates' then...
 # each blueprint in the order defined
     
+# Mapping credentials
+MAPBOX_PROJECT_ID = "< your Mapbox ID >"
+MAPBOX_ACCESS_TOKEN = "< your Mapbox Access Token>"
+
+#Mapquest is used for the location search function
+MAPQUEST_ACCESS_KEY = '< your Mapquest Access Key >'
+
 # A list of dictionaries of settings for sites that share this config and virtualenv
 SHARED_HOST_SETTINGS = [
     {"host_name": HOST_NAME, "database_path": DATABASE_PATH, "time_zone": TIME_ZONE, "contact_email_addr": CONTACT_EMAIL_ADDR, "contact_name": CONTACT_NAME},
