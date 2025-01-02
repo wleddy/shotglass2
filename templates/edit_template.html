@@ -7,7 +7,6 @@
 {% set value_list = [0] %}
 
 {% block fieldset %}
-<fieldset>
     {% if data.next %}
         <input type="hidden" name="next" value="{{ data.next }}" id="next" >
     {% endif %}
@@ -65,7 +64,6 @@
             {% endif%}
         {% endif %}
     {% endfor %}
-</fieldset>
 {% endblock fieldset %}
 
 {% block head %}
