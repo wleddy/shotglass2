@@ -124,6 +124,9 @@ def _after_request(response :object) -> object:
     Receives the response object from Flask and must return it.
     """
 
+    # keep his name on the clacks:
+    response.headers.add("X-Clacks-Overhead","GNU Terry Pratchett")
+
     if get_site_config()['DEBUG']:
         # always reload files in development
         response.headers["Cache-Control"] = "no-store"
