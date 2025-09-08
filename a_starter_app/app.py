@@ -73,7 +73,12 @@ def initalize_tables():
     """Place code here as needed to initialze all the tables for this site"""
     
     user.initalize_tables(g.db)
-    
+
+
+### Older tests call this...
+def initalize_base_tables(db):
+    initalize_tables()
+        
 
 # Customize your app -- Register any Blueprints for your app
 def register_blueprints():
