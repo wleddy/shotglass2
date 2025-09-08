@@ -2,7 +2,7 @@
     Some utility functions
 """
 
-from flask import g, render_template_string, flash, send_from_directory, abort, url_for, Response
+from flask import g, render_template_string, send_from_directory, abort, Response, request
 from shotglass2.takeabeltof.date_utils import nowString
 import linecache
 import sys
@@ -26,7 +26,15 @@ def cleanRecordID(id):
         return int(id)
         
     return -1
+
+def get_rec_id_if_none(rec_id):
+    # Attempt to get the rec_id from the request form if not valid
+    rec_id = cleanRecordID(rec_id)
+    if rec_id < 0 and request.form:
+        rec_id = cleanRecordID(request.form.get('id',request.args.get("id")))
     
+    return rec_id
+
     
 class Numeric():
     """Try to convert the input value to a number
@@ -297,31 +305,54 @@ def handle_request_error(error=None,request=None):
         
     return mes # just to make it testable
         
-        
+
+def is_mobile_device() -> bool:
+    """
+    Return True if request user agent looks like a mobile device
+
+    Returns:
+        bool
+    """
+    if not request:
+        return False
+    
+    mobile_devices = 'Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini'
+    for agent in mobile_devices.split('|'):
+        if agent in request.headers.get('User-Agent'):
+            return True
+    return False
+
+
 def send_static_file(filename,**kwargs):
     """Send the file if it exists, else try to send it from the static directory"""
     from shotglass2.shotglass import get_site_config
-    
+    # import pdb;pdb.set_trace()
     path_list = kwargs.get('path_list',['static','shotglass2/static'])
     
     path = None
     
-    explain = get_site_config().get('EXPLAIN_TEMPLATE_LOADING',False)
+    explain = str(get_site_config().get('EXPLAIN_STATIC_LOADING',False)).lower()
     
-    if explain:
+    if explain != 'false':
         print("\nSearching for {}".format(filename))
     
     for temp_path in path_list:
         file_loc = os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path,filename)
         if os.path.isfile(file_loc):
             path = temp_path
-            if explain:
-                print("{} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
+            if explain != 'false':
+                # print in red '\033[31m' + 'hi there' + '\033[0m'
+                print('\033[32m' + 
+                      "++++   {} was found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
+                      + '\033[0m'
+                      )
             break
         else:
-            if explain:
-                print("{} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path)))
-    
+            if explain != 'false' and explain.lower() != 'found only':
+             print('\033[31m' + 
+                      " ----  {} was not found at {}".format(filename,os.path.join(os.path.dirname(os.path.abspath(__name__)),temp_path))
+                      + '\033[0m'
+                      )    
     if path:
         return send_from_directory(path,filename, as_attachment=False)
             

@@ -26,10 +26,13 @@
     <p>{{ input_field(rec.username,"new_username",label="User Name",extras=extras) }}
     
     {% set label = 'Password <em class="w3-small">(&mdash; Optional &mdash;)</em>' %}
+    {% set pw_placehoder = '' %}
     {% if rec.password and rec.password != '' %}
         {% set label = 'Password <em class="w3-small">(leave as-is to keep current)</em>' %}
+        {% set pw_placehoder = '\u2022' * 8 %}
     {% endif %}
-    <p>{{ input_field(new_password,"new_password",type="password",label=label) }}</p>
+    <p>{{ label_only(label=label)}}</p>
+    <p>{{ input_field(new_password,"new_password",type="password", label=None, placeholder=pw_placehoder) }}</p>
     <p>{{ input_field(confirm_password,"confirm_password",type="password",label="Re-enter password") }}</p>
     <p>{{ input_field(rec.phone,"phone") }}</p>
     {% if 'may_send_text' in rec._fields %}

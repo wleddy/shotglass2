@@ -5,12 +5,84 @@ from datetime import datetime
 import re
 
 # some custom filters for templates
+
+def duration_minutes(value):
+    """Return number of minutes as hour and minutes"""
+    try:
+        mins = int(value)
+        hrs, min = divmod(mins,60)
+        if hrs and min:
+            return f"{hrs}:{min}"
+        elif hrs:
+            return f"{hrs} {plural('hr',hrs)}."
+        else:
+            return f'{min} min.'
+    except:
+        pass
+
+    return value
+    
+
 def iso_date_string(value):
     """YYYY-MM-DD"""
     format = '%Y-%m-%d'
     return date_to_string(value,format)
+
+def more(value,size=80,more_text="More...") ->str:
+    """
+    return value with a couple <span>s that will allow
+    it to be styled to trunkate value but dislay when clicked
+
+    Arguments:
+        value -- a string
+
+    Keyword Arguments:
+        size -- How many characters to always display (default: {80})
+        more_text -- Text to put in the middle span (default: {"More..."})
+
+    Returns:
+        a string
+    """
+
+    if len(value) <= size:
+        return value # too short
+    
+    first = value[:size-1]
+    # find a trailing space in first
+    while first[-1] not in [" ","/n"] and len(first) > size - 10:
+        size -= 1
+        # resize first
+        first = value[:size-1]
+    tail = value[size-1:]
+
+    return f'{first}<span>{more_text}</span><span>{ tail }</span>'
+
+
+def sanitize(value) ->str:
+    """
+    Attempt to remove any dangerous content from "safe" text.
+    BE SURE TO CALL THIS BEFORE "safe" filter
+
+    Arguments:
+        value -- a string
+
+    Returns:
+        a string
+    """
+
+    forbidden = [
+        "<script",
+        "</script>",
+        "<a",
+        "</a>",
+    ]
+
+    for baddy in forbidden:
+        value = value.replace(baddy,"")
+
+    return value
         
-        
+   
 def short_date_string(value):
     """mm/dd/yy"""
     format='%m/%d/%y'
@@ -76,7 +148,7 @@ def local_time_string(value):
     """6:00AM"""
     return date_to_string(value,'local_time')
 
-def two_decimal_string(value):
+def two_decimal_string(value,denomination=''):
     try:
         if type(value) is str:
             value = value.strip()
@@ -87,6 +159,9 @@ def two_decimal_string(value):
         pos = value.find(".")
         if pos > 0:
             value = value[:pos+3]
+
+        if denomination:
+            value = denomination + value
     except ValueError as e:
         pass
         
@@ -268,3 +343,6 @@ def register_jinja_filters(app):
     app.jinja_env.filters['default_if_none'] = default_if_none
     app.jinja_env.filters['plural'] = plural
     app.jinja_env.filters['phone'] = phone
+    app.jinja_env.filters['more'] = more
+    app.jinja_env.filters['sanitize'] = sanitize
+    app.jinja_env.filters['duration_minutes'] = duration_minutes

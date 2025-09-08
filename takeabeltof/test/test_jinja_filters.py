@@ -126,3 +126,10 @@ def test_plural():
     assert filters.plural('aircraft',2) == 'aircraft'
     assert filters.plural('hoof') == 'hooves'
     
+def test_duration_minutes():
+    assert filters.duration_minutes('60') == '1 hr.'
+    assert filters.duration_minutes(60) == '1 hr.'
+    assert filters.duration_minutes(120) == '2 hrs.'
+    assert filters.duration_minutes(150) == '2:30'
+    assert filters.duration_minutes('test') == 'test'
+    assert filters.duration_minutes(33) == '33 min.'

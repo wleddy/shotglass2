@@ -1,4 +1,4 @@
-from flask import g, session, request, redirect, abort, url_for
+from flask import g, session, request, redirect, abort, url_for, render_template, flash
 import os
 from shotglass2 import shotglass
 from shotglass2.takeabeltof.database import Database
@@ -7,13 +7,9 @@ from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.tools.views import tools
 from shotglass2.users.admin import Admin
 from shotglass2.users.views import login, user
-from shotglass2.users.models import User, Pref
+from shotglass2.users.models import User
 
 # Create app
-import logging
-
-import shotglass2.users.views.user 
-
 app = shotglass.create_app(
         __name__,
         instance_path='instance',
@@ -21,10 +17,100 @@ app = shotglass.create_app(
         static_folder=None,
         )
         
+#############
+###### Update the next 3 methods for your app
+#############
+
+# Customize your app -- Setup the menus for your app
+def create_menus():
+    """Create g.menu_items and g.admin objects.
+    
+    g.menu_items is a list of dicts that define the unprotected menu items. 
+    They will be displayed to all visitors at the top (or left) of the menus.
+    
+    g.admin defines menu items that require a user logged in with at certain level
+    of privilege.
+    
+    The order in which they are defined is the order in which they are displayed.
+
+    This method will be called at each request from _before() method
+
+    """
+    # g.menu_items should be a list of dicts
+    #  with keys of 'title' & 'url' used to construct
+    #  the non-table based items in the main menu
+
+    # g.admin items are added to the navigation menu by default
+    g.admin = Admin(g.db) # This is where user access rules are stored
+
+    g.menu_items = [
+        {'title':'Home','url':url_for('www.home')},
+        {'title':'About','url':url_for('www.about')},
+        {'title':'Contact Us','url':url_for('www.contact')},
+        ]
+        
+    # from starter_module.models import StarterTable
+    # g.admin.register(StarterTable,
+    #         url_for('starter.display'),
+    #         display_name='Starter',
+    #         top_level=True,
+    #         minimum_rank_required=500,
+    #     )
+    
+    # This one will set up the view log item
+    g.admin.register(User,
+            url_for('tools.view_log'),
+            display_name='View Log',
+            top_level = True,
+            minimum_rank_required=500,
+        )
+    
+    # set up the User menu
+    user.create_menus()
+
+# Customize your app -- Initalize any requited tables for your app
+def initalize_tables():
+    """Place code here as needed to initialze all the tables for this site"""
+    
+    user.initalize_tables(g.db)
+    
+
+# Customize your app -- Register any Blueprints for your app
+def register_blueprints():
+    """Register all your blueprints here and initialize 
+    any data tables they need.
+    """
+    # Some basic pages
+    ## Setup the routes for users
+    user.register_blueprints(app)
+
+    # setup www.routes...
+    shotglass.register_www(app)
+
+    app.register_blueprint(tools.mod)
+
+    # # add app specific modules...
+    # from starter_module.views import starter
+    # starter.db_init(g.db) #initialize the tables for the module
+    # starter.register_blueprints(app)
+    # # update function 'create_menus' to display menu items for the app
+
+
+#############
+### Everything below will probably work without Changes
+#############
+
 def start_app():
-    shotglass.start_logging(app,level=logging.DEBUG)
-    initalize_base_tables()
-    register_blueprints() # Register all bluepints
+    shotglass.start_logging(app)
+    register_jinja_filters(app)
+    get_db() #g.db now exists
+    initalize_tables()
+    register_blueprints() # Register all the bluepints for the app
+    start_backup_thread()
+
+
+def start_backup_thread():
+    # Start a background process to make backups of the data file
 
     # use os.path.normpath to resolve true path to data file when using '../' shorthand
     shotglass.start_backup_thread(
@@ -41,8 +127,6 @@ def inject_site_config():
     # Add 'site_config' dict to template context
     return {'site_config':shotglass.get_site_config()}
 
-register_jinja_filters(app)
-
 
 def get_db(filespec=None):
     """Return a connection to the database.
@@ -52,15 +136,9 @@ def get_db(filespec=None):
     if not filespec:
         filespec = shotglass.get_site_config()['DATABASE_PATH']
 
-    # This is probobly a good place to change the
-    # filespec if you want to use a different database
-    # for the current request.
-
     # test the path, if not found, try to create it
-    if shotglass.make_db_path(filespec):
-        g.db = Database(filespec).connect()
-        initalize_base_tables(g.db)
-    
+    if shotglass.make_path(filespec):
+        g.db = Database(filespec).connect()    
         return g.db
     else:
         # was unable to create a path to the database
@@ -82,14 +160,18 @@ def _before():
     #ensure that nothing is served from the instance directory
     if 'instance' in request.url:
         return abort(404)
-        
+            
+    if 'static' in request.url:
+        return
+    
     session.permanent = True
     
-    shotglass.get_site_config(app)
     shotglass.set_template_dirs(app)
-    
     get_db()
     
+    # load the saved visit_data into session
+    shotglass._before_request(g.db)
+
     # Is the user signed in?
     g.user = None
     is_admin = False
@@ -100,6 +182,7 @@ def _before():
 
     # if site is down and user is not admin, stop them here.
     # will allow an admin user to log in
+    from shotglass2.users.models import Pref
     down = Pref(g.db).get("Site Down Till",
                         user_name=shotglass.get_site_config().get("HOST_NAME"),
                         default='',
@@ -119,61 +202,9 @@ def _before():
             return render_template('site_down.html',down_till = down.value.strip())
         else:
             flash("The Site is in Maintenance Mode. Changes may be lost...",category='warning')
-         
+
     create_menus()
-        
-        
-@app.after_request
-def _after(response):
-    # print(session)
-    # session.clear()
-    # session['visit_id'] = "123456"
-    return response
- 
-def create_menus():
-    """Create g.menu_items and g.admin objects.
-    
-    g.menu_items is a list of dicts that define the unprotected menu items. 
-    They will be displayed to all visitors at the top (or left) of the menus.
-    
-    g.admin defines menu items that require a user logged in with at certain level
-    of privilege.
-    
-    The order in which they are defined is the order in which they are displayed.
-    """
-    # g.menu_items should be a list of dicts
-    #  with keys of 'title' & 'url' used to construct
-    #  the non-table based items in the main menu
-    g.menu_items = [
-        {'title':'Home','url':url_for('www.home')},
-        {'title':'About','url':url_for('www.about')},
-        {'title':'Contact Us','url':url_for('www.contact')},
-        {'title':'Docs','url':url_for('www.docs')},
-        ]
-        
-    # g.admin items are added to the navigation menu by default
-    g.admin = Admin(g.db) # This is where user access rules are stored
-    
-    # # Add a module to the menu
-    # from starter_module.models import StarterTable
-    # g.admin.register(StarterTable,
-    #         url_for('starter.display'),
-    #         display_name='Starter',
-    #         top_level=True,
-    #         minimum_rank_required=500,
-    #     )
-    
-    # This one will set up the view log item
-    g.admin.register(User,
-            url_for('tools.view_log'),
-            display_name='View Log',
-            top_level = True,
-            minimum_rank_required=500,
-        )
-    
-    # set up the User menu
-    shotglass.set_user_menus() # g.admin now holds access rules Users, Prefs and Roles
-    # shotglass.user_setup() # g.admin now holds access rules Users, Prefs and Roles
+
 
 @app.teardown_request
 def _teardown(exception):
@@ -190,34 +221,6 @@ def server_error(error):
     return shotglass.server_error(error)
 
 
-def initalize_base_tables(db=None):
-    """Place code here as needed to initialze all the tables for this site"""
-    if not db:
-        db = get_db()
-    
-    shotglass.initalize_user_tables(db)
-    
-def register_blueprints():
-    """Register all your blueprints here and initialize 
-    any data tables they need.
-    """
-    # Some basic pages
-    ## Setup the routes for users
-    user.register_users(app)
-
-    # setup www.routes...
-    shotglass.register_www(app)
-
-    app.register_blueprint(tools.mod)
-
-    # add app specific modules...
-    # from starter_module.models import init_db as starter_init
-    # starter_init(g.db) #initialize the tables for the module
-    # from starter_module.views import starter
-    # app.register_blueprint(starter.mod)
-    # # update function 'create_menus' to display menu items for the app
-
-
 #Register the static route
 app.add_url_rule('/static/<path:filename>','static',shotglass.static)
 
@@ -232,6 +235,6 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000)
-    #app.run()
+    
     
     

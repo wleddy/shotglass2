@@ -3,6 +3,7 @@ from shotglass2.takeabeltof.utils import cleanRecordID
 from shotglass2.takeabeltof.date_utils import local_datetime_now, getDatetimeFromString
 from shotglass2.users.views.password import getPasswordHash
 import time
+from datetime import timedelta
 import random
 
 class Role(SqliteTable):
@@ -85,7 +86,8 @@ class User(SqliteTable):
         self.table_name = 'user'
         self.order_by_col = 'lower(last_name), lower(first_name)'
         self.defaults = {'active':1,}
-        
+        self.indexes = {"user_active":"active"}
+
     def _active_only_clause(self,include_inactive=False,**kwargs):
         """Return a clause for the select statement to include active only or empty string"""
         include_inactive = kwargs.get('include_inactive',include_inactive)
@@ -499,7 +501,8 @@ class VisitData(SqliteTable):
         self.table_name = 'visit_data'
         self.order_by_col = 'id'
         self.defaults = {'value':'','user_name':'Unknown'}
-        
+        self.indexes = {"session_id_index":"session_id"}
+
     def create_table(self):
         """Define and create the table"""
 
@@ -532,30 +535,39 @@ class VisitData(SqliteTable):
         return False
 
 
-    def delete(self,identifier):
-        """Accept Session_id or record id for deletion"""
-        rec = self.get(identifier)
-        if rec:
-            super().delete(rec.id)
+    def get_session_data(self,session_id:str,**kwargs) -> object:
+        """
+        return the requested session data record or None
 
+        Test for expired sessions
 
-    def get(self,value,**kwargs):
-        """can get by data by id or session_id"""
-        if type(value) is str:
-            where = f' session_id = "{value}"'
-        else:
-            where = ' id = {}'.format(cleanRecordID(value))
-            
-        rec =  self.select_one(where=where)
+        Arguments:
+            session_id -- session_id
 
+        Returns:
+            A single record or None
+        """
+        rec = self.select_one(where = f'session_id = "{session_id}"')
+        if not rec:
+            return None
+        
         #Check expires date
         if self._is_expired(rec):
             rec = None
 
         return rec
-    
 
-    def new(self):
+
+    def delete(self,identifier: str | int) ->bool:
+        """Accept Session_id or record id for deletion"""
+        rec = self.get(identifier)
+        if rec:
+            return super().delete(rec.id)
+
+        return False
+        
+
+    def new(self) -> object:
         """Create a new VisitData record and assign a session_id"""
 
         from shotglass2.shotglass import get_site_config
@@ -570,11 +582,32 @@ class VisitData(SqliteTable):
 
         return rec
     
+    def prune(self) -> None:
+        """
+        Remove and out of date or otherwise undesirable visit records.
+        """
+        sql = """
+            select id from visit_data where
+                expires is not null and 
+                date(expires,'localtime') < date("{now}",'localtime')
+        
+            """.format(now=local_datetime_now())
+        
+        recs = self.query(sql)
+        
+        if recs:
+            for rec in recs:
+                    self.delete(rec.id)
 
-    def save(self,rec):
-        """Update the expries field and save the record"""
+
+    def save(self,rec:object) -> object:
+        """Update the expires field and save the record"""
         from shotglass2.shotglass import get_site_config
-        rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
+        # Unknown users' sessions expire in one hour
+        if rec.user_name.lower() == 'unknown':
+            rec.expires = local_datetime_now() + timedelta(seconds=3600)
+        else:
+            rec.expires = local_datetime_now() + get_site_config()['PERMANENT_SESSION_LIFETIME']
         super().save(rec)
         self.commit()
 

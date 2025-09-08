@@ -17,19 +17,30 @@
 {% endif %}
 {% set baseclass = "w3-input" %}
     {% if type=="radio" %}{% set baseclass = "w3-radio" %}{% elif type=="checkbox"%}{% set baseclass = "w3-check" %}{% endif %}
-    <input class="{{baseclass}} {{ class }}" type="{{type}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %}
+    <input class="{{baseclass}} {{ class }}" type="{{type}}" name="{{name}}" data-label="{{get_label_text(label,name)}}" {%if id %}id="{{id}}"{% endif %}
     {%if req %}required{%endif%} value="{{ value | default_if_none(default) }}" 
-    {% if placeholder%}placeholder="{{placeholder}}"{%endif%} {{extras | safe }} >
+    {% if placeholder%}placeholder="{{placeholder}}"{%endif%} {% if extras %}{{extras | safe}}{%endif%} >
 {% endmacro %}
 
 {% macro select_field(name,label="",type="",id=None,class="",req=False,placeholder="",default="",extras="") %}
 {{ make_label(label,name,req) }}
-<select name="{{name}}" {%if id %}id="{{id}}"{% endif %} class="w3-select {{class}}" {{extras | safe }}>
+<select name="{{name}}" {%if id %}id="{{id}}"{% endif %} class="w3-select {{class}}" {% if extras %}{{extras | safe}}{%endif%}>
 {# Be sure to provide the closing </select> tag after inserting your <option> items #}
 {% endmacro %}
 
+{% macro option_select_field(value,name,label="",id=None,options=[],class="",req=False,extras="") %}
+{{ make_label(label,name,req) }}
+<select name="{{name}}" {%if id %}id="{{id}}"{% endif %} class="w3-select {{class}}" {% if extras %}{{extras | safe}}{%endif%}>
+    {% if options %}
+    {% for option in options%}
+    <option value="{% if option['value'] %}{{ option['value']}}{% else %}{{ option['name'] }}{% endif %}" {% if value == option['value'] or value == option['name'] %}selected {% endif %} >{{ option['name'] }}</option>
+    {% endfor %}
+    {% endif %}
+</select>
+{% endmacro %}
+
 {% macro _radio_input_element(value,name,type,id,class,extras) %}
-<input type="{{type}}"  class="{{class}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %} value="{{value}}" {{ _get_checked(value) }} {{extras | safe }}>
+<input type="{{type}}"  class="{{class}}" name="{{name}}" {%if id %}id="{{id}}"{% endif %} value="{{value}}" {{ _get_checked(value) }} {% if extras %}{{extras | safe}}{%endif%}>
 {% endmacro %}
 
 
@@ -62,16 +73,14 @@
 {{radio_field(value,name,label,type,id,class,req,placeholder,default,extras,right)}}
 {%endmacro%}
 
-{% macro label_only(label="Label",req=False)%}
+{% macro label_only(label="Label",req=False,class='')%}
 {{ make_label(label,'',req) }}
 {%endmacro%}
 
-{% macro make_label(label,name,req,class='w3-block') %}
+{% macro make_label(label,name,req,class='') %}
 {% if label != None %}
-<label class="{{ class }} {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}} {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}</label>
+<label class="w3-block {{ class }} {{ label_color(req)}} {{label_text(req)}}">{{ get_label_text(label,name)}} {% if req %}<em class="w3-small {{label_text(req)}}">(required)</em>{%endif%}</label>
 {% endif %}
 {% endmacro %}
 
-{% macro get_label_text(label,name) %}
-{% if label %}{{ label | safe }}{% else%}{{ name | replace("_"," ") | title }}{%endif%}
-{% endmacro %}
+{% macro get_label_text(label,name) %}{% if label %}{{ label | safe }}{% else%}{{ name | replace("_"," ") | title }}{%endif%}{% endmacro %}

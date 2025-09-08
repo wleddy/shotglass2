@@ -2,10 +2,13 @@ from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.utils import cleanRecordID
         
 class StarterTable(SqliteTable):
-    """Handle some basic interactions with the role table"""
+    """Handle some basic interactions this table"""
+
+    TABLE_IDENTITY = 'sample' # so we can get the table name before the app starts up
+
     def __init__(self,db_connection):
         super().__init__(db_connection)
-        self.table_name = 'sample'
+        self.table_name = self.TABLE_IDENTITY
         self.order_by_col = 'lower(name)'
         self.defaults = {'rank':0,}
         
@@ -26,9 +29,8 @@ class StarterTable(SqliteTable):
         """A list of dicts used to add fields to an existing table.
         """
     
-        column_list = [
-        # {'name':'expires','definition':'DATETIME',},
-        ]
+        # {'name':'a_column_name','definition':'A_DATA_TYPE_&_CONSTRAINTS',},
+        column_list = []
         
         return column_list
     

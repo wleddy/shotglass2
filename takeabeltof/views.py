@@ -1,11 +1,10 @@
 from flask import request, session, g, url_for, \
      render_template, render_template_string, redirect, flash, Response
-from flask.views import View
 from shotglass2.shotglass import get_site_config, is_ajax_request
 from shotglass2.takeabeltof.database import SqliteTable
 from shotglass2.takeabeltof.date_utils import date_to_string, local_datetime_now
 from shotglass2.takeabeltof.jinja_filters import plural
-from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer
+from shotglass2.takeabeltof.utils import printException, cleanRecordID, DataStreamer, is_mobile_device
 from shotglass2.users.admin import login_required, table_access_required
 from shotglass2.takeabeltof.jinja_filters import plural, iso_date_string, local_date_string, excel_date_and_time_string
 from datetime import date
@@ -23,12 +22,16 @@ class TableView:
         self.display_name = self.table.display_name
         self.sql = None # may be used for a custom select
         self.recs = None
+        self.rec_id = -1 # only the delete method uses this
+        self.next = request.args.get('next',request.form.get('next',''))
         # for pagination
         self.page_size = 50 # default page size, set to 0 to disable pagination
         self.page_limit = 10 # max number of page numbers to display in list view. 0 is unlimted
         self.page = 1
         self.session_table_name = "list_page_table_name"
         self.session_page_number = 'list_page_number'
+        self.filter_changed = False
+        self.allow_user_filters = True # can user search and sort?
 
         self.list_fields = kwargs.get('list_fields',None) # define the fields (by name) to display in list
         if not self.list_fields:
@@ -42,6 +45,7 @@ class TableView:
         self.export_file_name = kwargs.get('export_file_name',None)
             
         # templates to use in the list view by default
+        self.base_layout = "layout.html"
         self.list_template = 'list_template.html'
         # These are includes in the main list template, so may want to point to a different file
         self.list_table_template = 'list_template_table.html'
@@ -49,11 +53,12 @@ class TableView:
         self.list_search_widget_extras_template = 'list_search_widget_extras.html'
         self.list_header_row_template = 'list_header_row.html'
         self.list_search_widget_ready_template = 'list_search_widget_ready.js'
-        self.list_order_ready_temlate = 'list_order_ready.js'
+        self.list_order_ready_template = 'list_order_ready.js'
         self.list_export_widget_template = 'list_export_widget.html'
         self.allow_record_addition = True #Set false to hide the 'add new record' link in the list page
         self.edit_template = 'edit_template.html'
         self.pagination_template = 'list_pagination_template.html'
+        self.is_mobile_device = is_mobile_device()
 
         # set the page title root
         g.title = self.table.table_name.replace('_', ' ').title()
@@ -66,6 +71,8 @@ class TableView:
         if not self.path:
             self.path = ['/']
         self.root = self.path.pop(0)
+        if len(self.path) > 1:
+            self.rec_id = cleanRecordID(self.path[-1])
         
         self.handlers = ['/','edit','delete','filter','order','export']
         
@@ -94,50 +101,73 @@ class TableView:
         edit_template:
         
         """
-    def delete(self,*args,**kwargs):
-        g.title = "Delete {} Record".format(self.display_name)
-        
-        record_identifier = None
-        
-        if len(self.path) > 1:
-            record_identifier = self.path[1]
+
+    @staticmethod
+    def delete(self):
         
         ################################
         #### For some reason, passing commit keyword arg 
         #### fails for reasons I can't understand
         ###############################
-        # success = self.table.delete(record_identifier,commit=True)
-            
-        self.success = self.table.delete(record_identifier)
+        # import pdb;pdb.set_trace()
+
+        self.success = self.table.delete(self.rec_id)
         if not self.success:
             self.result_text = 'Not able to delete that record.'
         else:
             self.db.commit()
             
-    def dispatch_request(self,*args,**kwargs):
+    def dispatch_request(self,*args,**kwargs) -> object:
+        """
+        Handle the response to a table listing request
+
+        This usually returns a table listing page but also handles the
+        Delete and Export functions
+
+        Returns:
+            A Flask Response object
+        """
+
         # import pdb;pdb.set_trace()
-        if self.path:
+        next = ''
+        if self.next:
+            next = '?next=' + self.next
+        while self.path:
             for handler in self.handlers:
-                if handler == self.path[0].lower():
+                if self.path and handler == self.path[0].lower():
                     if handler == 'edit':
-                        return 'Edit Record method not set'
-                        break
+                        flash('Record editing not handled here. Maybe use EditView?') 
+                        return redirect(g.listURL + next )
                     if handler == 'delete':
-                        self.delete()
+                        self.delete(self)
                         if self._ajax_request:
-                            resp = 'success' if self.success else 'failue: {}'.format(self.result_text)
+                            resp = 'success' if self.success else 'failure: {}'.format(self.result_text)
                             return resp
-                            # redirect to clear the old path name in browser
-                        return redirect(g.listURL)
+                        if not self.success:
+                            flash(self.result_text)
+                        if self.next:
+                            return redirect(self.next)
+                        else:
+                            return redirect(g.listURL)
                     if handler == 'filter':
+                        self.filter_changed = True
                         return ListFilter()._save_list_filter()
                     if handler == 'order':
+                        self.filter_changed = True
                         return ListFilter()._save_list_order()
                     if handler == 'export':
                         # export the currently selected records
                         return self.export()
+                
+            self.path.pop(0)
+
+        if self._ajax_request:
+            self.filter_changed = True
                     
-        return self.list(**kwargs)
+        if self.next:
+            return redirect(self.next)
+        else:
+            return self.list(**kwargs)
         
         
     def export(self,**kwargs):
@@ -147,6 +177,8 @@ class TableView:
         
         # provide for case where recs are set extenally
         if not self.recs:
+            kwargs["offset"] = 0
+            kwargs["limit"] = -1
             self.select_recs(**kwargs)
         if self.recs:
             if self.export_file_name:
@@ -299,10 +331,24 @@ class TableView:
             # cant make int
             self.page=1
 
+        if self.filter_changed:
+            # go to page one when a new filter or order is applied
+            self.page = 1
+            # Reset the marker
+            self.filter_changed = False
+
+        if (self.page - 1) * self.page_size > self.rec_count:
+            # selection results in too few pages
+            self.page = 1
+
         offset, limit = self.set_pagination()
 
+        # respect limits in kwargs if present
+        kwargs["offset"] = kwargs.get("offset",offset)
+        kwargs["limit"] = kwargs.get("limit",limit)
+
         # get the selection with limits
-        self._query_data(limit=limit,offset=offset,**kwargs)
+        self._query_data(**kwargs)
 
     def set_pagination(self) ->tuple:
         """Generate values for pagination
@@ -310,7 +356,7 @@ class TableView:
         returns offset and limit as ints
         """
         self.page_count = 1
-        limit = 9999999
+        limit = -1
         offset = 0
      
         if  self.page_size and self.rec_count > self.page_size:
@@ -336,16 +382,21 @@ class TableView:
 
     def _query_data(self,**kwargs):
         filters = self.get_list_filters()
-        limit = kwargs.get('limit',999999)
+        limit = kwargs.get('limit',-1)
         offset = kwargs.get('offset',0)
  
         if self.sql:
             # self.sql is assumed an sql statement but without the where or order by stanzas
-            self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
-                where=filters.where,order_by=filters.order_by,
-                    offset=offset,limit=limit,
+            if 'where' in self.sql or 'order by' in self.sql:
+                # disallow user filtering and ordering
+                self.allow_user_filters = False
+                self.recs = self.table.query(self.sql)
+            else:
+                self.recs = self.table.query(self.sql + "where {where} order by {order_by} limit {limit} offset {offset}".format(
+                    where=filters.where,order_by=filters.order_by,
+                        offset=offset,limit=limit,
+                        )
                     )
-                )
         else:
             self.recs = self.table.select(where=filters.where,order_by=filters.order_by,**kwargs)
             
@@ -414,21 +465,25 @@ class EditView():
         self.success = True
         self.result_text = ''
         self.stay_on_form = False
+        self.base_layout = "form_layout.html"
         self.form_template = "edit_template.html"
         self.rec_id = rec_id
+        self.rec = None
+        self.next = request.args.get('next',request.form.get('next',''))
         self._validate_rec_id() # self.rec_id may have a value now
         self.get() # could be an empty (new) record, existing record or None
         self.edit_fields = kwargs.get('edit_fields',None) # define the fields (by name) to display in list
         if not self.edit_fields:
             self.edit_fields = self._set_default_edit_fields() # set the defaults if needed
-        self._set_edit_fields() # ensure that all dictionaries are complete
+        self.use_anytime_date_picker = True # A way to shut this off in input form if desired
+        self.is_mobile_device = is_mobile_device()
 
-
+    @staticmethod
     def after_get_hook(self):
         """ do anything you want here"""
         pass
-        
-        
+
+    @staticmethod
     def before_commit_hook(self):
         # a place to put some code after the record is saved, but before it's committed
         pass
@@ -436,7 +491,7 @@ class EditView():
         
     def get(self):
         # Select an existing record or make a new one
-        if not self.rec_id:
+        if self.rec_id == 0:
             self.rec = self.table.new()
         else:
             self.rec = self.table.get(self.rec_id)
@@ -444,8 +499,8 @@ class EditView():
             self.result_text = "Unable to locate that record"
             flash(self.result_text)
             self.success = False
-
-        self.after_get_hook()
+          
+        self.after_get_hook(self)
             
 
     def render(self):
@@ -454,12 +509,15 @@ class EditView():
             data = self,
             )
             
-            
     def save(self):
         try:
-            self.table.save(self.rec)
-            self.rec_id = self.rec.id
-    
+            if self.validate_form(self):
+                self.table.save(self.rec)
+                self.rec_id = self.rec.id
+            else:
+                self.success = False
+                return
+            
         except Exception as e:
             self.db.rollback()
             self.result_text = printException('Error attempting to save {} record.'.format(self.table.display_name),"error",e)
@@ -467,7 +525,8 @@ class EditView():
             self.success = False
             return
     
-        self.before_commit_hook() # anyting special you want to do
+        self.before_commit_hook(self) # anyting special you want to do
+        
         if not self.success:
             self.db.rollback()
             if not self.result_text:
@@ -479,20 +538,15 @@ class EditView():
 
 
     def update(self,save_after_update=True):
-        # import pdb;pdb.set_trace()
         if request.form:
             self.table.update(self.rec,request.form)
-            if self.validate_form():
-                if save_after_update:
-                    self.save()
-            else:
-                self.success = False
-                self.result_text = "Form Validation Failed"
+            if save_after_update:
+                self.save()
         else:
             self.success = False
             self.result_text = "No input form provided"
 
-
+    @staticmethod
     def validate_form(self):
         valid_form = True
         self._set_edit_fields()
@@ -519,7 +573,7 @@ class EditView():
         # import pdb;pdb.set_trace()
         
         for field in self.edit_fields:
-            if not field['name']:
+            if 'name' not in field or not field['name']:
                 raise ValueError("The 'name' property in edit_fields may not be empty ")
                 break
             
@@ -552,6 +606,9 @@ class EditView():
                 'default':'',
                 'placeholder':None,
                 'extras':None,
+                'raw':False,
+                'options':None,
+                'code':False,
                 }
             
             
@@ -602,11 +659,11 @@ class ListFilter:
     The layout within the session dict is:
         'table_filters':{
             {<table name 1>:
-                filters:[{< id of input element>:{'type':<'text' | 'date'>,field_name':<field name>,'value':< filter value >}},{...},],
+                filters:[{< id of input element>:{'type':<'text' | 'date | 'datetime'>,field_name':<field name>,'value':< filter value >}},{...},],
                 'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
             {<table name 2>:
-                'filters':[{'id':< DOM id of input element>,'type':<text | date>,'field_name:<field name>,'value':< filter value >},{...},],
+                'filters':[{'id':< DOM id of input element>,'type':<text | date | 'datetime'>,'field_name:<field name>,'value':< filter value >},{...},],
                 'orders':[{'id':< DOM id of column element>:[{'field_name':<field name>,'direction':<int>},{...},]
             }
         }
@@ -679,6 +736,7 @@ class ListFilter:
         self._create_filter_session(table.table_name) # ensure it exists
         
         where_list = []
+        # import pdb;pdb.set_trace()
         session_data = session.get(self.HEADER_NAME)
         if session_data and table.table_name in session_data:
             filter_data = session_data[table.table_name][self.FILTERS_NAME]
@@ -695,14 +753,18 @@ class ListFilter:
                     if col in table_column_names and '.' not in col:
                         col = table.table_name + '.' + col
                         
-                    if kind == 'date':
+                    if kind.lower() in ['date','datetime',]:
                         start = iso_date_string(start if start else self.BEGINNING_OF_TIME)
                         end = iso_date_string(end if end else self.END_OF_TIME)
                         # print(start,end)
-                        where_list.append("""date({col}) >= date('{start}') and date({col}) <= date('{end}')""".format(col=col,start=start,end=end))
+                        local_time = ''
+                        # print('kind: ',kind)
+                        if kind.lower() == 'datetime':
+                            local_time = ", 'localtime'"
+                        where_list.append(f"""date({col}{local_time}) >= date('{start}') and date({col}{local_time}) <= date('{end}')""")
                         # print(where_list[-1])
                     else:
-                        where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).lower()))
+                        where_list.append("""{col} LIKE '%{val}%'""".format(col=col,val=str(val).replace("'","''").replace('"','""').lower()))
                         
             # import pdb;pdb.set_trace()
             order_list = []
@@ -784,9 +846,7 @@ class ListFilter:
         
         table_name = request.form.get('table_name')
         
-        if table_name:
-            session_data = self._create_filter_session(table_name)
-            
+        if table_name:            
             # import pdb;pdb.set_trace()
             filter_dict = self.filter_dict.copy()
             for k,v in self.filter_dict.items():

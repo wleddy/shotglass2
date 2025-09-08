@@ -1,9 +1,12 @@
-{% extends "layout.html" %}
+{% if data.base_layout %}{% extends data.base_layout %}{% else %}{% extends "layout.html" %}{% endif %}
 
 {% block title %}{{ g.title }}{% endblock %}
 
 {% block head %}
 {{ super() }}
+
+{% if data.allow_user_filters%}
+
 <script src="{{ url_for('static', filename='list_search.js') }}"></script>
 
 {% include data.list_search_widget_ready_template %}
@@ -24,6 +27,8 @@
         setDBorder('{{data.table.table_name}}',which,"{{ g.listURL }}order/","{{ g.listURL }}");
     }
 </script>
+
+{% endif %}
 
 {{ data.head | safe }}
 

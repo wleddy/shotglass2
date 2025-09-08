@@ -28,9 +28,8 @@ def register_admin():
 @login_required
 def view_log():
     """dump the log file to the screen"""
-    g.title = "View Log"
-    log = ShotLog().get_text() #log is a generator
-    
-    return render_template('log_viewer.html',log=log)
+    log = ShotLog()
+    g.title = f"View Log @ '{log.log_file_path}'"    
+    return render_template('log_viewer.html',log=log.get_text())
     
 

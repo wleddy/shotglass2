@@ -28,7 +28,9 @@ w3-bar-item w3-button w3-menu-border w3-menu-color w3-menu-hover-color
         {% endif %} <!-- g.menu -->
         {% if not g.user %}
           {% if  not site_config.SUPPRESS_LOGIN_MENU_ITEM | default(False) %}
-          <a class="{{menu_item_classes()}} " href="{{ url_for('login.login')}}">Login or Register</a>
+          <a class="{{menu_item_classes()}} " href="{{ url_for('login.login')}}">Login
+            {% if site_config.ALLOW_USER_SIGNUP | default(False) %} or Register{% endif %}
+          </a>
           {% endif %}
         {% else %}
             {# the menu items defined in g.admin appear next... #}

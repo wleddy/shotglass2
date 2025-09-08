@@ -25,9 +25,33 @@ class FileUpload:
     @property
     def saved_file_path_string(self):
         """The abreviated path and file name as a string"""
-        return self.saved_file_path.as_posix()
+        if self.filename:
+            return self.saved_file_path.as_posix()
+        return ''
+        
+    def remove_file(self,target):
+        """ Remove the target file and also it's directory if empty
         
         
+        Args: target : str path
+        
+        Returns:  None
+        
+        Raises: None
+        """
+
+        path = self.get_file_path(target)
+        if path.exists() and not path.is_dir():
+            path.unlink() #remove file
+        # Delete the enclosing directory if empty
+        path = path.parent
+        try:
+            path.rmdir()
+        except:
+            # not emtpy, most likely
+            pass
+
+
     def save(self,file,filename=None,max_size=None):
         """Save the file to disk
         
@@ -64,7 +88,7 @@ class FileUpload:
             self.error_text = "No file name specified"
             return
             
-        if not self.allowed_file(self.filename):
+        if not self.allowed_file():
             self.success = False
             self.error_text = "'{}' is not an allowed file type".format(self.filename)
             return
@@ -122,9 +146,10 @@ class FileUpload:
         return Path(self.resource_path,filename)
 
 
-    def allowed_file(self,filename):
+    def allowed_file(self):
         """Test that file is of an allowed type"""
-        
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in self.allowed_extensions
+        if not self.filename:
+            return False
+        return '.' in self.filename and self.filename.rsplit('.', 1)[1].lower() in self.allowed_extensions
 
     

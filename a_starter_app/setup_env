@@ -13,29 +13,14 @@ then
     then
         . env/bin/activate
 
-        echo 'installing requirements'
+        echo "installing requirements"
         pip install -r requirements.txt
     else
         echo "##### Not able to create env #####"
         exit 1
     fi
-else#!/bin/bash
-
-echo ""
-set -e 
-
-if [ ! -d "env" ]
-then
-    echo 'making env'
-
-    python3 -m venv env
-
-    . env/bin/activate
-
-    echo 'installing requirements'
-    pip install -r requirements.txt
-else
-    echo "##### a directory named 'env' already exists ####"
+else    
+    echo "Directory env already exists"
 fi
 
 echo ""
@@ -74,64 +59,18 @@ fi
 
 echo ""
 
-if [ -f 'clone_all' ]
-then
-    . clone_all
-fi
+# 
+# This causes the terminal program to crash
+# if [ -f "clone_all" ]
+# then
+#     source clone_all
+# fi
 
-echo ""
-
-if [ -d 'tmp' ]
+if [ !  -d "tmp" ]
 then
     mkdir "tmp"
+    touch tmp/restart.txt
 fi
-
-touch tmp/restart.txt
-
-echo ""
-
-echo "Don't forget to update instance/site_settings.py before launching the app for the first time"
-
-echo ""
-
-    echo "##### a directory named 'env' already exists ####"
-fi
-
-echo ""
-
-if [ ! -d "instance" ]
-then
-    echo 'create instance directory'
-    mkdir instance
-    touch instance/__init__.py
-    cp default_site_settings.confg instance/site_settings.py
-else
-    echo "###### a directory named 'instance' already exists #####"
-fi
-
-echo ""
-
-if [ ! -d "resource" ]
-then
-    echo 'create resource directory'
-    mkdir resource
-    touch resource/__init__.py
-    mkdir resource/static
-else
-    echo "###### a directory named 'resource' already exists #####"
-fi
-
-echo ""
-
-if [ ! -d "templates" ]
-then
-    echo 'create templates directory'
-    mkdir templates
-else
-    echo "###### a directory named 'templates' already exists #####"
-fi
-
-echo ""
 
 echo ""
 

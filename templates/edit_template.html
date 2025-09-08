@@ -1,45 +1,81 @@
-{% extends "form_layout.html" %}
+{% extends data.base_layout %}
 
-{% from "_form_helpers.html" import input_field, select_field, radio_field, checkbox_field, label_only %}
+
+{% from "_form_helpers.html" import input_field, select_field, option_select_field, radio_field, checkbox_field, label_only %}
 
 {% set type_list = ["text"] %}
 {% set value_list = [0] %}
+
 {% block fieldset %}
-<fieldset>
+    {% if data.next %}
+        <input type="hidden" name="next" value="{{ data.next }}" id="next" >
+    {% endif %}
     {% for field in data.edit_fields %}
-        {% set _ = value_list.pop()%}
-        {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
-        {% set _ = type_list.pop()%}
-        {% set _ = type_list.append('text')%}
-        {% if field['name'] == "id" %}
-            {% set _ = type_list.pop() %}
-            {% set _ = type_list.append('hidden')%}
-        {% endif %}
-        {% if field['type'].lower() == 'hidden' or type_list[0].lower() == 'hidden'%}
-            <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" />
-        {% elif type_list[0].lower() == 'textarea' %}
+        {% if field['raw'] or field['code'] %}
+            {% if field['code'] %}
+            {# display exactly as provided. Never use code if any risk of user input data #}
+            {{ field['content'] | safe }}
+            {% else %}
+            {# sanitize to remove dangerous user data #}
+            {{ field['content'] | sanitize | safe }}
+            {% endif %}
+        {% elif field['type'].lower() == 'label_only' %}
             <p>{{ label_only(field['label'],req=field['req'],) }}</p>
-            <p>
-                <textarea style="width:100%;" rows="6" name="{{ field['name'] }}" id="{{ field['name'] }}"
-                    {% if field['req'] %}>required{% endif %}
-                     {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
-                >{{ value_list[0] | default('',True)}}</textarea>
+        {% elif field['type'].lower() == 'file' %}
+            <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+            <p><input type=file name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                {% if field['class'] %}class="{{ field.class }}"{% endif %} />
             </p>
-        {% else %}
-            <p>{{ input_field(value_list[0],field['name'],type=type_list[0],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],extras=field['extras'])}}</p>
-        {% endif%}
+            {% elif field['type'].lower() == 'button' %}
+            <p>
+                <button type="button" name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}"
+                {%if field['extras'] %}{{field['extras']}}{% endif %}>
+                {{field['label'] | default('Button',True)}}
+                </button>
+            </p>
+            {% elif field['type'].lower() == 'submit' %}
+            <p>
+                <input type="submit" name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}"
+                {%if field['extras'] %}{{field['extras']}}{% endif %}
+                value = "{{field['label'] | default('Submit',True)}}"
+                >
+            </p>
+       {% else %}
+            {% set _ = value_list.pop()%}
+            {% set _ = value_list.append(data.rec.__getattribute__(field['name']))%}
+            {% if field['name'] == "id" %}
+                <input type="hidden" name="{{ field['name'] }}" value="{{value_list[0] | default(0,True) }}" id="{{ field['name'] }}" >
+            {% elif field['type'].lower() == 'textarea' %}
+                <p>{{ label_only(field['label'],req=field['req'],) }}</p>
+                <p>
+                    <textarea style="width:100%;" rows="6" name="{{ field['name'] }}" id="{{ field['name'] }}"
+                        {% if field['req'] %}>required{% endif %}
+                        {% if field['extras'] %}>{{ field["extras"] }}{% endif %}
+                    >{{ value_list[0] | default('',True)}}</textarea>
+                </p>
+                {% elif field['type'] == 'select' %}
+                <p>
+                    {{ option_select_field(value_list[0],field['name'],label=field['label'],id=field['name'],options=field['options'],class="",req=field['req'],extras=field['extras']) }}
+                </p>
+            {% else %}
+                <p>{{ input_field(value_list[0],field['name'],type=field['type'],id=field['name'],label=field['label'],req=field['req'],default=field['default'],placeholder=field['placeholder'],class=field['class'],extras=field['extras'])}}</p>
+            {% endif%}
+        {% endif %}
     {% endfor %}
-</fieldset>
 {% endblock fieldset %}
 
 {% block head %}
 {{ super() }}
+{% if data.use_anytime_date_picker %}
 {% include "anytime_head.html"%}
     <script>
     {% for field in data.edit_fields %}
-    {% if field['type'].lower() == 'date' or field['type'].lower() == 'datetime' %}
+    {% if field['type'].lower() in ['date','datetime','datetime-local',] %}
     $(document).ready(function(){set_date_picker("{{field['name']}}","{{field['type']}}","{{ data.rec.__getattribute__(field['name'])}}");});
     {% endif %}
     {% endfor %}
 </script>
+{% endif %}
 {% endblock head %}

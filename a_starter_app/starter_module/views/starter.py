@@ -2,21 +2,23 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from shotglass2.takeabeltof.utils import printException, cleanRecordID
 from shotglass2.users.admin import login_required, table_access_required
-from starter_module.models import StarterTable
+from shotglass2.takeabeltof.views import TableView, EditView
+from shotglass2.takeabeltof.jinja_filters import plural
 
-PRIMARY_TABLE = StarterTable
+import starter_module.models as models
 
-mod = Blueprint('starter',__name__, template_folder='templates/', url_prefix='/starter')
+PRIMARY_TABLE = models.SampleTable
+MOD_NAME = PRIMARY_TABLE.TABLE_IDENTITY
+
+mod = Blueprint(MOD_NAME,__name__, template_folder='templates/', url_prefix=f'/{MOD_NAME}')
 
 
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
     g.deleteURL = url_for('.display') + 'delete/'
-    g.title = 'Starter'
+    g.title = f'{plural(PRIMARY_TABLE(g.db).display_name,2)}'
 
-
-from shotglass2.takeabeltof.views import TableView
 
 # this handles table list and record delete
 @mod.route('/<path:path>',methods=['GET','POST',])
@@ -29,11 +31,8 @@ def display(path=None):
     
     view = TableView(PRIMARY_TABLE,g.db)
     # optionally specify the list fields
-    view.list_fields = [
-            {'name':'id','label':'ID','class':'w3-hide-small','search':True},
-            {'name':'description'},
-            {'name':'rank'},
-        ]
+    # view.list_fields = [
+    #     ]
     
     return view.dispatch_request()
     
@@ -46,43 +45,114 @@ def display(path=None):
 def edit(rec_id=None):
     setExits()
     g.title = "Edit {} Record".format(g.title)
+ 
+    view = EditView(PRIMARY_TABLE,g.db,rec_id)
+    # Optonally may want to specify the edit fields to use with default edit form
+    # otherwise all fields will be included except forgien keys
 
-    starter = PRIMARY_TABLE(g.db)
-    rec = None
+    # view.edit_fields = []
     
-    if rec_id == None:
-        rec_id = request.form.get('id',request.args.get('id',-1))
-        
-    rec_id = cleanRecordID(rec_id)
-    #import pdb;pdb.set_trace
+    # view.edit_fields.extend(
+    #     [
+    #     {'name':'location_name','req':True,},
+    #     {'name':'entry_type','req':True,'type':'select','options':[
+    #         {'name':'Departure'},
+    #         {'name':'Point of Interest'},
+    #         {'name':'Arrival'},
+    #     ]},
+    #     {'name':'entry_date','req':True,'type':'datetime','label':'When'},
+    #     ]
+    # )
+    # entry_date_dict = {'name':'entry_date','type':'raw','content':''}
+    # entry_date_dict['content'] = """<p><strong>Some Raw HTML</strong></p>"""
+    # view.edit_fields.extend([entry_date_dict])
 
-    if rec_id < 0:
-        flash("That is not a valid ID")
-        return redirect(g.listURL)
-        
-    if rec_id == 0:
-        rec = starter.new()
-    else:
-        rec = starter.get(rec_id)
-        if not rec:
-            flash("Unable to locate that record")
-            return redirect(g.listURL)
+    # Some methods in view you can override
+    # view.validate_form = validate_form # view does almost no validation
+    # view.after_get_hook = ? # view has just loaded the record from disk
+    # view.before_commit_hook = ? # view is about to commit the record
 
+    # if is_mobile_device():
+    #     # Sometimes not as convenient on mobile...
+    #     view.use_anytime_date_picker = False
+
+
+    # Process the form?
     if request.form:
-        starter.update(rec,request.form)
-        if validForm(rec):
-            starter.save(rec)
-            g.db.commit()
-
+        view.update(save_after_update=True)
+        if view.success:
             return redirect(g.listURL)
 
-    # display form
-    return render_template('starter/starter_edit.html', rec=rec)
+    # otherwise send the list...
+    return view.render()
+
     
-    
-def validForm(rec):
+def validate_form(view):
     # Validate the form
-    goodForm = True
-                
-    return goodForm
+    valid_form = True
+    view._set_edit_fields()
+    for field in view.edit_fields:
+        if field['name'] in request.form and field['req']:
+            val = view.rec.__getattribute__(field['name'])
+            if isinstance(val,str):
+                val = val.strip()
+            if not val:
+                view.result_text = "You must enter a value for {}".format(field['name'])
+                flash(view.result_text)
+                view.success = False
+                valid_form = False
+            
+    return valid_form
+
     
+def create_menus():
+    """
+    Create menu items for this module
+
+    g.menu_items and g.admin are created in app.
+
+    Menu elements defined directly in menu_items have no access control.
+    Menu elements defined using g.admin.register can have access control.
+
+    """
+
+    # # Static dropdown menu...
+    # g.menu_items.append({'title':'Drop down header','drop_down_menu':{
+    #         'name':'First','url':url_for('.something'),
+    #         'name':'Second','url':url_for('.another'),
+    #         }
+    #     })
+    # # single line menu
+    # g.menu_items.append({'title':'Something','url':url_for('.something')})
+    
+    # # This makes a drop down menu for this application
+    # g.admin.register(models.TripSegment,url_for('trip_segment.display'),display_name='Trip Logging',header_row=True,minimum_rank_required=500,roles=['admin',])
+    # g.admin.register(models.TripSegment,
+    #     url_for('trip_segment.display'),
+    #     display_name='Trip Segments',
+    #     top_level=False,
+    #     minimum_rank_required=500,
+    # )
+
+def register_blueprints(app, subdomain = None) -> None:
+    """
+    Register one or more modules with the Flask app
+
+    Arguments:
+        app -- the current app
+
+    Keyword Arguments:
+        subdomain -- limit access to this subdomain if difined (default: {None})
+    """ 
+    app.register_blueprint(mod, subdomain=subdomain)
+
+
+def initialize_tables(db) -> None:
+    """
+    Initialize all the tables for this module
+
+    Arguments:
+        db -- connection to the database
+    """
+    
+    models.init_db(db)

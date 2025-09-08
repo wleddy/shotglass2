@@ -81,7 +81,6 @@ p.clear {
 }
 
 #sg-list-template-contain {
-    /* background-color:white; */
     padding-top:6pt;
     padding-bottom:6pt;
 }
@@ -164,61 +163,58 @@ span.deleteicon input {
 {width:98%;}
 
 
-/* colors */
-/* Teal and Pale green */
-:root {
-    color:#000;
-    background-color: #f8f8f8;
-    --primary-color: #009688;
-    --primary-contrast: #fff;
-    --primary-border: rgb(63, 36, 20);
-    --secondary-color: #ddffdd; 
-    --secondary-contrast: #000;
-    --secondary-border: #ddffdd;
-    --menu-border: rgb(247, 240, 230);
-   }
-
-@media (prefers-color-scheme: dark)
-{
-    :root {
-        color: #f8f8f8;
-        background-color: #747272;
-
-        --primary-color: #009688;
-        --primary-contrast: #fff;
-        --primary-border: rgb(63, 36, 20);
-        --secondary-color: #ddffdd; 
-        --secondary-contrast: #000;
-        --secondary-border: #ddffdd;
-        --menu-border: rgb(247, 240, 230);
-       }
+.flash {}
+/* For warning category messages */
+.flash-warning{
+    background-color: lightcoral !important;
+    color: black !important;
+    padding-top:3pt;
+    padding-bottom:3pt;
+    font-weight: bold;
 }
 
-/*
-media (prefers-color-scheme: dark) 
-{
-    :root{
-        --primary-color: rgb(101, 58, 32);
-        --primary-contrast: #f8f5f5;
-        --primary-border: rgb(144, 83, 48);
-        --secondary-color: rgb(244, 195, 128); 
-        --secondary-contrast:#000;
-        --secondary-border: rgb(247, 240, 230);
-        --menu-border: rgb(247, 240, 230);   
-    }
-
-    .w3-table-all tr:nth-child(even), .datatable tr:nth-child(even) {
-        background-color: rgb(240, 206, 157)!important;
-        color:var(--secondary-contrast)!important;
-    }
-    
-    .w3-hoverable tbody tr:hover, .w3-ul.w3-hoverable li:hover, .datatable tr {
-        background-color:rgb(242, 189, 109)!important;
-        color: var(--secondary-contrast)!important;
-    }
-    
+/* Styles for the mobile input keypad */
+#keypad_window {
+    display:none;
 }
-*/
+#keypad_window div:first-child {
+    max-width:225pt;
+    margin:auto;
+    padding:6pt;
+    border-width: 6pt;
+    border-style: solid;
+    border-radius:16pt;
+    border-color:gainsboro;
+}
+#keypad_value {
+    height:50pt;
+    border: 2pt black inset;
+    padding: 2pt;
+    margin:6pt 30pt;
+    font-weight:bold;
+    font-size:28pt;
+    background-color:#ccc;
+    color:forestgreen;
+}
+.keypad_button, .keypad_zero {
+    width: 40pt;
+    margin: 3pt 4pt;
+    touch-action:none;
+}
+.keypad_zero {
+    width: 90pt
+}
+.keypad_right_button {
+    margin-right:0;
+}
+#keypad_header {
+    text-align: center;
+    font-size: 16pt;
+    font-weight:bold;
+}
+
+
+/* some sample color schemes */
 
 /* brown and tan (SABA) */
 /*
@@ -257,7 +253,86 @@ media (prefers-color-scheme: dark)
     --secondary-border: #ddffff;
     --menu-border: #b7f2f2;
    } */
+/* Teal and Pale green */
+/* :root {
+    color:#000;
+    background-color: #f8f8f8;
+    --primary-color: #009688;
+    --primary-contrast: #fff;
+    --primary-border: rgb(63, 36, 20);
+    --secondary-color: #ddffdd; 
+    --secondary-contrast: #000;
+    --secondary-border: #ddffdd;
+    --menu-border: rgb(247, 240, 230);
+   } */
 
+/* colors */
+/* Teal and Pale green */
+:root {
+    color:#000;
+    background-color: #f8f8f8;
+    --primary-color: #009688;
+    --primary-contrast: #fff;
+    --primary-border: rgb(63, 36, 20);
+    --secondary-color: #ddffdd; 
+    --secondary-contrast: #000;
+    --secondary-border: #ddffdd;
+    --menu-border: rgb(247, 240, 230);
+   }
+
+@media (prefers-color-scheme: dark)
+{
+    :root {
+        color: white;
+        background-color: black;
+
+        --primary-color: #005d54;
+        --primary-contrast: #fff;
+        --primary-border: white;
+        --secondary-color: #3f813f; 
+        --secondary-contrast: #fafbfa;
+        --secondary-border: #ddffdd;
+        --menu-border: rgb(247, 240, 230);
+       }
+    .datatable tr {
+        color:black;
+        background-color:lightgray;
+    }
+    .w3-striped tbody tr:nth-child(even) {
+        background-color:#666;
+    }
+    .w3-input, textarea {
+        background-color:#666;
+        color:white;
+    }
+    .w3-select {
+        background-color:#666;
+        color:white;
+    }
+    .sg-busy-box {
+        background-color:black;
+        border:2pt solid white;
+    }
+    .w3-table-all tr:nth-child(even), .datatable tr:nth-child(even) {
+        background-color: var(--secondary-color)!important;
+        color:white!important;
+    }
+    
+    .w3-hoverable tbody tr:hover, .w3-ul.w3-hoverable li:hover, .datatable tr {
+        background-color:rgb(80, 81, 80)!important;
+        color: white !important;
+    }
+    .w3-btn, .w3-button {
+        border: white .5pt solid;
+    }
+    
+    #keypad_header {
+        color:white;
+    }
+    #keypad_window div:first-child {
+        background-color:black;
+    }
+}
 
 /* the actual styles... */
 .w3-menu-color,.w3-drop-menu-hover-color:hover,
@@ -314,14 +389,4 @@ a.sg-page-begin
 /* buttons */
 .w3-save-button-color,.w3-save-button-hover-color:hover{color:#fff!important;background-color:#009688!important}
 .w3-delete-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#ff5722!important}
-.w3-cancel-button-color,.w3-delete-button-hover-color:hover{color:#fff!important;background-color:#3f51b5!important}
-
-.flash {}
-/* For warning category messages */
-.flash-warning{
-    background-color: lightcoral !important;
-    color: black !important;
-    padding-top:3pt;
-    padding-bottom:3pt;
-    font-weight: bold;
-}
+.w3-cancel-button-color,.w3-cancel-button-hover-color:hover{color:#fff!important;background-color:#3f51b5!important}

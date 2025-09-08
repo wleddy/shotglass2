@@ -11,7 +11,6 @@ import os
 import threading
 import time
   
-  
 def create_app(name,instance_path=None,config_filename=None,**kwargs):
     """Initialize and return an instance of the flask app
     
@@ -124,12 +123,21 @@ def _after_request(response :object) -> object:
     
     Receives the response object from Flask and must return it.
     """
-    # ses = session.get('session_id','No Session')
-    # print('_after:',request.path,ses[15:25])
-    # print('_after:',session)
-    # import pdb; pdb.set_trace()
 
-    if not 'static' in request.url:
+    # keep his name on the clacks:
+    response.headers.add("X-Clacks-Overhead","GNU Terry Pratchett")
+
+    if get_site_config()['DEBUG']:
+        # always reload files in development
+        response.headers["Cache-Control"] = "no-store"
+
+    if not request.path.startswith('/static'):
+        # import pdb; pdb.set_trace()
+
+        # somehow this is getting called when g.db does not exist
+        if not g or 'db' not in g:
+            return response
+
         session_id = session.get('session_id')
 
         ### Handle situation where no database exists
@@ -138,11 +146,19 @@ def _after_request(response :object) -> object:
         
         visit_data = VisitData(g.db)
 
+        visit_data.prune() # remove old visit records
+
         rec = None
         if session_id:
-            rec = visit_data.get(session_id)
-        if not rec:
-            rec = visit_data.new()
+            rec = visit_data.get_session_data(session_id)
+
+        # Only record "important" sessions
+        unimportant_keys = ['_perminent','_flashes']
+        for key in session.keys():
+            if key not in unimportant_keys:
+                if not rec:
+                    rec = visit_data.new()
+                break
 
         if rec:
             visit_dict = {}
@@ -151,26 +167,19 @@ def _after_request(response :object) -> object:
                 if k == 'session_id': 
                     continue
                 visit_dict.update({k:v})
-                if not k.startswith('_'):
+                if k.startswith('_'):
                     # these seem to be flask specific
-                    values_to_remove.append(k)
-
-            #### For inital testing, just compare what I got from session with stored data
-            from app import app
-            if rec.value and rec.value != json.dumps(visit_dict):
-                app.logger.warning(f"###### Stored Session Failed --- {request.path}")
-                app.logger.warning(f"stored session values:\n{rec.value}")
-                app.logger.warning(f"session values:\n{json.dumps(visit_dict)}")
+                    continue
+                values_to_remove.append(k)
 
             rec.value = json.dumps(visit_dict)
             rec.user_name = session.get('user_name','Unknown')
             visit_data.save(rec)
 
-            #### disable for inital testing
-            # # remove my items from session
-            # for k in values_to_remove:
-            #     del session[k]
-            
+            # remove my items from session
+            for k in values_to_remove:
+                del session[k]
+
             session['session_id'] = rec.session_id
         
     return response
@@ -185,26 +194,19 @@ def _before_request(db :object) -> None:
     # print('_before:',request.path,ses[15:25])
     # print('_before:',session)
     # import pdb; pdb.set_trace()
+    from app import app
+    start_logging(app) # Site specfic log
+
 
     # restore session from database
     visit_data = VisitData(db)
     session_id = session.get('session_id')
     if session_id:
-        rec = visit_data.get(session_id)
+        rec = visit_data.get_session_data(session_id)
         if rec and isinstance(rec.value,str):
-
-            #### For initial testing purposes, don't actually update the session
-            return
             session.update(json.loads(rec.value))
 
 
-def initalize_user_tables(db):
-    """Initialize the Users, Prefs and Roles tables"""
-
-    from shotglass2.users.models import init_db as users_init_db 
-    users_init_db(db)
-
-    
 def is_ajax_request():
     """Return True if this request was submitted as XMLHttpRequest else False"""
     try:
@@ -253,17 +255,17 @@ def make_path(filespec):
     return True
 
 
-def register_users(app,subdomain=None):
-    mes = 'shotglass.register_users should be replaced with users.register_users'
-    from app import app
-    app.logger.warning(mes)
+# def register_users(app,subdomain=None):
+    # shotglass.register_users should be replaced with users.register_users
+    # from app import app
+    # app.logger.warning(mes)
 
-    from shotglass2.users.views import user, login, role, pref, visit_data
-    app.register_blueprint(user.mod, subdomain=subdomain)
-    app.register_blueprint(login.mod, subdomain=subdomain)
-    app.register_blueprint(role.mod, subdomain=subdomain)
-    app.register_blueprint(pref.mod, subdomain=subdomain)
-    app.register_blueprint(visit_data.mod, subdomain=subdomain)
+    # from shotglass2.users.views import user, login, role, pref, visit_data
+    # app.register_blueprint(user.mod, subdomain=subdomain)
+    # app.register_blueprint(login.mod, subdomain=subdomain)
+    # app.register_blueprint(role.mod, subdomain=subdomain)
+    # app.register_blueprint(pref.mod, subdomain=subdomain)
+    # app.register_blueprint(visit_data.mod, subdomain=subdomain)
 
 
 def register_www(app,subdomain=None):
@@ -368,24 +370,24 @@ def static(filename):
     return send_static_file(filename,path_list=local_path)
 
 
-def user_setup():
-    # To support old app.py code
-    set_user_menus()
+# def user_setup():
+#     # To support old app.py code
+#     set_user_menus()
 
 
-def set_user_menus():
-    if 'admin' not in g:
-        g.admin = Admin(g.db)
-        # Add items to the Admin menu
-        # the order here determines the order of display in the menu
+# def set_user_menus():
+#     if 'admin' not in g:
+#         g.admin = Admin(g.db)
+#         # Add items to the Admin menu
+#         # the order here determines the order of display in the menu
         
-    # a header row must have the some permissions or higher than the items it heads
-    g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
+#     # a header row must have the some permissions or higher than the items it heads
+#     g.admin.register(User,url_for('user.display'),display_name='User Admin',header_row=True,minimum_rank_required=500)
         
-    g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
-    g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
-    g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
-    g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)
+#     g.admin.register(User,url_for('user.display'),display_name='Users',minimum_rank_required=500,roles=['admin',])
+#     g.admin.register(Role,url_for('role.display'),display_name='Roles',minimum_rank_required=500)
+#     g.admin.register(Pref,url_for('pref.display'),display_name='Prefs',minimum_rank_required=500)
+#     g.admin.register(VisitData,url_for('visit_data.display'),display_name='Visit Data',minimum_rank_required=500)
         
         
 class ShotLog():
@@ -410,11 +412,13 @@ class ShotLog():
 
         app.logger.addHandler(logHandler)
         
-        
     def get_text(self):
         # return the contents of the log in reverse order mostly for display
 
-        # def reverse_readline(filename, ):
+        if not os.path.exists(self.log_file_path):
+            fh = open(self.log_file_path,'w')
+            fh.close()
+        
         """A generator that returns the lines of a file in reverse order"""
         with open(self.log_file_path) as fh:
             buf_size=8192
@@ -450,8 +454,11 @@ class ShotLog():
     
 def start_logging(app,filename=None,maxBytes=100000,backupCount=5,level=logging.INFO):
     # to handle legacy code
-    log = ShotLog(level=level)
-    log.start(app,filename=None,maxBytes=100000,backupCount=5)
+    # import pdb;pdb.set_trace()
+    site_config = get_site_config()
+    filename = filename or site_config.get('INSTANCE_PATH','instance/') + site_config.get('LOG_FILE_NAME',"log.log")
+    log = ShotLog(log_file_path=filename,level=level)
+    log.start(app,filename,maxBytes,backupCount)
     
     
 def do_backups(source_file_path,**kwargs):

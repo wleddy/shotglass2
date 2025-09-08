@@ -1,5 +1,7 @@
 {# a search form for table lists #}
 
+{% if data.allow_user_filters %}
+
 {% set search_id_prefix = 'text-search-id-' %}
 {% set has_date_search = [] %}
 <div class="w3-col l8 m9 s12">
@@ -8,7 +10,7 @@
         <select class="w3-select" style="width:auto;" id="{{ search_id_prefix }}col_select" name="col_select" 
         kind='text' id_prefix='{{ search_id_prefix }}' onchange="search_changed(this)" >
         {% for field in data.list_fields %}
-            {% if field.search == 'date' %}{% set _ = has_date_search.append(True) %}{% endif %}
+            {% if field.search == 'date' or  field.search == 'datetime' %}{% set _ = has_date_search.append(True) %}{% endif %}
             {% if field.search and field.search != 'date' %}<option value="{{ field.name }}" >{{ field.label }}</option>
             {% endif %} {# search #}
         {% endfor %}
@@ -26,15 +28,15 @@
             {% for field in data.list_fields %}
                 {% set _ = search_id_prefix.pop(0) %}
                 {% set _ = search_id_prefix.append(field.name) %}
-                {% if field.search and field.search == 'date' %}
+                {% if field.search and field.search == 'date' or field.search == 'datetime' %}
                     <p>
                         <span class="w3-hide-small sg-list-search-label">{{ field.label }}:</span> 
                         <input id="{{ search_id_prefix[0] }}start_date" name="{{ field.name }}" type="text"
-                        class="DatePickerButton w3-border deletable" kind='date' id_prefix='{{ search_id_prefix[0] }}' 
+                        class="DatePickerButton w3-border deletable" kind='{{field.search}}' id_prefix='{{ search_id_prefix[0] }}' 
                         placeholder="Start Date" onchange="search_changed(this)" 
                         />&nbsp;thru&nbsp;
                         <input id="{{ search_id_prefix[0] }}end_date" name="{{ field.name }}" type="text"
-                        class="DatePickerButton w3-border deletable" kind='date' id_prefix='{{ search_id_prefix[0] }}' 
+                        class="DatePickerButton w3-border deletable" kind='{{field.search}}' id_prefix='{{ search_id_prefix[0] }}' 
                         placeholder="End Date" onchange="search_changed(this)" 
                         />
                     </p>
@@ -65,4 +67,6 @@
         });
     }
 </script>
+
+{% endif %}
     

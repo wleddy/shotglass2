@@ -313,7 +313,7 @@ class SqliteBackup():
                         if os.stat(backup_file).st_mtime < (time.time() - (keep_days * 86400)):
                             os.remove(backup_file)
                     except Exception as e:
-                        printException("Error in backup file purge for {}".fomat(backup_file),level="error",err=e)
+                        printException("Error in backup file purge for {}".format(backup_file),level="error",err=e)
         
 
 

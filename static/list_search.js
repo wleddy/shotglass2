@@ -8,7 +8,7 @@ function setDBsearch(table_name,which,session_save_URL,result_target_URL){
         var startDate = '';
         var endDate = '';
         var value = '';
-        if (kind == 'date'){
+        if (kind == 'date' | kind == 'datetime'){
             startDate = $('#'+dom_id+'start_date').val();
             endDate = $('#'+dom_id+'end_date').val();
         } else {
