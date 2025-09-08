@@ -130,10 +130,14 @@ def _after_request(response :object) -> object:
     # import pdb; pdb.set_trace()
 
     if not 'static' in request.url:
-
-
         session_id = session.get('session_id')
+
+        ### Handle situation where no database exists
+        if 'db' not in g:
+            return response
+        
         visit_data = VisitData(g.db)
+
         rec = None
         if session_id:
             rec = visit_data.get(session_id)
