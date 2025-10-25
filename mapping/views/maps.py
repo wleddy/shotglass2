@@ -234,7 +234,7 @@ def get_distance(point_1, point_2, in_K=False) -> float:
             # convert to miles
             distance = distance * 0.6213712
 
-        print("Result: ", distance)
+        # print("Result: ", distance)
 
     except Exception as e:
         printException(str(e))
