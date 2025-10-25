@@ -194,12 +194,12 @@ def get_distance(point_1, point_2, in_K=False) -> float:
           point_2: as above
           in_K: Bool; if true return value in kilometers
     
-    Returns:  distance:float, The straight line distance in miles or None if error
+    Returns:  distance:float, The straight line distance in miles or 0 if error
     
     Raises: None
     """
 
-    distance = None
+    distance = 0
 
     if not (isinstance(point_1, dict) and isinstance(point_2,dict)):
         return distance
@@ -207,6 +207,9 @@ def get_distance(point_1, point_2, in_K=False) -> float:
         return distance
     if not ('lat' in point_2 and 'lng' in point_2):
         return distance
+    if None in [point_1["lat"],point_1["lng"],point_2["lat"],point_2["lng"]]:
+        return distance
+
     
     try:
         from math import sin, cos, sqrt, atan2, radians
