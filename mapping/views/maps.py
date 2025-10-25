@@ -185,6 +185,57 @@ def getDivIcon(markerCount):
     
     return escapeTemplateForJson(divIcon)
     
+def get_distance(point_1, point_2, in_K=False) -> float:
+    """ return the distance in miles between to points
+    
+    Provide the lng and lat for 2 points as dicts
+    
+    Args: point_1: Dictionary containing "lng" and "lat" as number or string
+          point_2: as above
+          in_K: Bool; if true return value in kilometers
+    
+    Returns:  distance:float, The straight line distance in miles or None if error
+    
+    Raises: None
+    """
 
+    distance = None
+
+    if not (isinstance(point_1, dict) and isinstance(point_2,dict)):
+        return distance
+    if not ('lat' in point_1 and 'lng' in point_1):
+        return distance
+    if not ('lat' in point_2 and 'lng' in point_2):
+        return distance
+    
+    try:
+        from math import sin, cos, sqrt, atan2, radians
+
+        # Approximate radius of earth in km
+        R = 6373.0
+
+        lat1 = radians(abs(float(point_1["lat"])))
+        lon1 = radians(abs(float(point_1["lng"])))
+        lat2 = radians(abs(float(point_2["lat"])))
+        lon2 = radians(abs(float(point_2['lng'])))
+
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        distance = R * c # distance in Kilometers
+
+        if not in_K:
+            # convert to miles
+            distance = distance * 0.6213712
+
+        print("Result: ", distance)
+
+    except Exception as e:
+        printException(str(e))
+
+    return distance
     
     
