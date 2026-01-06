@@ -3,21 +3,23 @@
 from datetime import datetime, timedelta, date
 from pytz import timezone
 
-def local_datetime_now(time_zone=None):
+def local_datetime_now(time_zone="")->datetime:
     """Return a datetime object for now at the time zone specified.
-    
     If tz is None, use the tz name in app.config else use the local time per the server"""
-    if time_zone == None:
+
+    if not time_zone:
         time_zone = get_time_zone_setting()
         if time_zone == None:
             return datetime.now()
         
     try:
         #import pdb;pdb.set_trace()
-        utc = timezone("UTC")
-        local_tz = timezone(time_zone)
-        now = utc.localize(datetime.utcnow())
-        return now.astimezone(local_tz)
+        # utc = timezone("UTC")
+        # local_tz = timezone(time_zone)
+        # now = utc.localize(datetime.utcnow())
+        # return now.astimezone(local_tz)
+
+        return datetime.now(timezone(time_zone))
         
     except:
         return datetime.now()
@@ -49,9 +51,10 @@ def get_time_zone_setting():
     return time_zone
     
     
-def nowString():
+def nowString(time_zone='')->str:
     """Return the timestamp string in the normal format"""
-    return datetime_as_string(local_datetime_now())
+    
+    return datetime_as_string(local_datetime_now(time_zone))
     
     
 def date_to_string(value,format):
@@ -88,28 +91,34 @@ def date_to_string(value,format):
     return value
 
     
-def datetime_as_string(the_datetime=None):
+def datetime_as_string(the_datetime,time_zone):
     """Return a string version of the datetime provided or for now"""
     if the_datetime == None:
-        the_datetime = local_datetime_now()
+        the_datetime = local_datetime_now(time_zone)
         
     return the_datetime.isoformat(sep=" ")[:19]
     
 
-def getDatetimeFromString(dateString):
+def getDatetimeFromString(dateString,time_zone='') ->datetime | None:
     """Try to create a datetime object based on the string provided
     or else None.
-    The  datetime object returned is time zone aware
+    The  datetime object returned is time zone aware and set to the time zone if provided
+    else use the system default time zone
     """
-    if type(dateString) is str: # or type(dateString) is unicode:
+
+    theDate = None
+    if not time_zone:
+        time_zone = get_time_zone_setting()
+
+    if isinstance(dateString,str):
         pass
     elif isinstance(dateString,(date,datetime)):
         #already a datetime. just make sure it's timezone aware
-        if type(dateString) is date:
+        # if type(dateString) is date:
             # date object must be converted to datetime to be time zone aware
-            dateString = datetime(dateString.year,dateString.month,dateString.day,0,0,0)
-        if not dateString.tzinfo:
-            dateString = timezone(get_time_zone_setting()).localize(dateString)
+        # theDate = datetime(dateString.year,dateString.month,dateString.day,0,0,0)
+        make_tz_aware(dateString,time_zone)
+        # dateString = timezone(time_zone).localize(dateString)
         return dateString
     else:
         return None
@@ -214,6 +223,6 @@ def getDatetimeFromString(dateString):
         theDate = theDate.replace(year=theDate.year - 100)
         
     # Make datetime aware
-    theDate = timezone(get_time_zone_setting()).localize(theDate)
+    theDate = timezone(time_zone).localize(theDate)
         
     return theDate.replace(microsecond=0)
