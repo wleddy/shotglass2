@@ -207,38 +207,41 @@ def test_user_profile_page(client):
             assert b'Edit User' in result.data
                 
 def test_user_register(client):
-        with client as c:
-            from flask import session, g
-            result = c.get('/user/register/',follow_redirects=True)  
-            assert result.status_code == 200
-            assert b'Account Registration' in result.data
-            
-            form_data = {
-            'id':'0',
-            'first_name':'Willie',
-            'last_name': 'Nillie',
-            'email': 'willie@testing.com',
-            'new_username': 'testuser',
-            'new_password': '',
-            'confirm_password': '',
-            'address': '',
-            'address2': '',
-            'city': '',
-            'state': '',
-            'zip': '',
-            'phone': '',
-            'active':1,
-            }
+        if not app.app.config["ALLOW_USER_SIGNUP"]:
+            pass # user account creation is disabled
+        else:
+            with client as c:
+                from flask import session, g
+                result = c.get('/user/register/',follow_redirects=True)  
+                assert result.status_code == 200
+                assert b'Account Registration' in result.data
+                
+                form_data = {
+                'id':'0',
+                'first_name':'Willie',
+                'last_name': 'Nillie',
+                'email': 'willie@testing.com',
+                'new_username': 'testuser',
+                'new_password': '',
+                'confirm_password': '',
+                'address': '',
+                'address2': '',
+                'city': '',
+                'state': '',
+                'zip': '',
+                'phone': '',
+                'active':1,
+                }
 
-            result = c.post('/user/register/', data=form_data,follow_redirects=True)
-            assert result.status_code == 200
-            assert b'Signup Successful' in result.data
-            
-            #test that duplicate name is rejected
-            result = c.post('/user/register/', data=form_data,follow_redirects=True)
-            assert result.status_code == 200
-            assert b'That email address is already in use' in result.data
-            assert b'That User Name is already in use' in result.data
+                result = c.post('/user/register/', data=form_data,follow_redirects=True)
+                assert result.status_code == 200
+                assert b'Signup Successful' in result.data
+                
+                #test that duplicate name is rejected
+                result = c.post('/user/register/', data=form_data,follow_redirects=True)
+                assert result.status_code == 200
+                assert b'That email address is already in use' in result.data
+                assert b'That User Name is already in use' in result.data
             
             
 
