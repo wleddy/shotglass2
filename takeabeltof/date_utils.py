@@ -24,29 +24,30 @@ def local_datetime_now(time_zone="")->datetime:
     except:
         return datetime.now()
             
-def make_tz_aware(the_datetime,time_zone=None):
+def make_tz_aware(the_datetime:datetime,time_zone:str='')->datetime:
     """Return the time zone aware version of the datetime 
     This function will not convert an aware datetime to a new time zone"""
+    if not isinstance(the_datetime,datetime):
+        return the_datetime
+    
     if the_datetime.tzinfo != None:
         return the_datetime # not needed
         
-    if time_zone == None:
+    if not time_zone:
         time_zone = get_time_zone_setting()
-        if time_zone == None:
-            time_zone = 'UTC'
             
     tz = timezone(time_zone)
     return tz.localize(the_datetime)
     
     
-def get_time_zone_setting():
+def get_time_zone_setting()->str:
     """Return the TIME_ZONE config setting if it exists else None"""
     try:
         from shotglass2.shotglass import get_site_config
         
         time_zone = get_site_config()['TIME_ZONE']
     except:
-        time_zone = None
+        time_zone = 'UTC'
         
     return time_zone
     
@@ -91,15 +92,17 @@ def date_to_string(value,format):
     return value
 
     
-def datetime_as_string(the_datetime,time_zone):
+def datetime_as_string(the_datetime:datetime = None,time_zone:str = '')->str:
     """Return a string version of the datetime provided or for now"""
+    if not time_zone:
+        time_zone = get_time_zone_setting()
     if the_datetime == None:
         the_datetime = local_datetime_now(time_zone)
         
     return the_datetime.isoformat(sep=" ")[:19]
     
 
-def getDatetimeFromString(dateString,time_zone='') ->datetime | None:
+def getDatetimeFromString(dateString:str,time_zone:str='') ->datetime | None:
     """Try to create a datetime object based on the string provided
     or else None.
     The  datetime object returned is time zone aware and set to the time zone if provided
@@ -112,14 +115,9 @@ def getDatetimeFromString(dateString,time_zone='') ->datetime | None:
 
     if isinstance(dateString,str):
         pass
-    elif isinstance(dateString,(date,datetime)):
+    elif isinstance(dateString,(datetime,date)):
         #already a datetime. just make sure it's timezone aware
-        # if type(dateString) is date:
-            # date object must be converted to datetime to be time zone aware
-        # theDate = datetime(dateString.year,dateString.month,dateString.day,0,0,0)
-        make_tz_aware(dateString,time_zone)
-        # dateString = timezone(time_zone).localize(dateString)
-        return dateString
+        return make_tz_aware(dateString,time_zone)
     else:
         return None
 
