@@ -25,7 +25,9 @@ class FileUpload:
     @property
     def saved_file_path_string(self):
         """The abreviated path and file name as a string"""
-        return self.saved_file_path.as_posix()
+        if self.filename:
+            return self.saved_file_path.as_posix()
+        return ''
         
     def remove_file(self,target):
         """ Remove the target file and also it's directory if empty

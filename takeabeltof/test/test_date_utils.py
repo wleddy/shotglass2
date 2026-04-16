@@ -4,19 +4,21 @@ sys.path.append('') ##get import to look in the working dir.
 
 import pytest
 from datetime import datetime, date
-import shotglass2.takeabeltof.date_utils as dates
+from pytz import timezone
+from shotglass2.takeabeltof import date_utils as dates
 from shotglass2.shotglass import get_site_config
 
 def test_local_datetime_now():
     site_config = get_site_config()
     #site_config['TIME_ZONE'] = 'US/Pacific'
-    now = datetime.now()
+    time_zone = site_config['TIME_ZONE']
+    now = datetime.now(timezone(time_zone))
     local_now = dates.local_datetime_now()
     assert now.day == local_now.day
     assert now.hour == local_now.hour
     assert now.month == local_now.month
     assert local_now.tzinfo is not None
-    assert local_now.tzinfo.zone == site_config["TIME_ZONE"]
+    assert local_now.tzinfo.zone == time_zone
     
     # spcecify a time zone
     zone = "US/Eastern"
@@ -52,12 +54,10 @@ def test_date_to_string():
 
 def test_nowString():
     # This is really an alias to datetime_as_string
-    site_config = get_site_config()
-    
-    site_config['TIME_ZONE'] = 'US/Pacific'
+    time_zone = 'US/Pacific'
 
     now = dates.nowString()
-    assert now == dates.datetime_as_string(datetime.now())
+    assert now == dates.datetime_as_string(datetime.now(timezone(time_zone)))
     
     
 def test_datetime_as_string():
@@ -79,4 +79,18 @@ def test_getDatetimeFromString():
     assert dates.getDatetimeFromString(datetime(2019,2,8,6,33,00)) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),site_config["TIME_ZONE"])
     # Pass in a date
     assert dates.getDatetimeFromString(date(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
+    
+    # test with a different time zone
+    time_zone = "US/Eastern"
+    assert dates.getDatetimeFromString("12/14/12",time_zone) == dates.make_tz_aware(datetime(2012,12,14),time_zone)
+    assert dates.getDatetimeFromString("2012-12-14",time_zone) == dates.make_tz_aware(datetime(2012,12,14),time_zone)
+    assert dates.getDatetimeFromString("12/14/2012",time_zone) == dates.make_tz_aware(datetime(2012,12,14),time_zone)
+    assert dates.getDatetimeFromString("2/8/19",time_zone) == dates.make_tz_aware(datetime(2019,2,8),time_zone)
+    assert dates.getDatetimeFromString("2/8/51",time_zone) == dates.make_tz_aware(datetime(1951,2,8),time_zone)
+    
+    #test what happens when you pass in a date time
+    assert dates.getDatetimeFromString(datetime(2019,2,8),time_zone) == dates.make_tz_aware(datetime(2019,2,8),time_zone)
+    assert dates.getDatetimeFromString(datetime(2019,2,8,3,33,00),time_zone) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),time_zone)
+    # Pass in a date
+    assert dates.getDatetimeFromString(date(2019,2,8),time_zone) == dates.make_tz_aware(datetime(2019,2,8),time_zone)
     

@@ -7,7 +7,6 @@
 {% set value_list = [0] %}
 
 {% block fieldset %}
-<fieldset>
     {% if data.next %}
         <input type="hidden" name="next" value="{{ data.next }}" id="next" >
     {% endif %}
@@ -27,12 +26,21 @@
             <p><input type=file name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
                 {% if field['class'] %}class="{{ field.class }}"{% endif %} />
             </p>
-        {% elif field['type'].lower() == 'button' %}
+            {% elif field['type'].lower() == 'button' %}
             <p>
                 <button type="button" name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
-                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}">
+                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}"
+                {%if field['extras'] %}{{field['extras']}}{% endif %}>
                 {{field['label'] | default('Button',True)}}
                 </button>
+            </p>
+            {% elif field['type'].lower() == 'submit' %}
+            <p>
+                <input type="submit" name="{{ field.name }}" id="{{ field['id'] | default(field['name'],True)}}"
+                class="w3-btn w3-ripple w3-mobile w3-round-large w3-primary-color {% if field['class'] %}{{ field.class }}{% endif %}"
+                {%if field['extras'] %}{{field['extras']}}{% endif %}
+                value = "{{field['label'] | default('Submit',True)}}"
+                >
             </p>
        {% else %}
             {% set _ = value_list.pop()%}
@@ -56,7 +64,6 @@
             {% endif%}
         {% endif %}
     {% endfor %}
-</fieldset>
 {% endblock fieldset %}
 
 {% block head %}

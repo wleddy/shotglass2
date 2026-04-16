@@ -526,12 +526,15 @@ class VisitData(SqliteTable):
     
     def _is_expired(self,rec: object) -> True | False :
         """Return True if record has expired else False"""
-
-        if rec and rec.expires:
-            ex =  getDatetimeFromString(rec.expires)
-            if ex and ex < local_datetime_now():
-                return True
-            
+        try:
+            if rec and rec.expires:
+                ex =  getDatetimeFromString(rec.expires)
+                if ex and ex < local_datetime_now():
+                    return True
+        except TypeError:
+            # Older session records have offset-naive dates
+            return True
+                    
         return False
 
 

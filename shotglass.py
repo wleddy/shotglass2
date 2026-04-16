@@ -124,6 +124,9 @@ def _after_request(response :object) -> object:
     Receives the response object from Flask and must return it.
     """
 
+    # keep his name on the clacks:
+    response.headers.add("X-Clacks-Overhead","GNU Terry Pratchett")
+
     if get_site_config()['DEBUG']:
         # always reload files in development
         response.headers["Cache-Control"] = "no-store"
@@ -136,6 +139,11 @@ def _after_request(response :object) -> object:
             return response
 
         session_id = session.get('session_id')
+
+        ### Handle situation where no database exists
+        if 'db' not in g:
+            return response
+        
         visit_data = VisitData(g.db)
 
         visit_data.prune() # remove old visit records
