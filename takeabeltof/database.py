@@ -650,7 +650,7 @@ class DataRow:
 
     def __setattr__(self,prop,value):
         # can't modify the source_table list outside of __init__
-        if prop is 'source_table':
+        if prop == 'source_table':
             raise ValueError('DataRow source_table property may not be set.')
 
         super().__setattr__(prop,value)
