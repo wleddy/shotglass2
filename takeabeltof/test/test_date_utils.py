@@ -78,7 +78,7 @@ def test_getDatetimeFromString():
     assert dates.getDatetimeFromString(datetime(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
     assert dates.getDatetimeFromString(datetime(2019,2,8,6,33,00)) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),site_config["TIME_ZONE"])
     # Pass in a date
-    assert dates.getDatetimeFromString(date(2019,2,8)) == dates.make_tz_aware(datetime(2019,2,8),site_config["TIME_ZONE"])
+    assert dates.getDatetimeFromString(date(2019,2,8)) == dates.make_tz_aware(date(2019,2,8),site_config["TIME_ZONE"])
     
     # test with a different time zone
     time_zone = "US/Eastern"
@@ -90,7 +90,7 @@ def test_getDatetimeFromString():
     
     #test what happens when you pass in a date time
     assert dates.getDatetimeFromString(datetime(2019,2,8),time_zone) == dates.make_tz_aware(datetime(2019,2,8),time_zone)
-    assert dates.getDatetimeFromString(datetime(2019,2,8,3,33,00),time_zone) == dates.make_tz_aware(datetime(2019,2,8,6,33,00),time_zone)
+    assert dates.getDatetimeFromString(datetime(2019,2,8,3,33,00),time_zone) == dates.make_tz_aware(datetime(2019,2,8,3,33,00),time_zone)
     # Pass in a date
-    assert dates.getDatetimeFromString(date(2019,2,8),time_zone) == dates.make_tz_aware(datetime(2019,2,8),time_zone)
+    assert dates.getDatetimeFromString(date(2019,2,8),time_zone) == dates.make_tz_aware(date(2019,2,8),time_zone)
     
